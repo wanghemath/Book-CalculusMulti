@@ -1,0 +1,1384 @@
+---
+title: "Chapter 15. Polar Coordinates and Change of Variables in the Plane"
+subtitle: "Circular geometry, Jacobians, transformed regions, probability densities, and coordinate systems"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> **Chapter goal.** Many two-dimensional integrals become simple only after we choose coordinates that match the geometry. Rectangular coordinates are natural for boxes and vertical slices, but circular and radial regions call for polar coordinates. More generally, a change of variables replaces a complicated region in the $xy$-plane by a simpler region in a new $uv$-plane, at the cost of multiplying by a Jacobian factor.
+
+The central idea of this chapter is:
+
+$$
+\text{new area element} = \text{local area scaling factor}\times \text{new coordinate area element}.
+$$
+
+For polar coordinates this becomes
+
+$$
+dA = r\,dr\,d\theta.
+$$
+
+For a general transformation $(u,v)\mapsto (x,y)$, this becomes
+
+$$
+dA = \left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv.
+$$
+
+This idea is important in multivariable calculus, probability, statistics, numerical integration, geometric modeling, and machine learning. It explains why densities change under transformations, why radial symmetry simplifies Gaussian integrals, and why determinants measure local volume distortion.
+
+## Learning objectives
+
+After studying this chapter, you should be able to:
+
+1. convert between rectangular coordinates $(x,y)$ and polar coordinates $(r,\theta)$;
+2. describe disks, annuli, sectors, and shifted circles using polar inequalities;
+3. explain geometrically why $dA=r\,dr\,d\theta$;
+4. set up and evaluate double integrals in polar coordinates;
+5. decide when polar coordinates are preferable to rectangular coordinates;
+6. compute the Jacobian determinant of a transformation;
+7. apply the change-of-variables formula for double integrals;
+8. interpret Jacobians as local area-scaling factors;
+9. connect coordinate transformations to probability densities and modern data modeling.
+
+## 15.1 Why change coordinates?
+
+A coordinate system is not the object itself. It is a language for describing the object.
+
+The disk
+
+$$
+x^2+y^2\le 1
+$$
+
+is a simple geometric object, but in rectangular coordinates it requires square roots if we describe it by vertical slices:
+
+$$
+-1\le x\le 1,\qquad -\sqrt{1-x^2}\le y\le \sqrt{1-x^2}.
+$$
+
+In polar coordinates, the same disk becomes
+
+$$
+0\le r\le 1,
+\qquad 0\le \theta\le 2\pi.
+$$
+
+The geometry did not change; only the description changed. The new description matches the radial symmetry of the region.
+
+This principle appears throughout applied mathematics:
+
+- circular regions are easier in polar coordinates;
+- ellipses often become circles after a scaling transformation;
+- correlated Gaussian densities become independent Gaussian densities after a linear transformation;
+- complicated constraints may become rectangles in new variables;
+- latent-variable models often use a transformation from simple variables to observed variables.
+
+A good coordinate system reduces complexity.
+
+## 15.2 Polar coordinates
+
+In polar coordinates, a point in the plane is described by two numbers:
+
+- $r$: the distance from the origin;
+- $\theta$: the angle from the positive $x$-axis.
+
+The conversion formulas are
+
+$$
+x = r\cos\theta,
+\qquad
+ y = r\sin\theta,
+$$
+
+and
+
+$$
+r^2 = x^2+y^2,
+\qquad
+\tan\theta = \frac{y}{x}
+$$
+
+when $x\ne 0$, with the quadrant determining the correct angle.
+
+```{python}
+#| label: fig-ch15-polar-coordinate-point
+#| fig-cap: 'A point described by polar coordinates. The radius gives distance from the origin and the angle gives direction.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = 3.0
+theta = np.pi/5
+x = r*np.cos(theta)
+y = r*np.sin(theta)
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+ax.arrow(0, 0, x, y, head_width=0.12, length_includes_head=True)
+ax.scatter([x], [y], s=60)
+ax.text(x+0.12, y+0.12, r'$P=(r\cos\theta,r\sin\theta)$')
+ax.plot([x, x], [0, y], linestyle='--', linewidth=1)
+ax.plot([0, x], [y, y], linestyle='--', linewidth=1)
+
+ang = np.linspace(0, theta, 80)
+ax.plot(0.75*np.cos(ang), 0.75*np.sin(ang), linewidth=2)
+ax.text(0.85*np.cos(theta/2), 0.85*np.sin(theta/2), r'$\theta$')
+ax.text(x/2, y/2+0.15, r'$r$')
+
+ax.axhline(0, linewidth=1)
+ax.axvline(0, linewidth=1)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim(-0.5, 3.8)
+ax.set_ylim(-0.5, 2.8)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Polar coordinates')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Nonuniqueness of polar coordinates
+
+A rectangular coordinate pair $(x,y)$ is unique. Polar coordinates are not unique.
+
+For example, the point $(1,1)$ has polar coordinates
+
+$$
+\left(\sqrt{2},\frac{\pi}{4}\right),
+\qquad
+\left(\sqrt{2},\frac{\pi}{4}+2\pi\right),
+\qquad
+\left(\sqrt{2},\frac{\pi}{4}+4\pi\right),
+$$
+
+and many more. The origin has $r=0$ and any value of $\theta$.
+
+For double integrals, we usually take $r\ge 0$ and choose an interval of angles that covers the desired region exactly once.
+
+::: {.callout-note}
+## Practical convention
+
+When setting up polar integrals, choose bounds so that almost every point in the region is counted exactly once. Boundaries may overlap, but overlapping boundaries have area zero and do not change the value of the double integral.
+:::
+
+## 15.3 Common polar regions
+
+Polar coordinates are most useful when the region is described naturally by distance from the origin and angle.
+
+### Disk centered at the origin
+
+The disk $x^2+y^2\le a^2$ becomes
+
+$$
+0\le r\le a,
+\qquad 0\le \theta\le 2\pi.
+$$
+
+### Annulus centered at the origin
+
+The annulus $a^2\le x^2+y^2\le b^2$ becomes
+
+$$
+a\le r\le b,
+\qquad 0\le \theta\le 2\pi.
+$$
+
+### Sector
+
+A circular sector is described by
+
+$$
+0\le r\le a,
+\qquad \alpha\le \theta\le \beta.
+$$
+
+### Upper half-disk
+
+The upper half of the disk $x^2+y^2\le a^2$ is
+
+$$
+0\le r\le a,
+\qquad 0\le \theta\le \pi.
+$$
+
+### Shifted circle
+
+The circle
+
+$$
+(x-a)^2+y^2=a^2
+$$
+
+passes through the origin and has center $(a,0)$. Expanding gives
+
+$$
+x^2+y^2 = 2ax.
+$$
+
+In polar coordinates this becomes
+
+$$
+r^2 = 2ar\cos\theta,
+$$
+
+so for $r\ge 0$ the boundary is
+
+$$
+r=2a\cos\theta.
+$$
+
+The interior is usually described by
+
+$$
+-\frac{\pi}{2}\le \theta\le \frac{\pi}{2},
+\qquad
+0\le r\le 2a\cos\theta.
+$$
+
+```{python}
+#| label: fig-ch15-polar-regions
+#| fig-cap: 'Disks, annuli, sectors, and shifted circles have compact descriptions in polar coordinates.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(2, 2, figsize=(7, 7))
+
+# Disk
+ax = axes[0, 0]
+t = np.linspace(0, 2*np.pi, 400)
+ax.fill(np.cos(t), np.sin(t), alpha=0.35)
+ax.plot(np.cos(t), np.sin(t))
+ax.set_title('Disk: 0 <= r <= 1')
+
+# Annulus
+ax = axes[0, 1]
+outer = np.column_stack([2*np.cos(t), 2*np.sin(t)])
+inner = np.column_stack([1*np.cos(t[::-1]), 1*np.sin(t[::-1])])
+poly = np.vstack([outer, inner])
+ax.fill(poly[:, 0], poly[:, 1], alpha=0.35)
+ax.plot(2*np.cos(t), 2*np.sin(t))
+ax.plot(np.cos(t), np.sin(t))
+ax.set_title('Annulus: 1 <= r <= 2')
+
+# Sector
+ax = axes[1, 0]
+th = np.linspace(np.pi/6, 2*np.pi/3, 200)
+sector_x = np.r_[0, 1.8*np.cos(th), 0]
+sector_y = np.r_[0, 1.8*np.sin(th), 0]
+ax.fill(sector_x, sector_y, alpha=0.35)
+ax.plot(1.8*np.cos(th), 1.8*np.sin(th))
+ax.plot([0, 1.8*np.cos(np.pi/6)], [0, 1.8*np.sin(np.pi/6)])
+ax.plot([0, 1.8*np.cos(2*np.pi/3)], [0, 1.8*np.sin(2*np.pi/3)])
+ax.set_title('Sector')
+
+# Shifted circle
+ax = axes[1, 1]
+a = 1.0
+th = np.linspace(-np.pi/2, np.pi/2, 400)
+r = 2*a*np.cos(th)
+x = r*np.cos(th)
+y = r*np.sin(th)
+ax.fill(x, y, alpha=0.35)
+ax.plot(x, y)
+ax.scatter([a], [0], s=30)
+ax.set_title(r'Shifted circle: $r=2a\cos\theta$')
+
+for ax in axes.ravel():
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+    ax.set_aspect('equal', adjustable='box')
+    ax.grid(True, alpha=0.25)
+
+plt.tight_layout()
+plt.show()
+```
+
+## 15.4 The polar area element
+
+The most important formula in polar integration is
+
+$$
+dA = r\,dr\,d\theta.
+$$
+
+This factor $r$ is not optional. It records the fact that a small angular change $d\theta$ sweeps out a longer arc when the point is farther from the origin.
+
+Consider a small polar rectangle:
+
+$$
+r\le \rho\le r+dr,
+\qquad
+\theta\le \phi\le \theta+d\theta.
+$$
+
+Its radial thickness is approximately $dr$. Its angular width is approximately arc length $r\,d\theta$. Therefore its area is approximately
+
+$$
+(r\,d\theta)(dr)=r\,dr\,d\theta.
+$$
+
+```{python}
+#| label: fig-ch15-polar-area-element
+#| fig-cap: 'A small polar coordinate cell has radial thickness dr and angular width approximately r dtheta, so its area is approximately r dr dtheta.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+r0 = 1.5
+dr = 0.35
+th0 = np.pi/5
+dth = np.pi/9
+th = np.linspace(th0, th0+dth, 120)
+
+x_outer = (r0+dr)*np.cos(th)
+y_outer = (r0+dr)*np.sin(th)
+x_inner = r0*np.cos(th[::-1])
+y_inner = r0*np.sin(th[::-1])
+poly_x = np.r_[x_outer, x_inner]
+poly_y = np.r_[y_outer, y_inner]
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+for rad in [0.75, 1.15, 1.5, 1.85, 2.25]:
+    th_full = np.linspace(0, np.pi/2, 200)
+    ax.plot(rad*np.cos(th_full), rad*np.sin(th_full), color='gray', alpha=0.35, linewidth=0.8)
+for angle in np.linspace(0, np.pi/2, 7):
+    ax.plot([0, 2.4*np.cos(angle)], [0, 2.4*np.sin(angle)], color='gray', alpha=0.35, linewidth=0.8)
+
+ax.fill(poly_x, poly_y, alpha=0.55)
+ax.plot(poly_x, poly_y, linewidth=2)
+ax.text(1.85*np.cos(th0+dth/2), 1.85*np.sin(th0+dth/2)+0.15, r'$r\,d\theta$')
+ax.text((r0+0.2)*np.cos(th0+dth)+0.08, (r0+0.2)*np.sin(th0+dth), r'$dr$')
+ax.text(1.0*np.cos(th0/2), 1.0*np.sin(th0/2), r'$\theta$')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim(0, 2.5)
+ax.set_ylim(0, 2.5)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Polar area element')
+ax.grid(True, alpha=0.2)
+plt.show()
+```
+
+::: {.callout-warning}
+## Common mistake
+
+Do not write $dA=dr\,d\theta$. The correct formula is $dA=r\,dr\,d\theta$. The factor $r$ is the local stretching factor from angular movement.
+:::
+
+## 15.5 Double integrals in polar coordinates
+
+Suppose a region $D$ is described in polar form as
+
+$$
+\alpha\le \theta\le \beta,
+\qquad
+h_1(\theta)\le r\le h_2(\theta).
+$$
+
+Then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_\alpha^\beta\int_{h_1(\theta)}^{h_2(\theta)}
+f(r\cos\theta,r\sin\theta)\,r\,dr\,d\theta.
+$$
+
+The process has three steps:
+
+1. rewrite the region in polar bounds;
+2. substitute $x=r\cos\theta$ and $y=r\sin\theta$ into the integrand;
+3. replace $dA$ by $r\,dr\,d\theta$.
+
+### Worked example 1: Area of a disk
+
+Find the area of the disk $D:x^2+y^2\le a^2$.
+
+Since $D$ is $0\le r\le a$, $0\le \theta\le 2\pi$,
+
+$$
+\operatorname{Area}(D)
+=
+\int_0^{2\pi}\int_0^a r\,dr\,d\theta
+=
+\int_0^{2\pi}\frac{a^2}{2}\,d\theta
+=
+\pi a^2.
+$$
+
+This is the usual area formula, now derived as a double integral.
+
+### Worked example 2: Converting a rectangular-coordinate integral
+
+Convert
+
+$$
+\int_{-1}^{1}\int_0^{\sqrt{1-x^2}} 4\,dy\,dx
+$$
+
+into polar coordinates and evaluate it.
+
+The region is the upper half of the unit disk:
+
+$$
+x^2+y^2\le 1,
+\qquad y\ge 0.
+$$
+
+In polar coordinates,
+
+$$
+0\le r\le 1,
+\qquad 0\le \theta\le \pi.
+$$
+
+Therefore
+
+$$
+\int_{-1}^{1}\int_0^{\sqrt{1-x^2}} 4\,dy\,dx
+=
+\int_0^\pi\int_0^1 4r\,dr\,d\theta
+=2\pi.
+$$
+
+```{python}
+#| label: fig-ch15-upper-half-disk
+#| fig-cap: 'The region for the integral is the upper half of the unit disk, which becomes 0 <= r <= 1 and 0 <= theta <= pi.'
+#| fig-width: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1, 1, 400)
+y = np.sqrt(1 - x**2)
+
+fig, ax = plt.subplots(figsize=(6, 4.8))
+ax.fill_between(x, 0, y, alpha=0.4)
+ax.plot(x, y)
+ax.plot(x, -y, color='gray', alpha=0.4, linestyle='--')
+ax.axhline(0, linewidth=1)
+ax.axvline(0, linewidth=1)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Upper half of the unit disk')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Worked example 3: An annular integral
+
+Evaluate
+
+$$
+\iint_D \cos(x^2+y^2)\,dA,
+$$
+
+where $D$ is the region between $r=3$ and $r=4$ in the upper half-plane.
+
+The bounds are
+
+$$
+3\le r\le 4,
+\qquad
+0\le \theta\le \pi.
+$$
+
+Since $x^2+y^2=r^2$ and $dA=r\,dr\,d\theta$,
+
+$$
+\iint_D \cos(x^2+y^2)\,dA
+=
+\int_0^\pi\int_3^4 \cos(r^2)r\,dr\,d\theta.
+$$
+
+Let $u=r^2$, so $du=2r\,dr$. Then
+
+$$
+\int_3^4 \cos(r^2)r\,dr
+=
+\frac12\int_9^{16}\cos u\,du
+=
+\frac12(\sin 16-\sin 9).
+$$
+
+Thus
+
+$$
+\iint_D \cos(x^2+y^2)\,dA
+=
+\frac{\pi}{2}(\sin 16-\sin 9).
+$$
+
+This example shows a typical reason for using polar coordinates: the expression $x^2+y^2$ becomes the simpler expression $r^2$.
+
+## 15.6 Volume using polar coordinates
+
+If a solid lies under $z=f(x,y)$ and above a region $D$, then its volume is
+
+$$
+V=\iint_D f(x,y)\,dA.
+$$
+
+When $D$ is circular or the function depends on $x^2+y^2$, polar coordinates often simplify the integral.
+
+### Worked example 4: Paraboloid over a quadrant
+
+Find the volume under
+
+$$
+z=6-2x^2-2y^2
+$$
+
+above the first-quadrant part of the region where $z\ge 0$.
+
+The condition $z\ge 0$ gives
+
+$$
+6-2x^2-2y^2\ge 0,
+$$
+
+so
+
+$$
+x^2+y^2\le 3.
+$$
+
+In the first quadrant,
+
+$$
+0\le \theta\le \frac{\pi}{2},
+\qquad
+0\le r\le \sqrt{3}.
+$$
+
+Therefore
+
+$$
+V=
+\int_0^{\pi/2}\int_0^{\sqrt{3}} (6-2r^2)r\,dr\,d\theta.
+$$
+
+Compute the inner integral:
+
+$$
+\int_0^{\sqrt{3}} (6r-2r^3)\,dr
+=
+\left[3r^2-\frac12r^4\right]_0^{\sqrt{3}}
+=9-\frac92
+=\frac92.
+$$
+
+Hence
+
+$$
+V=\frac{\pi}{2}\cdot \frac92
+=\frac{9\pi}{4}.
+$$
+
+```{python}
+#| label: fig-ch15-paraboloid-first-quadrant
+#| fig-cap: 'The surface z = 6 - 2x^2 - 2y^2 above a quarter disk. Polar coordinates match both the circular boundary and the radial integrand.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+r = np.linspace(0, np.sqrt(3), 90)
+th = np.linspace(0, np.pi/2, 90)
+R, TH = np.meshgrid(r, th)
+X = R*np.cos(TH)
+Y = R*np.sin(TH)
+Z = 6 - 2*R**2
+
+fig = plt.figure(figsize=(7, 5.5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.85, linewidth=0, antialiased=True)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Paraboloid above a quarter disk')
+plt.show()
+```
+
+## 15.7 Shifted circular regions
+
+Polar coordinates are not only for circles centered at the origin. They also work well for some shifted circles, especially when the circle passes through the origin.
+
+Consider
+
+$$
+D=\{(x,y):(x-2)^2+y^2\le 4\}.
+$$
+
+Expanding gives
+
+$$
+x^2-4x+4+y^2\le 4,
+$$
+
+so
+
+$$
+x^2+y^2\le 4x.
+$$
+
+In polar coordinates,
+
+$$
+r^2\le 4r\cos\theta.
+$$
+
+For $r\ge 0$, this becomes
+
+$$
+0\le r\le 4\cos\theta.
+$$
+
+We need $4\cos\theta\ge 0$, so one convenient angular interval is
+
+$$
+-\frac{\pi}{2}\le \theta\le \frac{\pi}{2}.
+$$
+
+Thus
+
+$$
+D=\left\{(r,\theta):-\frac{\pi}{2}\le \theta\le \frac{\pi}{2},\ 0\le r\le 4\cos\theta\right\}.
+$$
+
+The area is
+
+$$
+\int_{-\pi/2}^{\pi/2}\int_0^{4\cos\theta} r\,dr\,d\theta
+=
+\int_{-\pi/2}^{\pi/2} 8\cos^2\theta\,d\theta
+=4\pi.
+$$
+
+This agrees with the area of a circle of radius $2$.
+
+```{python}
+#| label: fig-ch15-shifted-disk-polar
+#| fig-cap: 'The shifted disk (x-2)^2 + y^2 <= 4 is described by 0 <= r <= 4 cos(theta), -pi/2 <= theta <= pi/2.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+th = np.linspace(-np.pi/2, np.pi/2, 500)
+r = 4*np.cos(th)
+x = r*np.cos(th)
+y = r*np.sin(th)
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+ax.fill(x, y, alpha=0.35)
+ax.plot(x, y, linewidth=2, label=r'$r=4\cos\theta$')
+for angle in np.linspace(-np.pi/2, np.pi/2, 9):
+    rr = 4*np.cos(angle)
+    ax.plot([0, rr*np.cos(angle)], [0, rr*np.sin(angle)], color='gray', alpha=0.35, linewidth=0.8)
+ax.scatter([2], [0], s=45, label='center')
+ax.axhline(0, linewidth=1)
+ax.axvline(0, linewidth=1)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Shifted disk in polar coordinates')
+ax.legend()
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 15.8 Strategy for choosing polar coordinates
+
+Polar coordinates are often a good choice when at least one of the following appears:
+
+1. The region involves $x^2+y^2$.
+2. The boundary is a circle, disk, annulus, sector, or ray from the origin.
+3. The integrand contains $x^2+y^2$, $\sqrt{x^2+y^2}$, or radial symmetry.
+4. A rectangular-coordinate integral contains square roots such as $\sqrt{a^2-x^2}$.
+5. The geometry is best described by distance and angle.
+
+Polar coordinates may not help if the region is rectangular and the integrand has no radial structure.
+
+### A comparison example
+
+The integral
+
+$$
+\int_{-1}^{1}\int_{-\sqrt{1-x^2}}^{\sqrt{1-x^2}} e^{-(x^2+y^2)}\,dy\,dx
+$$
+
+is hard in rectangular coordinates because the inner integral has no elementary antiderivative. In polar coordinates it becomes
+
+$$
+\int_0^{2\pi}\int_0^1 e^{-r^2}r\,dr\,d\theta,
+$$
+
+which is elementary:
+
+$$
+2\pi\left[-\frac12e^{-r^2}\right]_0^1
+=\pi(1-e^{-1}).
+$$
+
+```{python}
+#| label: fig-ch15-radial-integrand
+#| fig-cap: 'A radially symmetric integrand over a disk. Polar coordinates turn the two-dimensional integral into a one-dimensional radial integral times an angular factor.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.2, 1.2, 350)
+y = np.linspace(-1.2, 1.2, 350)
+X, Y = np.meshgrid(x, y)
+Z = np.exp(-(X**2 + Y**2))
+mask = X**2 + Y**2 <= 1
+Z_masked = np.where(mask, Z, np.nan)
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+cont = ax.contourf(X, Y, Z_masked, levels=20)
+ax.contour(X, Y, X**2 + Y**2, levels=[1], linewidths=2)
+fig.colorbar(cont, ax=ax, label=r'$e^{-(x^2+y^2)}$')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Radial integrand over a disk')
+plt.show()
+```
+
+## 15.9 General change of variables
+
+Polar coordinates are one example of a broader idea.
+
+Let a transformation $T$ map a point $(u,v)$ in a new coordinate plane to a point $(x,y)$ in the original plane:
+
+$$
+T(u,v)=(x(u,v),y(u,v)).
+$$
+
+The Jacobian determinant of the transformation is
+
+$$
+\frac{\partial(x,y)}{\partial(u,v)}
+=
+\begin{vmatrix}
+\frac{\partial x}{\partial u} & \frac{\partial x}{\partial v} \\
+\frac{\partial y}{\partial u} & \frac{\partial y}{\partial v}
+\end{vmatrix}
+=
+\frac{\partial x}{\partial u}\frac{\partial y}{\partial v}
+-
+\frac{\partial x}{\partial v}\frac{\partial y}{\partial u}.
+$$
+
+The absolute value of this determinant measures local area scaling.
+
+### Change-of-variables formula
+
+If $T$ maps a region $S$ in the $uv$-plane to a region $D$ in the $xy$-plane, and if the transformation behaves well on the region, then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\iint_S f(x(u,v),y(u,v))
+\left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv.
+$$
+
+This formula has the same structure as polar integration:
+
+$$
+\text{integrand after substitution}\times \text{area-scaling factor}.
+$$
+
+### Polar coordinates as a Jacobian example
+
+For polar coordinates,
+
+$$
+x=r\cos\theta,
+\qquad
+ y=r\sin\theta.
+$$
+
+The Jacobian is
+
+$$
+\frac{\partial(x,y)}{\partial(r,\theta)}
+=
+\begin{vmatrix}
+\cos\theta & -r\sin\theta \\
+\sin\theta & r\cos\theta
+\end{vmatrix}
+=r\cos^2\theta+r\sin^2\theta
+=r.
+$$
+
+Therefore
+
+$$
+dA=r\,dr\,d\theta.
+$$
+
+The familiar polar formula is just the general change-of-variables formula applied to the polar map.
+
+## 15.10 Linear transformations and area scaling
+
+A linear transformation
+
+$$
+\begin{pmatrix}x\\y\end{pmatrix}
+=
+A\begin{pmatrix}u\\v\end{pmatrix}
+$$
+
+scales every area by the constant factor $|\det A|$.
+
+For example, let
+
+$$
+x=2u+v,
+\qquad
+ y=u+3v.
+$$
+
+Then
+
+$$
+A=\begin{pmatrix}2&1\\1&3\end{pmatrix},
+\qquad
+\det A=5.
+$$
+
+So any region in the $uv$-plane has image area five times as large in the $xy$-plane.
+
+```{python}
+#| label: fig-ch15-linear-transformation-grid
+#| fig-cap: 'A square grid in the uv-plane transformed by a linear map. The determinant gives the constant area-scaling factor.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[2, 1], [1, 3]])
+vals = np.linspace(0, 1, 11)
+
+fig, axes = plt.subplots(1, 2, figsize=(7, 3.8))
+
+# uv grid
+ax = axes[0]
+for c in vals:
+    ax.plot([c, c], [0, 1], color='gray', linewidth=0.8)
+    ax.plot([0, 1], [c, c], color='gray', linewidth=0.8)
+ax.set_title('$uv$-plane')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$u$')
+ax.set_ylabel('$v$')
+ax.grid(True, alpha=0.2)
+
+# transformed grid
+ax = axes[1]
+for c in vals:
+    pts = np.array([[c, 0], [c, 1]]) @ A.T
+    ax.plot(pts[:, 0], pts[:, 1], color='gray', linewidth=0.8)
+    pts = np.array([[0, c], [1, c]]) @ A.T
+    ax.plot(pts[:, 0], pts[:, 1], color='gray', linewidth=0.8)
+unit_square = np.array([[0,0], [1,0], [1,1], [0,1], [0,0]])
+image = unit_square @ A.T
+ax.plot(image[:,0], image[:,1], linewidth=2)
+ax.set_title('$xy$-plane')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.grid(True, alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Worked example 5: Area of a parallelogram
+
+Let $S=[0,1]\times[0,1]$ and define
+
+$$
+x=2u+v,
+\qquad
+ y=u+3v.
+$$
+
+The image $D=T(S)$ is a parallelogram. Its area is
+
+$$
+\operatorname{Area}(D)
+=
+\iint_D 1\,dA
+=
+\iint_S 1\cdot |5|\,du\,dv
+=5.
+$$
+
+This agrees with the determinant interpretation: the unit square is stretched into a parallelogram with area $5$.
+
+## 15.11 Nonlinear transformations
+
+For nonlinear transformations, the Jacobian usually varies from point to point. The transformation may stretch one part of the region more than another.
+
+For example,
+
+$$
+x=u,
+\qquad
+ y=v+0.4u^2.
+$$
+
+The Jacobian is
+
+$$
+\frac{\partial(x,y)}{\partial(u,v)}
+=
+\begin{vmatrix}
+1&0\\0.8u&1
+\end{vmatrix}
+=1.
+$$
+
+Although this transformation bends horizontal grid lines into parabolas, it preserves area locally because the Jacobian determinant is $1$.
+
+```{python}
+#| label: fig-ch15-nonlinear-transformation-grid
+#| fig-cap: 'A nonlinear shear bends grid lines but has Jacobian determinant 1, so it preserves area locally.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+vals = np.linspace(-1, 1, 11)
+
+def T(u, v):
+    return u, v + 0.4*u**2
+
+fig, axes = plt.subplots(1, 2, figsize=(7, 3.8))
+
+ax = axes[0]
+for c in vals:
+    s = np.linspace(-1, 1, 200)
+    ax.plot(np.full_like(s, c), s, color='gray', linewidth=0.8)
+    ax.plot(s, np.full_like(s, c), color='gray', linewidth=0.8)
+ax.set_title('$uv$-grid')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$u$')
+ax.set_ylabel('$v$')
+ax.grid(True, alpha=0.2)
+
+ax = axes[1]
+for c in vals:
+    s = np.linspace(-1, 1, 200)
+    x, y = T(np.full_like(s, c), s)
+    ax.plot(x, y, color='gray', linewidth=0.8)
+    x, y = T(s, np.full_like(s, c))
+    ax.plot(x, y, color='gray', linewidth=0.8)
+ax.set_title('Transformed $xy$-grid')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.grid(True, alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+### Worked example 6: A triangular transformation
+
+Let
+
+$$
+x=u,
+\qquad
+ y=uv,
+$$
+
+where
+
+$$
+1\le u\le 2,
+\qquad 0\le v\le 1.
+$$
+
+The Jacobian is
+
+$$
+\frac{\partial(x,y)}{\partial(u,v)}
+=
+\begin{vmatrix}
+1&0\\v&u
+\end{vmatrix}
+=u.
+$$
+
+The image region satisfies
+
+$$
+1\le x\le 2,
+\qquad
+0\le y\le x.
+$$
+
+If we want to evaluate
+
+$$
+\iint_D (x+y)\,dA,
+$$
+
+then
+
+$$
+\iint_D (x+y)\,dA
+=
+\int_1^2\int_0^1 (u+uv)u\,dv\,du.
+$$
+
+Simplifying,
+
+$$
+\int_1^2\int_0^1 u^2(1+v)\,dv\,du
+=
+\int_1^2 \frac32u^2\,du
+=\frac32\cdot\frac{7}{3}
+=\frac72.
+$$
+
+## 15.12 Change of variables in probability
+
+Change of variables is essential in probability and statistics.
+
+If $(X,Y)$ has joint density $f_{X,Y}(x,y)$ and
+
+$$
+(X,Y)=T(U,V),
+$$
+
+then the density of $(U,V)$ involves the Jacobian factor. Informally,
+
+$$
+\text{probability mass} = \text{density}\times \text{area}.
+$$
+
+When area changes, density must change in the opposite way so that probability is preserved.
+
+### Radial probability
+
+Suppose a density depends only on radius:
+
+$$
+f(x,y)=c e^{-(x^2+y^2)}.
+$$
+
+To find the normalizing constant $c$, require
+
+$$
+1=\iint_{\mathbb R^2} c e^{-(x^2+y^2)}\,dA.
+$$
+
+Using polar coordinates,
+
+$$
+1=c\int_0^{2\pi}\int_0^\infty e^{-r^2}r\,dr\,d\theta
+=c(2\pi)\left(\frac12\right)
+=c\pi.
+$$
+
+So
+
+$$
+c=\frac1\pi.
+$$
+
+This is a two-dimensional radial density. Similar ideas lead to the normalization constants for multivariate normal distributions.
+
+```{python}
+#| label: fig-ch15-radial-density-simulation
+#| fig-cap: 'Samples from a radial distribution. Polar coordinates separate radius and angle, which is useful for simulation and probability calculations.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(15)
+n = 4000
+# For density (1/pi) exp(-r^2), the variable R^2 is exponential with mean 1.
+r = np.sqrt(rng.exponential(scale=1.0, size=n))
+th = rng.uniform(0, 2*np.pi, size=n)
+x = r*np.cos(th)
+y = r*np.sin(th)
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+ax.scatter(x, y, s=4, alpha=0.25)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Random points from a radial density')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 15.13 Computational viewpoint
+
+In computation, a change of variables is more than a symbolic trick. It is a method for transforming a difficult numerical problem into an easier one.
+
+### Monte Carlo in a disk
+
+To approximate
+
+$$
+\iint_{x^2+y^2\le 1} e^{-(x^2+y^2)}\,dA,
+$$
+
+we can sample uniformly from the disk. A correct polar simulation must not sample $r$ uniformly on $[0,1]$. Since area in polar coordinates is $r\,dr\,d\theta$, the radius distribution must put more points near the outer part of the disk.
+
+A uniform point in the unit disk can be generated by
+
+$$
+\Theta\sim \operatorname{Uniform}(0,2\pi),
+\qquad
+R=\sqrt{U},
+$$
+
+where $U\sim \operatorname{Uniform}(0,1)$.
+
+```{python}
+#| label: fig-ch15-uniform-disk-sampling
+#| fig-cap: 'Uniform sampling in a disk requires R = sqrt(U), not R = U. The Jacobian factor r explains the difference.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(151)
+n = 3000
+th = rng.uniform(0, 2*np.pi, size=n)
+
+r_wrong = rng.uniform(0, 1, size=n)
+x_wrong = r_wrong*np.cos(th)
+y_wrong = r_wrong*np.sin(th)
+
+r_right = np.sqrt(rng.uniform(0, 1, size=n))
+x_right = r_right*np.cos(th)
+y_right = r_right*np.sin(th)
+
+fig, axes = plt.subplots(1, 2, figsize=(7, 3.8))
+axes[0].scatter(x_wrong, y_wrong, s=4, alpha=0.25)
+axes[0].set_title('Incorrect: $R=U$')
+axes[1].scatter(x_right, y_right, s=4, alpha=0.25)
+axes[1].set_title(r'Correct: $R=\sqrt{U}$')
+
+for ax in axes:
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_xlim(-1.05, 1.05)
+    ax.set_ylim(-1.05, 1.05)
+    ax.grid(True, alpha=0.2)
+
+plt.tight_layout()
+plt.show()
+```
+
+The exact value is
+
+$$
+\int_0^{2\pi}\int_0^1 e^{-r^2}r\,dr\,d\theta
+=\pi(1-e^{-1}).
+$$
+
+The simulation estimate is close to that value.
+
+```{python}
+#| label: fig-ch15-monte-carlo-disk-integral
+#| fig-cap: 'Monte Carlo estimates of a disk integral approach the exact polar-coordinate value as the sample size increases.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(152)
+exact = np.pi*(1 - np.exp(-1))
+sizes = np.array([100, 300, 1000, 3000, 10000, 30000])
+estimates = []
+
+for n in sizes:
+    th = rng.uniform(0, 2*np.pi, size=n)
+    r = np.sqrt(rng.uniform(0, 1, size=n))
+    values = np.exp(-r**2)
+    estimates.append(np.pi*values.mean())  # area of unit disk times average value
+
+fig, ax = plt.subplots(figsize=(6.5, 4.8))
+ax.plot(sizes, estimates, marker='o', label='Monte Carlo estimate')
+ax.axhline(exact, linestyle='--', label='exact value')
+ax.set_xscale('log')
+ax.set_xlabel('sample size')
+ax.set_ylabel('integral estimate')
+ax.set_title('Monte Carlo integration over the unit disk')
+ax.legend()
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 15.14 Applications in data, statistics, and AI
+
+### Radial basis functions
+
+Many machine-learning models use radial basis functions such as
+
+$$
+\phi(x,y)=e^{-\gamma(x^2+y^2)}.
+$$
+
+These functions are constant on circles centered at the origin. Polar coordinates reveal their radial structure immediately.
+
+### Gaussian models
+
+The bivariate normal density has elliptical level curves. After shifting, scaling, and rotating coordinates, those ellipses become circles. This is a change-of-variables idea. The determinant of the covariance matrix controls how volume changes.
+
+### Normalizing flows
+
+In modern generative modeling, a normalizing flow transforms a simple latent variable $z$ into a more complicated observed variable $x=T(z)$. The probability density changes by a Jacobian determinant. In two dimensions the formula is the same idea as this chapter; in high dimensions it becomes
+
+$$
+\text{density correction}=\left|\det J_T\right|^{-1}.
+$$
+
+### Numerical integration
+
+Monte Carlo methods, importance sampling, and coordinate transformations all rely on understanding how area or volume changes under a transformation. A poor coordinate system can make an integral numerically unstable; a good one can make the same problem nearly one-dimensional.
+
+## 15.15 Chapter summary
+
+The key formulas are:
+
+$$
+x=r\cos\theta,
+\qquad
+ y=r\sin\theta,
+\qquad
+r^2=x^2+y^2.
+$$
+
+The polar area element is
+
+$$
+dA=r\,dr\,d\theta.
+$$
+
+Thus, for a polar region
+
+$$
+D=\{(r,\theta):\alpha\le \theta\le \beta,\\ h_1(\theta)\le r\le h_2(\theta)\},
+$$
+
+we have
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_\alpha^\beta\int_{h_1(\theta)}^{h_2(\theta)} f(r\cos\theta,r\sin\theta)r\,dr\,d\theta.
+$$
+
+For a general transformation
+
+$$
+T(u,v)=(x(u,v),y(u,v)),
+$$
+
+the Jacobian determinant is
+
+$$
+\frac{\partial(x,y)}{\partial(u,v)}
+=
+\begin{vmatrix}
+x_u & x_v \\
+y_u & y_v
+\end{vmatrix},
+$$
+
+and the change-of-variables formula is
+
+$$
+\iint_D f(x,y)\,dA
+=
+\iint_S f(x(u,v),y(u,v))
+\left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv.
+$$
+
+The absolute value of the Jacobian determinant is the local area-scaling factor.
+
+## Exercises
+
+### Conceptual questions
+
+1. Explain why polar coordinates are useful for disks and annuli.
+2. Explain why the polar area element is $r\,dr\,d\theta$, not $dr\,d\theta$.
+3. Why are polar coordinates not unique?
+4. What does the Jacobian determinant measure geometrically?
+5. Why do we use the absolute value of the Jacobian determinant in the change-of-variables formula?
+6. Give an example of a region where rectangular coordinates are more convenient than polar coordinates.
+7. Give an example of an integrand where polar coordinates simplify the algebra.
+8. Explain why uniform sampling in a disk requires $R=\sqrt{U}$ instead of $R=U$.
+
+### Polar coordinate descriptions
+
+9. Describe the disk $x^2+y^2\le 9$ in polar coordinates.
+10. Describe the annulus $4\le x^2+y^2\le 25$ in polar coordinates.
+11. Describe the upper half of the disk $x^2+y^2\le 16$ in polar coordinates.
+12. Describe the first-quadrant part of the annulus $1\le x^2+y^2\le 4$ in polar coordinates.
+13. Convert the circle $x^2+y^2=6x$ to polar form.
+14. Convert the circle $x^2+y^2=-4y$ to polar form.
+15. Describe the region inside $r=2\cos\theta$.
+16. Describe the region inside $r=3\sin\theta$.
+
+### Polar integrals
+
+17. Evaluate $\iint_D 1\,dA$ where $D$ is the disk $x^2+y^2\le 4$.
+18. Evaluate $\iint_D (x^2+y^2)\,dA$ where $D$ is the disk $x^2+y^2\le 1$.
+19. Evaluate $\iint_D e^{-(x^2+y^2)}\,dA$ where $D$ is the disk $x^2+y^2\le 4$.
+20. Evaluate $\iint_D \sqrt{x^2+y^2}\,dA$ where $D$ is the annulus $1\le x^2+y^2\le 9$.
+21. Evaluate $\iint_D y\,dA$ where $D$ is the upper half of the disk $x^2+y^2\le 1$.
+22. Evaluate $\iint_D x^2\,dA$ where $D$ is the first-quadrant unit disk.
+23. Convert $\int_{-2}^2\int_0^{\sqrt{4-x^2}} f(x,y)\,dy\,dx$ to polar form.
+24. Convert $\int_0^2\int_0^{\sqrt{4-y^2}} f(x,y)\,dx\,dy$ to polar form.
+25. Evaluate the volume under $z=9-x^2-y^2$ above the disk $x^2+y^2\le 9$.
+26. Evaluate the volume under $z=4-x^2-y^2$ above the first-quadrant part of $x^2+y^2\le 4$.
+
+### Change of variables
+
+27. Compute the Jacobian for $x=3u$, $y=2v$.
+28. Compute the Jacobian for $x=u+v$, $y=u-v$.
+29. Compute the Jacobian for $x=u^2-v^2$, $y=2uv$.
+30. Compute the Jacobian for $x=e^u\cos v$, $y=e^u\sin v$.
+31. Let $x=2u+v$, $y=u+4v$, and $S=[0,1]\times[0,2]$. Find the area of $T(S)$.
+32. Let $x=u$, $y=uv$, where $1\le u\le 3$ and $0\le v\le 2$. Write the corresponding region in the $xy$-plane.
+33. Use the change of variables $x=2u$, $y=3v$ to compute the area of the ellipse $x^2/4+y^2/9\le 1$.
+34. Use an appropriate change of variables to convert the ellipse $x^2/a^2+y^2/b^2\le 1$ into a unit disk.
+
+### Applications and computation
+
+35. Use polar coordinates to normalize the density $f(x,y)=ce^{-(x^2+y^2)}$ over the plane.
+36. Find the probability that a point with density $f(x,y)=\pi^{-1}e^{-(x^2+y^2)}$ lies inside the unit disk.
+37. Write Python code to approximate $\iint_{x^2+y^2\le 1}\sqrt{x^2+y^2}\,dA$ by Monte Carlo simulation.
+38. Explain how the determinant appears in a two-dimensional normalizing flow.
+39. Let $L(a,b)=\iint_D (a+br-y)^2\,dA$ over a disk $D$. Explain why polar coordinates may simplify the geometry but not necessarily the integrand.
+40. A sensor has circular range $x^2+y^2\le R^2$. Write an integral for the average signal strength $S(x,y)=e^{-\lambda\sqrt{x^2+y^2}}$ over the range.
+
+## Python lab: Polar coordinates and Jacobians
+
+In the companion Python lab, you will:
+
+1. plot polar grids and polar regions;
+2. convert rectangular integrals over disks into polar form;
+3. compute polar integrals numerically;
+4. visualize the polar area element;
+5. compute Jacobians of transformations;
+6. transform grids under linear and nonlinear maps;
+7. simulate uniform points in disks;
+8. estimate radial probability integrals using Monte Carlo methods.
+
+## Looking ahead
+
+This chapter introduced coordinate transformations in the plane. The next chapters extend the same idea to three-dimensional integration. Cylindrical and spherical coordinates will play the role that polar coordinates played here, and the Jacobian factors will become volume-scaling factors.

@@ -1,0 +1,35 @@
+
+/* Multivariable Calculus in the Age of Data, AI, and Applied Mathematics */
+:root {
+  --cm-blue: #12355b;
+  --cm-accent: #0f766e;
+  --cm-soft: #eef7f6;
+  --cm-warm: #fff7ed;
+}
+
+.navbar-title, .sidebar-title { font-weight: 800; }
+
+.callout-note, .callout-tip, .callout-important { border-radius: 0; }
+
+.theorem, .definition, .example {
+  border-left: 4px solid var(--cm-accent);
+  padding-left: 0.8rem;
+}
+
+.ai-box, .stat-box, .lab-box {
+  border-left: 5px solid var(--cm-blue);
+  background: var(--cm-soft);
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+}
+
+.bridge-box {
+  border-left: 5px solid #c2410c;
+  background: var(--cm-warm);
+  padding: 0.9rem 1rem;
+  margin: 1rem 0;
+}
+
+.math.display { overflow-x: auto; }
+
+.smallcaps { font-variant: small-caps; letter-spacing: 0.03em; }

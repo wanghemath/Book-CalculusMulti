@@ -1,0 +1,12 @@
+{
+  "hash": "e50403a744cef817638e90888ef3d144",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "# Introduction {-}\n\nSingle-variable calculus studies functions such as $f(x)$, where one number is used as input and one number is returned as output. Multivariable calculus studies functions such as\n\n$$\nf(x,y), \\qquad f(x,y,z), \\qquad f(x_1,\\dots,x_n).\n$$\n\nThis shift from one input to many inputs changes the subject in a fundamental way. A derivative is no longer just a slope. It becomes a direction-dependent object. An integral is no longer just signed area under a curve. It becomes volume, mass, probability, flux, and accumulated density over regions. A curve is no longer just a graph. It can be a path through space, a trajectory of a particle, or a path followed by an optimization algorithm.\n\n## The modern viewpoint\n\nModern applied mathematics and statistics are high-dimensional. A data point may have hundreds of variables. A neural network may have millions or billions of parameters. A likelihood function may depend on many unknown parameters. A physical field may assign a vector to every point in space.\n\nThis book develops multivariable calculus with this modern reality in mind. The classical theory remains central, but every major idea is connected to computation and modeling.\n\n## How to use this book\n\nThe recommended learning cycle is:\n\n1. read the chapter motivation and definitions,\n2. work through the examples by hand,\n3. run the Python lab,\n4. modify the code to test your intuition,\n5. solve the practice problems, and\n6. revisit the chapter summary before moving on.\n\n## Python environment\n\nThe notebooks use standard Python tools:\n\n::: {#072c2c67 .cell execution_count=1}\n``` {.python .cell-code}\nimport numpy as np\nimport matplotlib.pyplot as plt\n```\n:::\n\n\nSome optional labs may use `sympy`, `scipy`, or `plotly`, but the core labs are designed to run in a standard scientific Python environment or Google Colab.\n\n",
+    "supporting": [
+      "introduction_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

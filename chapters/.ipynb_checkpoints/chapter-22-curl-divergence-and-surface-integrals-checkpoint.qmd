@@ -1,0 +1,1177 @@
+---
+title: "Chapter 22. Curl, Divergence, and Surface Integrals"
+subtitle: "Local rotation, local expansion, oriented surfaces, and flux"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+ 
+
+The previous chapters developed line integrals and Green's theorem.  A line integral measures how a scalar or vector field accumulates along a curve.  Green's theorem then showed that circulation or flux around a closed plane curve can be computed by integrating a local derivative over the enclosed region.
+
+This chapter moves that idea into three-dimensional space.  Instead of curves enclosing planar regions, we now study surfaces in space.  Instead of asking only how much a vector field pushes along a path, we ask how much it rotates near a point, how much it expands out of a point, and how much it flows through a surface.
+
+The central objects are:
+
+- **curl**, which measures local rotational tendency;
+- **divergence**, which measures local source or sink strength;
+- **surface integrals**, which accumulate scalar quantities over curved surfaces;
+- **flux integrals**, which measure flow through oriented surfaces.
+
+These concepts are essential for vector calculus, physics, partial differential equations, probability flow, optimization dynamics, and geometric data analysis.  They also prepare the way for Stokes' theorem and the divergence theorem in the next chapter.
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. compute the curl of a vector field in space;
+2. interpret curl as local rotational tendency;
+3. compute the divergence of a vector field;
+4. interpret divergence as local expansion, compression, source, or sink behavior;
+5. use the identities $\nabla\cdot(\nabla\times F)=0$ and $\nabla\times(\nabla f)=0$ when appropriate;
+6. parameterize surfaces and compute tangent vectors;
+7. compute surface area using $|r_u\times r_v|$;
+8. compute scalar surface integrals;
+9. orient a surface and compute flux integrals;
+10. use graph formulas for surface area and flux;
+11. approximate curl, divergence, surface area, and flux numerically using Python.
+
+::: {.callout-note}
+## The main theme
+
+Curl and divergence are local differential measurements.  Surface integrals and flux integrals are global accumulations.  The great theorems of vector calculus explain when local rotation or local expansion determines a global boundary integral.
+:::
+
+## The differential operator $\nabla$
+
+For a scalar function $f(x,y,z)$, the gradient is
+
+$$
+\nabla f=\left\langle f_x,f_y,f_z\right\rangle.
+$$
+
+For a vector field
+
+$$
+F(x,y,z)=\langle P(x,y,z),Q(x,y,z),R(x,y,z)\rangle,
+$$
+
+we use the formal differential operator
+
+$$
+\nabla=\left\langle \frac{\partial}{\partial x},\frac{\partial}{\partial y},\frac{\partial}{\partial z}\right\rangle.
+$$
+
+This notation is powerful because it lets us remember several vector-calculus operations using familiar vector algebra:
+
+$$
+\nabla f \quad \text{gradient},
+$$
+
+$$
+\nabla\cdot F \quad \text{divergence},
+$$
+
+$$
+\nabla\times F \quad \text{curl}.
+$$
+
+The notation is formal: $\nabla$ is not an ordinary vector of numbers.  Its components are derivative operators.  But the dot-product and cross-product notation correctly organizes the formulas.
+
+## Curl
+
+Let
+
+$$
+F=\langle P,Q,R\rangle
+$$
+
+be a vector field in space.  The **curl** of $F$ is the vector field
+
+$$
+\nabla\times F
+=
+\left\langle
+R_y-Q_z,
+P_z-R_x,
+Q_x-P_y
+\right\rangle.
+$$
+
+Equivalently,
+
+$$
+\nabla\times F
+=
+\begin{vmatrix}
+\mathbf i & \mathbf j & \mathbf k\\
+\frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z}\\
+P & Q & R
+\end{vmatrix}.
+$$
+
+Curl measures the infinitesimal tendency of the field to rotate.  Its direction is the axis of rotation determined by the right-hand rule, and its magnitude measures the local strength of the rotation.
+
+::: {.callout-important}
+## Curl in the plane
+
+A two-dimensional vector field
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle
+$$
+
+can be treated as the three-dimensional field $\langle P,Q,0\rangle$.  Then
+
+$$
+\nabla\times F
+=
+\left\langle 0,0,Q_x-P_y\right\rangle.
+$$
+
+The scalar quantity
+
+$$
+Q_x-P_y
+$$
+
+is often called the scalar curl of the plane field.  It is exactly the integrand that appears in Green's theorem in circulation form.
+:::
+
+### Example: a rotating field
+
+Let
+
+$$
+F(x,y,z)=\langle -y,x,0\rangle.
+$$
+
+Then
+
+$$
+P=-y,
+\qquad
+Q=x,
+\qquad
+R=0.
+$$
+
+Therefore
+
+$$
+\nabla\times F
+=\left\langle
+0-0,
+0-0,
+1-(-1)
+\right\rangle
+=\langle 0,0,2\rangle.
+$$
+
+The field rotates counterclockwise in the $xy$-plane.  The curl points in the positive $z$-direction.
+
+```{python}
+#| label: fig-ch22-rotational-field-curl
+#| fig-cap: 'The field $F=\langle -y,x\rangle$ rotates counterclockwise. Its curl points in the positive $z$-direction.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 21)
+y = np.linspace(-2, 2, 21)
+X, Y = np.meshgrid(x, y)
+U = -Y
+V = X
+speed = np.sqrt(U**2 + V**2)
+
+fig, ax = plt.subplots()
+ax.quiver(X, Y, U, V, speed, angles='xy')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title(r'Rotational field $F=\langle -y,x\rangle$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Example: curl of a three-dimensional field
+
+Let
+
+$$
+F(x,y,z)=\langle yz,xz,xy+e^z\rangle.
+$$
+
+Then
+
+$$
+P=yz,
+\qquad
+Q=xz,
+\qquad
+R=xy+e^z.
+$$
+
+Compute:
+
+$$
+R_y=x,
+\qquad
+Q_z=x,
+$$
+
+$$
+P_z=y,
+\qquad
+R_x=y,
+$$
+
+$$
+Q_x=z,
+\qquad
+P_y=z.
+$$
+
+Hence
+
+$$
+\nabla\times F=\langle x-x,y-y,z-z\rangle=\langle 0,0,0\rangle.
+$$
+
+This zero curl suggests that the field may be conservative on a suitable simply connected domain.  In fact,
+
+$$
+F=\nabla f,
+\qquad
+f(x,y,z)=xyz+e^z.
+$$
+
+## Divergence
+
+Let
+
+$$
+F=\langle P,Q,R\rangle.
+$$
+
+The **divergence** of $F$ is the scalar field
+
+$$
+\nabla\cdot F
+=
+P_x+Q_y+R_z.
+$$
+
+Divergence measures the local tendency of a vector field to flow outward from a point.  Positive divergence indicates local source-like behavior.  Negative divergence indicates local sink-like behavior.  Zero divergence indicates local incompressibility.
+
+::: {.callout-important}
+## Divergence is a scalar field
+
+Curl returns a vector field in three dimensions.  Divergence returns a scalar field:
+
+$$
+\nabla\times F \in \mathbb R^3,
+\qquad
+\nabla\cdot F \in \mathbb R.
+$$
+:::
+
+### Example: a source field
+
+Let
+
+$$
+F(x,y,z)=\langle x,y,z\rangle.
+$$
+
+Then
+
+$$
+\nabla\cdot F=1+1+1=3.
+$$
+
+Everywhere, the field points away from the origin.  A small ball centered at any point experiences net outward flow.
+
+### Example: an incompressible rotational field
+
+For
+
+$$
+F(x,y,z)=\langle -y,x,0\rangle,
+$$
+
+we get
+
+$$
+\nabla\cdot F=0+0+0=0.
+$$
+
+The field rotates, but it does not locally expand or compress area.  It has curl but no divergence.
+
+```{python}
+#| label: fig-ch22-source-and-rotational-fields
+#| fig-cap: 'A radial source field has positive divergence; a rotational field can have zero divergence but nonzero curl.'
+#| fig-width: 8
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 17)
+y = np.linspace(-2, 2, 17)
+X, Y = np.meshgrid(x, y)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+U1, V1 = X, Y
+axes[0].quiver(X, Y, U1, V1, angles='xy')
+axes[0].set_title(r'Source field $\langle x,y\rangle$')
+axes[0].set_aspect('equal', adjustable='box')
+axes[0].grid(True, alpha=0.25)
+
+U2, V2 = -Y, X
+axes[1].quiver(X, Y, U2, V2, angles='xy')
+axes[1].set_title(r'Rotational field $\langle -y,x\rangle$')
+axes[1].set_aspect('equal', adjustable='box')
+axes[1].grid(True, alpha=0.25)
+
+for ax in axes:
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$y$')
+
+plt.tight_layout()
+plt.show()
+```
+
+## Two fundamental identities
+
+For sufficiently smooth functions and fields, two identities occur throughout vector calculus.
+
+First, the curl of a gradient is zero:
+
+$$
+\nabla\times(\nabla f)=0.
+$$
+
+This says that gradient fields have no local rotation.  It is the three-dimensional version of the conservative-field test.
+
+Second, the divergence of a curl is zero:
+
+$$
+\nabla\cdot(\nabla\times F)=0.
+$$
+
+This says that a curl field has no local source or sink.
+
+::: {.callout-warning}
+## Smoothness and domain matter
+
+The identities above require enough differentiability.  Also, equations such as $\nabla\times F=0$ guarantee a global potential only under suitable assumptions on the domain.  Holes and singularities can create global circulation even when local curl is zero away from the singularity.
+:::
+
+## Numerical curl and divergence on a grid
+
+In applications, a vector field may be sampled rather than given by a formula.  For example, a velocity field may come from fluid simulation, a weather model, image motion, or a learned dynamical system.  We can approximate divergence and curl by finite differences.
+
+For a plane field $F=\langle P,Q\rangle$, approximate
+
+$$
+\nabla\cdot F=P_x+Q_y,
+$$
+
+and
+
+$$
+\operatorname{curl}_z F=Q_x-P_y.
+$$
+
+```{python}
+#| label: fig-ch22-numerical-curl-divergence
+#| fig-cap: 'Finite differences approximate divergence and scalar curl on a grid.'
+#| fig-width: 9
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 80)
+y = np.linspace(-2, 2, 80)
+X, Y = np.meshgrid(x, y)
+P = -Y + 0.35*X
+Q = X - 0.2*Y
+
+dx = x[1] - x[0]
+dy = y[1] - y[0]
+P_y, P_x = np.gradient(P, dy, dx)
+Q_y, Q_x = np.gradient(Q, dy, dx)
+Div = P_x + Q_y
+Curl = Q_x - P_y
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+cf0 = axes[0].contourf(X, Y, Div, levels=20)
+axes[0].set_title(r'Approximate divergence')
+axes[0].set_aspect('equal', adjustable='box')
+fig.colorbar(cf0, ax=axes[0])
+
+cf1 = axes[1].contourf(X, Y, Curl, levels=20)
+axes[1].set_title(r'Approximate scalar curl')
+axes[1].set_aspect('equal', adjustable='box')
+fig.colorbar(cf1, ax=axes[1])
+
+for ax in axes:
+    ax.set_xlabel(r'$x$')
+    ax.set_ylabel(r'$y$')
+
+plt.tight_layout()
+plt.show()
+```
+
+This example is deliberately simple: the field has nearly constant divergence and curl.  In real data, the plots may reveal sources, sinks, vortices, and boundaries.
+
+## Surfaces and parameterizations
+
+A curve is described by one parameter:
+
+$$
+r(t)=\langle x(t),y(t),z(t)\rangle.
+$$
+
+A surface is described by two parameters:
+
+$$
+r(u,v)=\langle x(u,v),y(u,v),z(u,v)\rangle,
+\qquad
+(u,v)\in D.
+$$
+
+The parameter domain $D$ lies in the $uv$-plane.  The map $r$ bends and stretches this flat parameter region into a surface $S$ in space.
+
+For a parameterized surface, the tangent vectors are
+
+$$
+r_u=\frac{\partial r}{\partial u},
+\qquad
+r_v=\frac{\partial r}{\partial v}.
+$$
+
+The cross product
+
+$$
+r_u\times r_v
+$$
+
+is normal to the surface.  Its magnitude gives the local area scaling factor:
+
+$$
+dS=|r_u\times r_v|\,du\,dv.
+$$
+
+```{python}
+#| label: fig-ch22-parametric-surface-normals
+#| fig-cap: 'For a parameterized surface, the cross product $r_u\times r_v$ gives a normal direction and the local area scale.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+u = np.linspace(-1.5, 1.5, 35)
+v = np.linspace(-1.5, 1.5, 35)
+U, V = np.meshgrid(u, v)
+X = U
+Y = V
+Z = 0.35*(U**2 + V**2)
+
+fig = plt.figure(figsize=(8, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.75, linewidth=0)
+
+# normals for z = g(x,y): <-g_x, -g_y, 1>
+pts = np.linspace(-1.2, 1.2, 5)
+PX, PY = np.meshgrid(pts, pts)
+PZ = 0.35*(PX**2 + PY**2)
+NX = -0.7*PX
+NY = -0.7*PY
+NZ = np.ones_like(PX)
+length = np.sqrt(NX**2 + NY**2 + NZ**2)
+NX, NY, NZ = NX/length, NY/length, NZ/length
+ax.quiver(PX, PY, PZ, NX, NY, NZ, length=0.35)
+
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_zlabel(r'$z$')
+ax.set_title('Surface normals on a paraboloid')
+plt.show()
+```
+
+## Surface area
+
+The area of a parameterized surface
+
+$$
+r(u,v),
+\qquad
+(u,v)\in D,
+$$
+
+is
+
+$$
+A(S)=\iint_D |r_u\times r_v|\,dA.
+$$
+
+This formula is the surface analog of arc length.  For curves, $|r'(t)|$ measures how much the parameter stretches length.  For surfaces, $|r_u\times r_v|$ measures how much the two-parameter map stretches area.
+
+### Graph surfaces
+
+If a surface is a graph
+
+$$
+z=g(x,y),
+\qquad
+(x,y)\in D,
+$$
+
+we can parameterize it as
+
+$$
+r(x,y)=\langle x,y,g(x,y)\rangle.
+$$
+
+Then
+
+$$
+r_x=\langle 1,0,g_x\rangle,
+\qquad
+r_y=\langle 0,1,g_y\rangle,
+$$
+
+so
+
+$$
+r_x\times r_y=\langle -g_x,-g_y,1\rangle.
+$$
+
+Therefore
+
+$$
+dS=\sqrt{1+g_x^2+g_y^2}\,dA,
+$$
+
+and
+
+$$
+A(S)=\iint_D \sqrt{1+g_x^2+g_y^2}\,dA.
+$$
+
+### Worked example: area of a plane patch
+
+Find the area of the part of the plane
+
+$$
+z=8+2x+5y
+$$
+
+above the rectangle
+
+$$
+0\le x\le 3,
+\qquad
+1\le y\le 6.
+$$
+
+Here
+
+$$
+g_x=2,
+\qquad
+g_y=5.
+$$
+
+Thus
+
+$$
+\sqrt{1+g_x^2+g_y^2}
+=\sqrt{1+4+25}
+=\sqrt{30}.
+$$
+
+The rectangle has area $15$, so
+
+$$
+A(S)=15\sqrt{30}.
+$$
+
+## Scalar surface integrals
+
+If $f(x,y,z)$ is a scalar function defined on a surface $S$, then the scalar surface integral is
+
+$$
+\iint_S f(x,y,z)\,dS.
+$$
+
+For a parameterized surface $r(u,v)$,
+
+$$
+\iint_S f\,dS
+=
+\iint_D f(r(u,v))|r_u\times r_v|\,du\,dv.
+$$
+
+If $f$ is a surface density, then this integral gives the total mass of the surface.  If $f=1$, the integral gives surface area.
+
+### Worked example: surface integral over a paraboloid
+
+Let $S$ be the graph
+
+$$
+z=x^2+y^2
+$$
+
+over the disk $x^2+y^2\le 1$.  Compute
+
+$$
+\iint_S z\,dS.
+$$
+
+Since $g(x,y)=x^2+y^2$, we have
+
+$$
+g_x=2x,
+\qquad
+g_y=2y,
+$$
+
+so
+
+$$
+dS=\sqrt{1+4x^2+4y^2}\,dA.
+$$
+
+The integral becomes
+
+$$
+\iint_D (x^2+y^2)\sqrt{1+4x^2+4y^2}\,dA.
+$$
+
+In polar coordinates,
+
+$$
+\iint_S z\,dS
+=
+\int_0^{2\pi}\int_0^1 r^2\sqrt{1+4r^2}\,r\,dr\,d\theta.
+$$
+
+That is
+
+$$
+2\pi\int_0^1 r^3\sqrt{1+4r^2}\,dr.
+$$
+
+```{python}
+#| label: fig-ch22-scalar-surface-integral-paraboloid
+#| fig-cap: 'A scalar surface integral accumulates density over a curved surface. Here the density is $f(x,y,z)=z$ on a paraboloid.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.linspace(0, 1, 80)
+theta = np.linspace(0, 2*np.pi, 120)
+R, T = np.meshgrid(r, theta)
+X = R*np.cos(T)
+Y = R*np.sin(T)
+Z = R**2
+
+fig = plt.figure(figsize=(8, 5))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='viridis', linewidth=0, alpha=0.9)
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_zlabel(r'$z$')
+ax.set_title(r'Paraboloid $z=x^2+y^2$ over the unit disk')
+fig.colorbar(surf, ax=ax, shrink=0.65, label=r'$z$')
+plt.show()
+```
+
+## Orientation of surfaces
+
+A surface is **orientable** if it is possible to choose a continuous unit normal vector $n$ at every point of the surface.  Choosing one of the two possible normal directions gives an **orientation**.
+
+For a parameterized surface $r(u,v)$, the vector
+
+$$
+r_u\times r_v
+$$
+
+defines one orientation.  Reversing the parameter order changes the normal direction:
+
+$$
+r_v\times r_u=-(r_u\times r_v).
+$$
+
+For a closed surface, the standard orientation is **outward**.  For an open surface, the orientation must be specified, for example upward, downward, outward, or inward.
+
+::: {.callout-warning}
+## Orientation affects flux
+
+Scalar surface integrals do not depend on orientation because $dS$ is positive.  Flux integrals do depend on orientation because changing $n$ to $-n$ changes the sign of $F\cdot n$.
+:::
+
+## Flux integrals
+
+Let $F$ be a vector field and let $S$ be an oriented surface with unit normal vector $n$.  The **flux** of $F$ through $S$ is
+
+$$
+\iint_S F\cdot n\,dS.
+$$
+
+This measures the net amount of the field passing through the surface in the chosen normal direction.
+
+Using a parameterization $r(u,v)$, we have
+
+$$
+n\,dS=(r_u\times r_v)\,du\,dv
+$$
+
+for the orientation determined by $r_u\times r_v$.  Therefore
+
+$$
+\iint_S F\cdot n\,dS
+=
+\iint_D F(r(u,v))\cdot(r_u\times r_v)\,du\,dv.
+$$
+
+This formula is one of the most important computational tools in vector calculus.
+
+### Graph formula for flux
+
+Suppose
+
+$$
+S: z=g(x,y),
+\qquad
+(x,y)\in D,
+$$
+
+with upward orientation.  Then
+
+$$
+r_x\times r_y=\langle -g_x,-g_y,1\rangle.
+$$
+
+If
+
+$$
+F=\langle P,Q,R\rangle,
+$$
+
+then
+
+$$
+\iint_S F\cdot n\,dS
+=
+\iint_D \left(-P g_x-Q g_y+R\right)dA,
+$$
+
+where $P,Q,R$ are evaluated at $(x,y,g(x,y))$.
+
+For downward orientation, the sign changes.
+
+### Worked example: flux through a graph
+
+Let
+
+$$
+F(x,y,z)=\langle x,y,z\rangle,
+$$
+
+and let $S$ be the upper paraboloid
+
+$$
+z=1-x^2-y^2,
+\qquad
+x^2+y^2\le 1,
+$$
+
+with upward orientation.
+
+Here
+
+$$
+g_x=-2x,
+\qquad
+g_y=-2y.
+$$
+
+The upward flux integrand is
+
+$$
+-Pg_x-Qg_y+R
+= -x(-2x)-y(-2y)+(1-x^2-y^2).
+$$
+
+Thus
+
+$$
+-Pg_x-Qg_y+R
+=1+x^2+y^2.
+$$
+
+Therefore
+
+$$
+\iint_S F\cdot n\,dS
+=\iint_D (1+x^2+y^2)\,dA.
+$$
+
+In polar coordinates,
+
+$$
+\int_0^{2\pi}\int_0^1 (1+r^2)r\,dr\,d\theta
+=2\pi\left[\frac{r^2}{2}+\frac{r^4}{4}\right]_0^1
+=\frac{3\pi}{2}.
+$$
+
+```{python}
+#| label: fig-ch22-flux-through-paraboloid
+#| fig-cap: 'For the upward-oriented graph $z=1-x^2-y^2$, projected normal arrows in the $xy$-plane point outward while the normal has positive $z$-component.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.linspace(0, 1, 120)
+theta = np.linspace(0, 2*np.pi, 240)
+R, T = np.meshgrid(r, theta)
+X = R*np.cos(T)
+Y = R*np.sin(T)
+Z = 1 - R**2
+
+fig, ax = plt.subplots(figsize=(7, 6))
+cf = ax.contourf(X, Y, Z, levels=20)
+fig.colorbar(cf, ax=ax, label=r'$z=1-x^2-y^2$')
+
+pts = np.linspace(-0.8, 0.8, 7)
+PX, PY = np.meshgrid(pts, pts)
+mask = PX**2 + PY**2 <= 1
+PX = PX[mask]
+PY = PY[mask]
+# Upward normal for z=1-x^2-y^2 is <2x,2y,1>.
+# We draw its horizontal projection <2x,2y>.
+ax.quiver(PX, PY, 2*PX, 2*PY, angles='xy', scale_units='xy', scale=8)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title('Projected upward normals on the paraboloid')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## Flux through standard surfaces
+
+For standard surfaces, it is often better to use geometry than algebra.
+
+### Sphere
+
+The sphere of radius $a$ centered at the origin can be parameterized by
+
+$$
+r(\phi,\theta)
+=\langle a\sin\phi\cos\theta,
+a\sin\phi\sin\theta,
+a\cos\phi\rangle,
+$$
+
+where
+
+$$
+0\le \phi\le \pi,
+\qquad
+0\le \theta\le 2\pi.
+$$
+
+The outward unit normal is
+
+$$
+n=\frac{1}{a}\langle x,y,z\rangle.
+$$
+
+If $F=\langle x,y,z\rangle$, then on the sphere,
+
+$$
+F\cdot n
+=\langle x,y,z\rangle\cdot \frac{1}{a}\langle x,y,z\rangle
+=\frac{x^2+y^2+z^2}{a}
+=a.
+$$
+
+Since the surface area is $4\pi a^2$, the flux is
+
+$$
+\iint_S F\cdot n\,dS
+=a(4\pi a^2)=4\pi a^3.
+$$
+
+For the sphere $x^2+y^2+z^2=4$, we have $a=2$, so the flux is
+
+$$
+32\pi.
+$$
+
+```{python}
+#| label: fig-ch22-sphere-outward-flux
+#| fig-cap: 'For a sphere centered at the origin, outward normals are radial. The cross-section shows the same orientation idea.'
+#| fig-width: 6
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+a = 2.0
+theta = np.linspace(0, 2*np.pi, 300)
+xc = a*np.cos(theta)
+yc = a*np.sin(theta)
+
+sample = np.linspace(0, 2*np.pi, 16, endpoint=False)
+xs = a*np.cos(sample)
+ys = a*np.sin(sample)
+ux = np.cos(sample)
+uy = np.sin(sample)
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.plot(xc, yc)
+ax.quiver(xs, ys, ux, uy, angles='xy', scale_units='xy', scale=4)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title('Radial outward normals on a sphere: cross-section view')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Cylinder
+
+A circular cylinder of radius $a$ can be parameterized by
+
+$$
+r(\theta,z)=\langle a\cos\theta,a\sin\theta,z\rangle.
+$$
+
+Then
+
+$$
+r_\theta=\langle -a\sin\theta,a\cos\theta,0\rangle,
+\qquad
+r_z=\langle 0,0,1\rangle.
+$$
+
+The cross product
+
+$$
+r_z\times r_\theta=\langle -a\cos\theta,-a\sin\theta,0\rangle
+$$
+
+points inward, while
+
+$$
+r_\theta\times r_z=\langle a\cos\theta,a\sin\theta,0\rangle
+$$
+
+points outward.  Always check orientation.
+
+## Numerical surface integration
+
+For computational work, a parameterized surface integral is usually approximated by sampling a grid in parameter space.  If
+
+$$
+r(u,v),
+\qquad
+(u,v)\in D,
+$$
+
+then
+
+$$
+\iint_S f\,dS
+\approx
+\sum_{i,j} f(r(u_i,v_j))|r_u(u_i,v_j)\times r_v(u_i,v_j)|\Delta u\Delta v.
+$$
+
+Similarly,
+
+$$
+\iint_S F\cdot n\,dS
+\approx
+\sum_{i,j} F(r(u_i,v_j))\cdot(r_u(u_i,v_j)\times r_v(u_i,v_j))\Delta u\Delta v.
+$$
+
+```{python}
+#| label: fig-ch22-numerical-surface-integration
+#| fig-cap: 'Numerical surface integration samples the parameter domain and multiplies by the local area scale.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Approximate surface area of z = x^2 + y^2 over [-1,1] x [-1,1]
+n = 250
+x = np.linspace(-1, 1, n)
+y = np.linspace(-1, 1, n)
+X, Y = np.meshgrid(x, y)
+g_x = 2*X
+g_y = 2*Y
+area_density = np.sqrt(1 + g_x**2 + g_y**2)
+dx = x[1] - x[0]
+dy = y[1] - y[0]
+area_est = area_density.sum()*dx*dy
+
+fig, ax = plt.subplots(figsize=(7, 5))
+cs = ax.contourf(X, Y, area_density, levels=25)
+fig.colorbar(cs, ax=ax, label=r'$\sqrt{1+g_x^2+g_y^2}$')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title(f'Area-density plot; estimated area = {area_est:.4f}')
+plt.show()
+```
+
+The code computes an approximate surface area by summing the area-density factor over a grid.  This is the same Riemann-sum idea that underlies all definite integrals, now applied to surfaces.
+
+## Curl, divergence, and flux in applied modeling
+
+### Fluid velocity fields
+
+If $F$ is a fluid velocity field, then:
+
+- $\nabla\times F$ measures local swirling;
+- $\nabla\cdot F$ measures local expansion or compression;
+- $\iint_S F\cdot n\,dS$ measures the rate of flow through a surface.
+
+These ideas appear in incompressible flow, fluid simulation, weather models, and diffusion processes.
+
+### Probability flow
+
+In probability and statistics, a time-dependent density can move under a velocity field.  Divergence helps describe whether probability mass is locally spreading or concentrating.  In continuous normalizing flows and score-based generative modeling, vector fields and Jacobians are central tools.
+
+### Optimization and machine learning
+
+Gradient descent is driven by a vector field $-\nabla L$.  Such a field has zero curl when $L$ is smooth.  More general training dynamics may include momentum, stochastic noise, constraints, or game-theoretic interactions.  These dynamics can show rotational behavior, which is naturally detected by curl-like measurements.
+
+### Geometry and data
+
+Surface integrals appear when data lie on curved manifolds rather than flat Euclidean spaces.  Area elements and Jacobian factors explain why densities change under parameterization and why sampling uniformly in parameter coordinates does not always sample uniformly on a surface.
+
+## Common mistakes
+
+1. **Forgetting that curl is a vector in space.**  In three dimensions, $\nabla\times F$ has three components.
+
+2. **Confusing scalar curl with full curl.**  In the plane, $Q_x-P_y$ is the $z$-component of the three-dimensional curl of $\langle P,Q,0\rangle$.
+
+3. **Forgetting the area factor.**  A surface integral is not usually just an ordinary double integral over the parameter domain.  The factor $|r_u\times r_v|$ is essential.
+
+4. **Using the wrong orientation.**  Flux changes sign when the normal direction is reversed.
+
+5. **Using graph formulas outside their setting.**  The formula for $z=g(x,y)$ applies only when the surface is represented as a graph over the $xy$-plane.
+
+6. **Treating $dS$ like $dA$.**  For flat horizontal surfaces, $dS=dA$.  For curved surfaces, $dS$ includes an area-stretching factor.
+
+## Chapter exercises
+
+### Conceptual exercises
+
+1. Explain the difference between curl and divergence.
+
+2. Give an example of a vector field with nonzero curl and zero divergence.
+
+3. Give an example of a vector field with zero curl and nonzero divergence.
+
+4. Explain why scalar surface integrals do not depend on orientation but flux integrals do.
+
+5. What does the vector $r_u\times r_v$ represent geometrically?
+
+6. Why does reversing the order of the cross product reverse the orientation?
+
+7. Explain why $\nabla\times(\nabla f)=0$ should be expected geometrically.
+
+8. Explain why $\nabla\cdot(\nabla\times F)=0$ suggests that curl fields have no sources or sinks.
+
+### Computational exercises
+
+9. Compute the curl of
+
+    $$
+    F(x,y,z)=\langle xz,yz,xy\rangle.
+    $$
+
+10. Compute the divergence of
+
+    $$
+    F(x,y,z)=\langle x^2y,y^2z,z^2x\rangle.
+    $$
+
+11. Determine whether the following field has zero curl:
+
+    $$
+    F(x,y,z)=\langle yz,xz,xy\rangle.
+    $$
+
+12. Let
+
+    $$
+    F(x,y,z)=\langle -y,x,z\rangle.
+    $$
+
+    Compute $\nabla\times F$ and $\nabla\cdot F$.
+
+13. Let $S$ be the graph $z=x^2+y^2$ over $0\le x\le 1$, $0\le y\le 1$.  Set up the surface area integral.
+
+14. Compute the area of the plane $z=1+2x-2y$ above the rectangle $0\le x\le 3$, $0\le y\le 2$.
+
+15. Let $S$ be the sphere of radius $3$ centered at the origin.  Compute the flux of $F=\langle x,y,z\rangle$ through $S$ with outward orientation.
+
+16. Let $S$ be the graph $z=4-x-y$ over the triangle with vertices $(0,0)$, $(1,0)$, and $(0,1)$.  Compute the upward flux of $F=\langle 0,0,z\rangle$ through $S$.
+
+17. Parameterize the cylinder $x^2+y^2=9$, $0\le z\le 4$, and compute $|r_\theta\times r_z|$.
+
+18. Let
+
+    $$
+    r(u,v)=\langle u,v,u^2-v^2\rangle,
+    \qquad
+    0\le u\le 1,
+    \quad
+    0\le v\le 1.
+    $$
+
+    Compute $r_u\times r_v$ and set up the surface area integral.
+
+### Applied and computational exercises
+
+19. Write Python code to approximate the surface area of $z=\sin(xy)$ over $[-1,1]\times[-1,1]$.
+
+20. Write Python code to approximate the flux of $F=\langle x,y,z\rangle$ through the upward-oriented graph $z=1-x^2-y^2$ over the unit disk.
+
+21. Suppose a measured two-dimensional velocity field has approximately zero divergence but nonzero scalar curl.  Give an applied interpretation.
+
+22. Suppose a learned dynamical system in parameter space has visible rotational motion around a point.  Which derivative measurement from this chapter would detect that behavior?
+
+23. A surface is parameterized by a neural network $r(u,v)$.  Explain why $|r_u\times r_v|$ is the correct local area distortion factor.
+
+24. In a probability flow model, why is divergence related to local density change?
+
+## Chapter summary
+
+This chapter introduced the local derivative operations and surface integrals needed for the final theorems of vector calculus.
+
+- Curl measures local rotation.
+- Divergence measures local source or sink behavior.
+- In the plane, scalar curl is $Q_x-P_y$.
+- In space, curl is $\nabla\times F$ and divergence is $\nabla\cdot F$.
+- The identity $\nabla\times(\nabla f)=0$ says gradient fields have no local rotation.
+- The identity $\nabla\cdot(\nabla\times F)=0$ says curl fields have no local source or sink.
+- A parameterized surface $r(u,v)$ has tangent vectors $r_u$ and $r_v$.
+- The vector $r_u\times r_v$ gives a normal direction and an area scale.
+- Scalar surface integrals accumulate scalar quantities over curved surfaces.
+- Flux integrals measure how much a vector field passes through an oriented surface.
+- Orientation matters for flux but not for scalar surface integrals.
+
+The next chapter uses these tools to state and apply Stokes' theorem and the divergence theorem, the three-dimensional successors of Green's theorem.

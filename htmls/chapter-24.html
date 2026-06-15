@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 24. Multivariable Calculus for Probability and Statistics</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; line-height: 1.55; max-width: 900px; }
+    h1 { color: #12355b; }
+    .box { border-left: 5px solid #0f766e; background: #eef7f6; padding: 1rem; }
+    code, pre { background: #f6f8fa; padding: 0.2rem 0.35rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 24. Multivariable Calculus for Probability and Statistics</h1>
+  <div class="box">
+    <p>This is a starter standalone interactive page for the chapter. Replace or extend this page with a richer JavaScript, Plotly, GeoGebra, or Desmos activity.</p>
+  </div>
+  <h2>Python idea behind this page</h2>
+  <pre><code>import numpy as np
+
+# Monte Carlo expectation E[X+Y] for independent Uniform(0,1).
+N = 100000
+X = np.random.rand(N)
+Y = np.random.rand(N)
+print(np.mean(X + Y))</code></pre>
+  <p><a href="index.html">Back to HTML index</a></p>
+</body>
+</html>

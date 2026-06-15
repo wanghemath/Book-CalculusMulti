@@ -1,0 +1,1213 @@
+---
+title: "Chapter 11. Directional Derivatives, Hessians, and Optimization"
+subtitle: "From local rates of change to modern loss landscapes"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> **Chapter goal.** In this chapter we turn derivatives into decisions. A gradient tells us how a function changes when we move in a chosen direction. A Hessian tells us the local curvature of a surface or a loss function. Together, they give a practical language for maxima, minima, saddle points, and numerical optimization.
+
+A function of one variable has only two local directions: left and right. A function of two or more variables has infinitely many directions. This is the first major difference between single-variable and multivariable optimization. At a point on a surface $z=f(x,y)$, we can move east, west, north, south, northeast, or along any unit direction $u$. The **directional derivative** measures the rate of change in that direction.
+
+This idea is central in applied mathematics, statistics, data science, and machine learning. A statistical loss function or negative log-likelihood is usually a function of many parameters. To minimize it, we must know which direction decreases the loss most rapidly. The answer is built from the gradient and refined by the Hessian.
+
+## Learning objectives
+
+After studying this chapter, you should be able to:
+
+1. compute directional derivatives using the formula $D_u f = \nabla f \cdot u$;
+2. explain why the gradient points in the direction of steepest increase;
+3. find and classify critical points of functions of two variables;
+4. use the Hessian matrix and the second derivative test;
+5. distinguish local extrema, absolute extrema, and saddle points;
+6. solve absolute optimization problems on closed bounded regions;
+7. implement gradient descent and Newton's method for two-variable functions;
+8. interpret optimization as the geometric core of modern model fitting.
+
+## 11.1 Directional derivatives
+
+Let $f(x,y)$ be a differentiable function and let $u=\langle a,b\rangle$ be a unit vector. The **directional derivative** of $f$ at $(x_0,y_0)$ in the direction $u$ is
+
+$$
+D_u f(x_0,y_0)
+=
+\lim_{h\to 0}
+\frac{f(x_0+ha,y_0+hb)-f(x_0,y_0)}{h}.
+$$
+
+This is the rate of change of $f$ as we move from $(x_0,y_0)$ in the direction $u$.
+
+The important computational formula is
+
+$$
+D_u f(x,y)=\nabla f(x,y)\cdot u.
+$$
+
+For a function of three variables, if $u=\langle a,b,c\rangle$ is a unit vector, then
+
+$$
+D_u f(x,y,z)=\nabla f(x,y,z)\cdot u.
+$$
+
+::: {.callout-note}
+## Always normalize the direction vector
+
+The direction vector in a directional derivative must be a **unit vector**. If the problem gives a nonzero vector $v$, first compute
+
+$$
+ u=\frac{v}{\|v\|}.
+$$
+
+Then use $D_u f=\nabla f\cdot u$.
+:::
+
+### Worked example 11.1: a directional derivative from a non-unit vector
+
+Let
+
+$$
+f(x,y)=x^2+3xy-2y^4.
+$$
+
+Find $D_u f(0,1)$ in the direction of $v=\langle 1,2\rangle$.
+
+First compute the gradient:
+
+$$
+\nabla f(x,y)=\langle 2x+3y,3x-8y^3\rangle.
+$$
+
+At $(0,1)$,
+
+$$
+\nabla f(0,1)=\langle 3,-8\rangle.
+$$
+
+The vector $v=\langle 1,2\rangle$ has length $\sqrt{5}$, so the unit direction is
+
+$$
+u=\frac{1}{\sqrt{5}}\langle 1,2\rangle.
+$$
+
+Therefore
+
+$$
+D_u f(0,1)
+=\langle 3,-8\rangle\cdot \left\langle \frac{1}{\sqrt{5}},\frac{2}{\sqrt{5}}\right\rangle
+=\frac{3-16}{\sqrt{5}}
+=-\frac{13}{\sqrt{5}}.
+$$
+
+The negative sign means that $f$ is decreasing in the direction $\langle 1,2\rangle$ at $(0,1)$.
+
+```{python}
+#| label: fig-ch11-directional-slice
+#| fig-cap: 'A directional derivative is the slope of a one-variable slice through a surface.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x, y: x**2 + 3*x*y - 2*y**4
+x0, y0 = 0.0, 1.0
+v = np.array([1.0, 2.0])
+u = v / np.linalg.norm(v)
+
+h = np.linspace(-0.35, 0.35, 200)
+x_path = x0 + h*u[0]
+y_path = y0 + h*u[1]
+z_path = f(x_path, y_path)
+
+fig, ax = plt.subplots()
+ax.plot(h, z_path)
+ax.scatter([0], [f(x0, y0)], s=50)
+ax.set_xlabel('distance along the unit direction')
+ax.set_ylabel('f along the path')
+ax.set_title('One-dimensional slice used by a directional derivative')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+The derivative of this one-variable slice at $h=0$ is exactly $D_u f(x_0,y_0)$.
+
+## 11.2 The gradient as the direction of steepest increase
+
+The formula $D_u f=\nabla f\cdot u$ has a powerful geometric interpretation. If $u$ is a unit vector, then
+
+$$
+D_u f = \nabla f\cdot u
+=\|\nabla f\|\|u\|\cos\theta
+=\|\nabla f\|\cos\theta,
+$$
+
+where $\theta$ is the angle between $\nabla f$ and $u$.
+
+Because $-1\leq \cos\theta\leq 1$, we get three conclusions:
+
+$$
+-\|\nabla f\|\leq D_u f\leq \|\nabla f\|.
+$$
+
+Thus:
+
+- the maximum directional derivative is $\|\nabla f\|$;
+- it occurs when $u$ points in the same direction as $\nabla f$;
+- the minimum directional derivative is $-\|\nabla f\|$;
+- it occurs when $u$ points in the opposite direction from $\nabla f$.
+
+::: {.callout-important}
+## Steepest directions
+
+At a point where $\nabla f\neq 0$:
+
+$$
+\text{steepest ascent direction} = \frac{\nabla f}{\|\nabla f\|},
+$$
+
+and
+
+$$
+\text{steepest descent direction} = -\frac{\nabla f}{\|\nabla f\|}.
+$$
+:::
+
+This is the geometric reason gradient descent works: to decrease a differentiable function rapidly, move approximately in the direction $-\nabla f$.
+
+### Worked example 11.2: fastest increase of temperature
+
+Suppose the temperature at a point $(x,y,z)$ is
+
+$$
+T(x,y,z)=xe^y+\frac{1}{2}z^2.
+$$
+
+Find the direction in which the temperature increases fastest at $(1,0,3)$ and find the maximum rate of increase.
+
+The gradient is
+
+$$
+\nabla T(x,y,z)=\langle e^y,xe^y,z\rangle.
+$$
+
+At $(1,0,3)$,
+
+$$
+\nabla T(1,0,3)=\langle 1,1,3\rangle.
+$$
+
+Therefore the direction of fastest increase is
+
+$$
+\frac{1}{\sqrt{11}}\langle 1,1,3\rangle,
+$$
+
+and the maximum rate of increase is
+
+$$
+\|\nabla T(1,0,3)\|=\sqrt{11}.
+$$
+
+### Worked example 11.3: climbing a hill
+
+Suppose a hill is modeled by
+
+$$
+z=f(x,y)=1100-2x^2-y^2,
+$$
+
+where $x$ and $y$ are measured in meters. At the point $(10,20)$,
+
+$$
+\nabla f(x,y)=\langle -4x,-2y\rangle,
+$$
+
+so
+
+$$
+\nabla f(10,20)=\langle -40,-40\rangle.
+$$
+
+The hill rises fastest in the southwest direction
+
+$$
+\frac{1}{\sqrt{2}}\langle -1,-1\rangle,
+$$
+
+and the maximum rate of increase is
+
+$$
+\sqrt{(-40)^2+(-40)^2}=40\sqrt{2}.
+$$
+
+```{python}
+#| label: fig-ch11-hill-gradient
+#| fig-cap: 'The gradient on a contour map points toward the direction of fastest increase.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-35, 35, 250)
+y = np.linspace(-35, 35, 250)
+X, Y = np.meshgrid(x, y)
+Z = 1100 - 2*X**2 - Y**2
+
+p = np.array([10.0, 20.0])
+g = np.array([-4*p[0], -2*p[1]])
+g_unit = g / np.linalg.norm(g)
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, Z, levels=18)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.scatter([p[0]], [p[1]], s=50)
+ax.arrow(p[0], p[1], 10*g_unit[0], 10*g_unit[1], head_width=1.5, length_includes_head=True)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Gradient direction on a hill')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.3 Gradients and level curves
+
+A level curve of $f$ is a curve $f(x,y)=c$. If a differentiable curve $r(t)=\langle x(t),y(t)\rangle$ stays on the level curve, then
+
+$$
+f(x(t),y(t))=c.
+$$
+
+Differentiating with respect to $t$ gives
+
+$$
+\nabla f(x(t),y(t))\cdot r'(t)=0.
+$$
+
+So the gradient is perpendicular to the tangent vector of the level curve. In other words:
+
+::: {.callout-note}
+## Gradient and level curves
+
+At a regular point of a level curve, $\nabla f$ is normal to the level curve.
+:::
+
+This fact connects three ideas:
+
+1. level curves show where the function has constant value;
+2. the gradient points perpendicular to level curves;
+3. closely spaced level curves usually indicate a large gradient magnitude.
+
+```{python}
+#| label: fig-ch11-gradient-level-curves
+#| fig-cap: 'Gradient vectors are perpendicular to level curves and point toward increasing values.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2.5, 2.5, 220)
+y = np.linspace(-2.5, 2.5, 220)
+X, Y = np.meshgrid(x, y)
+F = X**2 + 0.5*Y**2
+
+xq = np.linspace(-2, 2, 9)
+yq = np.linspace(-2, 2, 9)
+Xq, Yq = np.meshgrid(xq, yq)
+U = 2*Xq
+V = Yq
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, F, levels=12)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.quiver(Xq, Yq, U, V)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Level curves and gradient vectors')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.4 Critical points and local extrema
+
+A function $f(x,y)$ has a **local maximum** at $(a,b)$ if
+
+$$
+f(x,y)\leq f(a,b)
+$$
+
+for all points $(x,y)$ sufficiently close to $(a,b)$. It has a **local minimum** at $(a,b)$ if
+
+$$
+f(x,y)\geq f(a,b)
+$$
+
+for all points $(x,y)$ sufficiently close to $(a,b)$.
+
+A point $(a,b)$ is called a **critical point** if
+
+$$
+\nabla f(a,b)=0,
+$$
+
+or if one of the first partial derivatives fails to exist.
+
+::: {.callout-important}
+## First derivative test for possible extrema
+
+If $f$ has a local maximum or local minimum at $(a,b)$ and the first partial derivatives exist there, then
+
+$$
+f_x(a,b)=0,\qquad f_y(a,b)=0.
+$$
+
+So local extrema can occur only at critical points, boundary points, or points where differentiability fails.
+:::
+
+### Worked example 11.4: a quadratic local minimum
+
+Let
+
+$$
+f(x,y)=x^2+y^2-4x-2y+18.
+$$
+
+The gradient is
+
+$$
+\nabla f(x,y)=\langle 2x-4,2y-2\rangle.
+$$
+
+Setting $\nabla f=0$ gives
+
+$$
+x=2,\qquad y=1.
+$$
+
+Completing the square,
+
+$$
+f(x,y)=(x-2)^2+(y-1)^2+13.
+$$
+
+So $f$ has a local and absolute minimum at $(2,1)$, with minimum value $13$.
+
+### Worked example 11.5: a saddle point
+
+Let
+
+$$
+f(x,y)=y^2-x^2.
+$$
+
+Then
+
+$$
+\nabla f(x,y)=\langle -2x,2y\rangle,
+$$
+
+so the only critical point is $(0,0)$. But along the $y$-axis,
+
+$$
+f(0,y)=y^2\geq 0,
+$$
+
+while along the $x$-axis,
+
+$$
+f(x,0)=-x^2\leq 0.
+$$
+
+Thus $(0,0)$ is neither a local maximum nor a local minimum. It is a **saddle point**.
+
+```{python}
+#| label: fig-ch11-saddle-surface
+#| fig-cap: 'The surface z=y^2-x^2 has a saddle point at the origin.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 130)
+y = np.linspace(-2, 2, 130)
+X, Y = np.meshgrid(x, y)
+Z = Y**2 - X**2
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, alpha=0.85)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Saddle surface')
+plt.show()
+```
+
+## 11.5 The Hessian matrix and second derivative test
+
+The second derivative information of a function $f(x,y)$ is organized into the **Hessian matrix**:
+
+$$
+H_f(x,y)=
+\begin{bmatrix}
+f_{xx}(x,y) & f_{xy}(x,y)\\
+f_{yx}(x,y) & f_{yy}(x,y)
+\end{bmatrix}.
+$$
+
+When $f_{xy}=f_{yx}$, this matrix is symmetric. Near a critical point $(a,b)$, the quadratic part of the Taylor approximation is
+
+$$
+\frac{1}{2}
+\begin{bmatrix}x-a & y-b\end{bmatrix}
+H_f(a,b)
+\begin{bmatrix}x-a\\ y-b\end{bmatrix}.
+$$
+
+So the Hessian describes local curvature.
+
+For two-variable functions, define
+
+$$
+D(a,b)=f_{xx}(a,b)f_{yy}(a,b)-[f_{xy}(a,b)]^2.
+$$
+
+This is the determinant of the Hessian matrix.
+
+::: {.callout-tip}
+## Second derivative test
+
+Suppose $f_x(a,b)=0$, $f_y(a,b)=0$, and the second partial derivatives are continuous near $(a,b)$.
+
+- If $D(a,b)>0$ and $f_{xx}(a,b)>0$, then $f$ has a local minimum at $(a,b)$.
+- If $D(a,b)>0$ and $f_{xx}(a,b)<0$, then $f$ has a local maximum at $(a,b)$.
+- If $D(a,b)<0$, then $f$ has a saddle point at $(a,b)$.
+- If $D(a,b)=0$, the test is inconclusive.
+:::
+
+### Why the determinant works
+
+The Hessian represents the local quadratic shape. For a symmetric $2\times 2$ Hessian:
+
+- $D>0$ and $f_{xx}>0$ means both principal curvatures are positive, so the surface curves upward in all directions;
+- $D>0$ and $f_{xx}<0$ means both principal curvatures are negative, so the surface curves downward in all directions;
+- $D<0$ means one curvature direction is positive and one is negative, so the graph has a saddle shape.
+
+This is the two-dimensional version of the eigenvalue test for quadratic forms.
+
+### Worked example 11.6: classify critical points
+
+Let
+
+$$
+f(x,y)=x^3+y^3-3xy+4.
+$$
+
+The first derivatives are
+
+$$
+f_x=3x^2-3y,\qquad f_y=3y^2-3x.
+$$
+
+Setting them equal to zero gives
+
+$$
+y=x^2,\qquad x=y^2.
+$$
+
+Substituting gives $x=x^4$, so $x=0$ or $x=1$. Thus the critical points are
+
+$$
+(0,0),\qquad (1,1).
+$$
+
+The second derivatives are
+
+$$
+f_{xx}=6x,\qquad f_{yy}=6y,\qquad f_{xy}=-3.
+$$
+
+Thus
+
+$$
+D(x,y)=36xy-9.
+$$
+
+At $(0,0)$,
+
+$$
+D(0,0)=-9<0,
+$$
+
+so $(0,0)$ is a saddle point.
+
+At $(1,1)$,
+
+$$
+D(1,1)=27>0,\qquad f_{xx}(1,1)=6>0,
+$$
+
+so $(1,1)$ is a local minimum. The minimum value is
+
+$$
+f(1,1)=1+1-3+4=3.
+$$
+
+```{python}
+#| label: fig-ch11-critical-contours
+#| fig-cap: 'Level curves reveal the saddle point at (0,0) and the local minimum at (1,1).'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.2, 2.0, 260)
+y = np.linspace(-1.2, 2.0, 260)
+X, Y = np.meshgrid(x, y)
+F = X**3 + Y**3 - 3*X*Y + 4
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, F, levels=24)
+ax.clabel(cs, inline=True, fontsize=8)
+crit = np.array([[0, 0], [1, 1]])
+ax.scatter(crit[:,0], crit[:,1], s=60)
+ax.text(0.04, 0.04, 'saddle')
+ax.text(1.04, 1.04, 'local min')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Critical points of a cubic surface')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Worked example 11.7: four critical points
+
+Let
+
+$$
+f(x,y)=x^3+y^3+3x^2-3y^2-7.
+$$
+
+The first derivatives are
+
+$$
+f_x=3x^2+6x=3x(x+2),
+$$
+
+and
+
+$$
+f_y=3y^2-6y=3y(y-2).
+$$
+
+Therefore
+
+$$
+x=0\text{ or }x=-2,
+\qquad
+ y=0\text{ or }y=2.
+$$
+
+The critical points are
+
+$$
+(0,0),\quad (0,2),\quad (-2,0),\quad (-2,2).
+$$
+
+The second derivatives are
+
+$$
+f_{xx}=6x+6,
+\qquad
+f_{yy}=6y-6,
+\qquad
+f_{xy}=0.
+$$
+
+Since $D=f_{xx}f_{yy}$:
+
+- at $(0,0)$, $D=6(-6)<0$, so it is a saddle point;
+- at $(0,2)$, $D=6(6)>0$ and $f_{xx}>0$, so it is a local minimum;
+- at $(-2,0)$, $D=(-6)(-6)>0$ and $f_{xx}<0$, so it is a local maximum;
+- at $(-2,2)$, $D=(-6)(6)<0$, so it is a saddle point.
+
+## 11.6 Absolute extrema on closed bounded regions
+
+Local extrema describe what happens near a point. Absolute extrema describe the largest and smallest values on an entire region.
+
+::: {.callout-note}
+## Extreme value principle
+
+If $f$ is continuous on a closed and bounded region $D\subset \mathbb R^2$, then $f$ attains both an absolute maximum and an absolute minimum on $D$.
+:::
+
+To find absolute extrema on a closed bounded region:
+
+1. find critical points inside $D$;
+2. find extrema on the boundary of $D$;
+3. compare all candidate values.
+
+### Worked example 11.8: extrema on a rectangle
+
+Find the absolute maximum and minimum of
+
+$$
+f(x,y)=x^2-2xy+2y
+$$
+
+on the rectangle
+
+$$
+D=\{(x,y):0\leq x\leq 3,\;0\leq y\leq 2\}.
+$$
+
+Interior critical points satisfy
+
+$$
+f_x=2x-2y=0,
+\qquad
+f_y=-2x+2=0.
+$$
+
+So $x=1$ and $y=1$. The interior value is
+
+$$
+f(1,1)=1.
+$$
+
+Now check the four boundary sides.
+
+On $x=0$:
+
+$$
+f(0,y)=2y,
+\qquad 0\leq y\leq 2,
+$$
+
+so the boundary values range from $0$ to $4$.
+
+On $x=3$:
+
+$$
+f(3,y)=9-4y,
+\qquad 0\leq y\leq 2,
+$$
+
+so the boundary values range from $1$ to $9$.
+
+On $y=0$:
+
+$$
+f(x,0)=x^2,
+\qquad 0\leq x\leq 3,
+$$
+
+so the boundary values range from $0$ to $9$.
+
+On $y=2$:
+
+$$
+f(x,2)=x^2-4x+4=(x-2)^2,
+\qquad 0\leq x\leq 3,
+$$
+
+so the boundary values range from $0$ to $4$.
+
+Therefore the absolute maximum value is
+
+$$
+9,
+$$
+
+attained at $(3,0)$, and the absolute minimum value is
+
+$$
+0,
+$$
+
+attained at $(0,0)$ and $(2,2)$.
+
+```{python}
+#| label: fig-ch11-rectangle-extrema
+#| fig-cap: 'Absolute extrema on a rectangle require checking both the interior and the boundary.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 3, 220)
+y = np.linspace(0, 2, 220)
+X, Y = np.meshgrid(x, y)
+F = X**2 - 2*X*Y + 2*Y
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, F, levels=18)
+ax.clabel(cs, inline=True, fontsize=8)
+points = np.array([[1,1], [3,0], [0,0], [2,2]])
+ax.scatter(points[:,0], points[:,1], s=60)
+ax.set_xlim(-0.1, 3.1)
+ax.set_ylim(-0.1, 2.1)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Candidates for absolute extrema')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Worked example 11.9: extrema on a disk
+
+Find the extreme values of
+
+$$
+f(x,y)=x^2+2y^2+2
+$$
+
+on the disk
+
+$$
+D=\{(x,y):x^2+y^2\leq 1\}.
+$$
+
+The gradient is
+
+$$
+\nabla f(x,y)=\langle 2x,4y\rangle.
+$$
+
+The only interior critical point is $(0,0)$, where
+
+$$
+f(0,0)=2.
+$$
+
+On the boundary $x^2+y^2=1$,
+
+$$
+f(x,y)=x^2+2y^2+2=(1-y^2)+2y^2+2=3+y^2.
+$$
+
+Since $0\leq y^2\leq 1$, the boundary values satisfy
+
+$$
+3\leq f\leq 4.
+$$
+
+Therefore the absolute minimum is $2$ at $(0,0)$, and the absolute maximum is $4$ at $(0,1)$ and $(0,-1)$.
+
+```{python}
+#| label: fig-ch11-disk-extrema
+#| fig-cap: 'For extrema on a disk, interior candidates and boundary candidates must both be compared.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.2, 1.2, 260)
+y = np.linspace(-1.2, 1.2, 260)
+X, Y = np.meshgrid(x, y)
+F = X**2 + 2*Y**2 + 2
+mask = X**2 + Y**2 <= 1
+F_masked = np.where(mask, F, np.nan)
+
+theta = np.linspace(0, 2*np.pi, 300)
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, F_masked, levels=12)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.plot(np.cos(theta), np.sin(theta))
+ax.scatter([0, 0, 0], [0, 1, -1], s=60)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Interior and boundary candidates on a disk')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.7 Gradient descent
+
+Many optimization problems in statistics and machine learning cannot be solved exactly by hand. Instead, we use iterative algorithms.
+
+The most basic method is **gradient descent**. To minimize a differentiable function $L(\theta)$, we start with an initial guess $\theta_0$ and update by
+
+$$
+\theta_{k+1}=\theta_k-\eta\nabla L(\theta_k),
+$$
+
+where $\eta>0$ is the learning rate.
+
+The idea is simple:
+
+- $\nabla L$ points in the direction of steepest increase;
+- $-\nabla L$ points in the direction of steepest decrease;
+- the learning rate controls the step size.
+
+### Worked example 11.10: gradient descent on a quadratic loss
+
+Consider
+
+$$
+L(x,y)=3(x-1)^2+(y+2)^2+xy.
+$$
+
+The gradient is
+
+$$
+\nabla L(x,y)=\langle 6(x-1)+y,2(y+2)+x\rangle.
+$$
+
+The critical point solves
+
+$$
+6(x-1)+y=0,
+\qquad
+2(y+2)+x=0.
+$$
+
+Solving gives
+
+$$
+(x,y)=\left(\frac{16}{11},-\frac{30}{11}\right).
+$$
+
+Gradient descent approaches this point when the learning rate is chosen appropriately.
+
+```{python}
+#| label: fig-ch11-gradient-descent-quadratic
+#| fig-cap: 'Gradient descent follows the negative gradient direction toward a local minimum.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+L = lambda x, y: 3*(x-1)**2 + (y+2)**2 + x*y
+grad = lambda p: np.array([6*(p[0]-1) + p[1], 2*(p[1]+2) + p[0]])
+
+x = np.linspace(-1.5, 3.5, 260)
+y = np.linspace(-4.5, 1.5, 260)
+X, Y = np.meshgrid(x, y)
+Z = L(X, Y)
+
+eta = 0.08
+p = np.array([-1.0, 1.0])
+path = [p.copy()]
+for _ in range(40):
+    p = p - eta*grad(p)
+    path.append(p.copy())
+path = np.array(path)
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, Z, levels=24)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.plot(path[:,0], path[:,1], marker='o', markersize=3)
+ax.scatter([16/11], [-30/11], s=70)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Gradient descent on a quadratic function')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.8 Least squares as an optimization problem
+
+Suppose we have data points $(x_i,y_i)$ and model them with a line
+
+$$
+\hat y_i=\beta_0+\beta_1x_i.
+$$
+
+The least-squares loss is
+
+$$
+L(\beta_0,\beta_1)=\sum_{i=1}^n \left[y_i-(\beta_0+\beta_1x_i)\right]^2.
+$$
+
+This is a function of two variables: the intercept $\beta_0$ and the slope $\beta_1$. The best-fit line is the point in parameter space where this loss is minimized.
+
+The gradient is
+
+$$
+\frac{\partial L}{\partial \beta_0}
+=-2\sum_{i=1}^n \left[y_i-(\beta_0+\beta_1x_i)\right],
+$$
+
+and
+
+$$
+\frac{\partial L}{\partial \beta_1}
+=-2\sum_{i=1}^n x_i\left[y_i-(\beta_0+\beta_1x_i)\right].
+$$
+
+Gradient descent updates the parameters by moving opposite this gradient.
+
+```{python}
+#| label: fig-ch11-least-squares-gradient-descent
+#| fig-cap: 'Least-squares fitting minimizes a loss function over parameter space.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+x_data = np.linspace(-2, 2, 45)
+y_data = 1.4 + 2.1*x_data + rng.normal(scale=0.35, size=x_data.shape)
+
+b0 = np.linspace(-1.0, 3.5, 180)
+b1 = np.linspace(-0.5, 4.5, 180)
+B0, B1 = np.meshgrid(b0, b1)
+Loss = np.zeros_like(B0)
+for xi, yi in zip(x_data, y_data):
+    Loss += (yi - (B0 + B1*xi))**2
+
+def loss_grad(beta):
+    beta0, beta1 = beta
+    residuals = y_data - (beta0 + beta1*x_data)
+    d0 = -2*np.sum(residuals)
+    d1 = -2*np.sum(x_data*residuals)
+    return np.array([d0, d1])
+
+eta = 0.004
+beta = np.array([-0.5, 4.0])
+path = [beta.copy()]
+for _ in range(120):
+    beta = beta - eta*loss_grad(beta)
+    path.append(beta.copy())
+path = np.array(path)
+
+fig, ax = plt.subplots()
+cs = ax.contour(B0, B1, Loss, levels=28)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.plot(path[:,0], path[:,1], marker='o', markersize=2)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Gradient descent on least-squares loss')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.9 Newton's method in several variables
+
+Gradient descent uses first derivative information. Newton's method also uses second derivative information.
+
+For a function $L(\theta)$ with gradient $\nabla L(\theta)$ and Hessian $H_L(\theta)$, Newton's update is
+
+$$
+\theta_{k+1}=\theta_k-H_L(\theta_k)^{-1}\nabla L(\theta_k).
+$$
+
+Equivalently, solve the linear system
+
+$$
+H_L(\theta_k)s_k=-\nabla L(\theta_k)
+$$
+
+and set
+
+$$
+\theta_{k+1}=\theta_k+s_k.
+$$
+
+Newton's method can be very fast near a local minimum when the Hessian is positive definite. However, it can behave poorly near saddle points or when the Hessian is singular or indefinite. In large-scale machine learning, full Newton steps may be too expensive, so many algorithms use approximations to Hessian information.
+
+```{python}
+#| label: fig-ch11-newton-rosenbrock
+#| fig-cap: 'Newton-type steps use curvature information and can move differently from gradient descent.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Rosenbrock function: a standard nonconvex optimization test problem.
+def rosen(p):
+    x, y = p
+    return (1-x)**2 + 20*(y-x**2)**2
+
+def grad_rosen(p):
+    x, y = p
+    return np.array([
+        -2*(1-x) - 80*x*(y-x**2),
+        40*(y-x**2)
+    ])
+
+def hess_rosen(p):
+    x, y = p
+    return np.array([
+        [2 - 80*y + 240*x**2, -80*x],
+        [-80*x, 40]
+    ])
+
+# Damped Newton iteration.
+p = np.array([-1.2, 1.2])
+path = [p.copy()]
+for _ in range(12):
+    H = hess_rosen(p)
+    g = grad_rosen(p)
+    step = np.linalg.solve(H, -g)
+    alpha = 1.0
+    # Simple backtracking for stability.
+    while rosen(p + alpha*step) > rosen(p) and alpha > 1e-3:
+        alpha *= 0.5
+    p = p + alpha*step
+    path.append(p.copy())
+path = np.array(path)
+
+x = np.linspace(-1.6, 1.6, 300)
+y = np.linspace(-0.5, 2.0, 300)
+X, Y = np.meshgrid(x, y)
+Z = (1-X)**2 + 20*(Y-X**2)**2
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, Z, levels=np.logspace(-1, 3, 18))
+ax.clabel(cs, inline=True, fontsize=8)
+ax.plot(path[:,0], path[:,1], marker='o')
+ax.scatter([1], [1], s=70)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title("Damped Newton steps on Rosenbrock's function")
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 11.10 Practical optimization workflow
+
+For a smooth function $L(\theta)$, the standard optimization workflow is:
+
+1. **Model the objective.** Decide what function should be minimized or maximized.
+2. **Compute the gradient.** Use calculus, automatic differentiation, or finite differences.
+3. **Find critical points.** Solve $\nabla L=0$ when possible.
+4. **Use the Hessian.** Classify local behavior when the Hessian is available.
+5. **Check boundaries or constraints.** Local critical points are not the whole story.
+6. **Run numerical optimization.** Use gradient descent, Newton's method, or another iterative method.
+7. **Interpret the answer.** In applications, the meaning of the optimizer matters as much as the numerical value.
+
+### Finite-difference gradients
+
+When an explicit gradient is unavailable, we can approximate it numerically:
+
+$$
+\frac{\partial f}{\partial x_j}(x)
+\approx
+\frac{f(x+h e_j)-f(x-h e_j)}{2h}.
+$$
+
+This is useful for checking analytic gradients and for debugging optimization code.
+
+```{python}
+#| label: fig-ch11-finite-difference-gradient
+#| fig-cap: 'Finite differences approximate the gradient when symbolic derivatives are unavailable.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def f_vec(p):
+    x, y = p
+    return np.exp(0.2*x*y) + x**2 + 0.5*y**2
+
+def analytic_grad(p):
+    x, y = p
+    return np.array([
+        0.2*y*np.exp(0.2*x*y) + 2*x,
+        0.2*x*np.exp(0.2*x*y) + y
+    ])
+
+def finite_grad(f, p, h=1e-4):
+    p = np.array(p, dtype=float)
+    g = np.zeros_like(p)
+    for j in range(len(p)):
+        e = np.zeros_like(p)
+        e[j] = 1.0
+        g[j] = (f(p + h*e) - f(p - h*e)) / (2*h)
+    return g
+
+p = np.array([1.0, -0.5])
+g_exact = analytic_grad(p)
+g_fd = finite_grad(f_vec, p)
+
+fig, ax = plt.subplots()
+ax.bar(['exact x', 'exact y', 'finite x', 'finite y'], [g_exact[0], g_exact[1], g_fd[0], g_fd[1]])
+ax.set_title('Analytic gradient versus finite-difference gradient')
+ax.grid(True, axis='y', alpha=0.25)
+plt.show()
+
+print('analytic gradient:', g_exact)
+print('finite-difference gradient:', g_fd)
+print('difference:', g_fd - g_exact)
+```
+
+## 11.11 Common mistakes
+
+::: {.callout-warning}
+## Frequent errors
+
+1. **Forgetting to normalize the direction vector.** Directional derivative formulas require a unit vector.
+2. **Assuming every critical point is an extremum.** Saddle points are common in several variables.
+3. **Using the second derivative test when $D=0$.** The test gives no conclusion in this case.
+4. **Ignoring the boundary.** Absolute extrema on closed regions may occur on the boundary.
+5. **Choosing a learning rate blindly.** In gradient descent, too large a learning rate may cause divergence or oscillation.
+6. **Confusing local and global behavior.** A local minimum may not be the absolute minimum.
+:::
+
+## 11.12 Chapter summary
+
+The directional derivative measures the rate of change of a function in a chosen direction:
+
+$$
+D_u f=\nabla f\cdot u.
+$$
+
+The gradient is the direction of steepest increase, and the negative gradient is the direction of steepest decrease. Critical points occur where the gradient vanishes or where derivatives fail to exist. The Hessian matrix provides second derivative information, and the determinant
+
+$$
+D=f_{xx}f_{yy}-f_{xy}^2
+$$
+
+classifies nondegenerate critical points in two variables.
+
+For absolute extrema on closed bounded regions, critical points are not enough: the boundary must also be checked. In computational settings, gradient descent and Newton's method turn these ideas into algorithms for fitting models and minimizing loss functions.
+
+## Exercises
+
+### Conceptual questions
+
+1. Explain in words what $D_u f(a,b)$ measures.
+2. Why must $u$ be a unit vector in the definition of directional derivative?
+3. Explain why the gradient points perpendicular to level curves.
+4. What is the difference between a critical point and a local minimum?
+5. Why does $D<0$ in the second derivative test indicate a saddle point?
+6. Why must boundary points be checked when finding absolute extrema?
+7. Explain the relationship between gradient descent and steepest descent.
+8. Why can Newton's method fail near a saddle point?
+
+### Computational practice
+
+1. Let $f(x,y)=x^2+xy+y^2$. Compute $D_u f(1,2)$ in the direction of $v=\langle 3,4\rangle$.
+2. Let $f(x,y)=e^{xy}+y^3$. Find the direction of fastest increase at $(1,0)$ and the maximum rate of increase.
+3. Let $f(x,y,z)=x^2y+yz^2$. Compute the directional derivative at $(1,2,-1)$ in the direction of $v=\langle 1,0,2\rangle$.
+4. Find and classify the critical points of $f(x,y)=x^2+y^2-6x+4y+20$.
+5. Find and classify the critical points of $f(x,y)=x^2-y^2+4x+2y$.
+6. Find and classify the critical points of $f(x,y)=x^3+y^3-6xy$.
+7. Find and classify the critical points of $f(x,y)=x^4+y^4-4xy$.
+8. Find the absolute maximum and minimum of $f(x,y)=x+y$ on the square $0\leq x\leq 1$, $0\leq y\leq 2$.
+9. Find the absolute maximum and minimum of $f(x,y)=x^2+y^2-2x$ on the disk $x^2+y^2\leq 4$.
+10. Run gradient descent on $L(x,y)=(x-3)^2+4(y+1)^2$ from $(0,0)$ with several learning rates. Describe what changes.
+
+### Applied and data-oriented problems
+
+1. A model has loss $L(w_1,w_2)=4(w_1-2)^2+(w_2+1)^2+w_1w_2$. Find the critical point and classify it.
+2. For least squares with data $(x_i,y_i)$, derive the gradient of $L(\beta_0,\beta_1)=\sum_i[y_i-(\beta_0+\beta_1x_i)]^2$.
+3. Suppose a log-likelihood $\ell(\theta_1,	heta_2)$ has Hessian negative definite at a critical point. What does that tell you about the likelihood locally?
+4. A neural-network training loss has a point where $\nabla L=0$ but the Hessian has both positive and negative eigenvalues. What kind of point is this?
+5. Write a Python function that approximates the gradient of a function $f:\mathbb R^n\to\mathbb R$ using central differences.
+
+## Python lab
+
+Open the Chapter 11 Python lab from the `labs` folder. The lab asks you to:
+
+1. compute directional derivatives numerically and analytically;
+2. visualize gradient vectors on contour maps;
+3. classify critical points using the Hessian determinant;
+4. implement gradient descent on quadratic and least-squares losses;
+5. compare gradient descent with a damped Newton method.
+
+## Looking ahead
+
+This chapter focused on unconstrained optimization and boundary checks. The next chapter develops constrained optimization systematically. The key geometric idea will be that, at a constrained optimum, the gradient of the objective is parallel to the gradient of the constraint.

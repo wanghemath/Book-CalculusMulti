@@ -1,0 +1,1263 @@
+---
+title: "Chapter 14. Double Integrals over General Regions"
+subtitle: "Type I and Type II regions, reversing order, area, mass, and probability"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> **Chapter goal.** Rectangles are the training ground for double integrals, but most meaningful regions are not rectangles. This chapter develops double integrals over curved and irregular plane regions. The main skill is translating a geometric region into correct limits of integration, choosing an efficient order, and interpreting the result as area, volume, mass, average value, or probability.
+
+A double integral over a general region has the same conceptual meaning as before:
+
+$$
+\iint_D f(x,y)\,dA
+$$
+
+adds the values of $f$ over a two-dimensional region $D$. The new difficulty is that $D$ may be bounded by curves. Instead of constant limits such as $a\le x\le b$ and $c\le y\le d$, the inner limits often depend on the outer variable.
+
+This chapter is a bridge from rectangular integration to the geometric and computational thinking needed in probability, statistics, machine learning, numerical methods, and vector calculus.
+
+## Learning objectives
+
+After studying this chapter, you should be able to:
+
+1. describe Type I regions using inequalities of the form $a\le x\le b$, $p(x)\le y\le q(x)$;
+2. describe Type II regions using inequalities of the form $c\le y\le d$, $g(y)\le x\le h(y)$;
+3. set up and evaluate double integrals over nonrectangular regions;
+4. sketch a region from integral limits and write integral limits from a sketch;
+5. reverse the order of integration when it simplifies the computation;
+6. compute area using $\iint_D 1\,dA$;
+7. split a complicated region into simpler pieces;
+8. interpret double integrals over general regions as volume, mass, average value, and probability.
+
+## 14.1 Why rectangles are not enough
+
+In the previous chapter, the base region was usually a rectangle
+
+$$
+R=[a,b]\times[c,d].
+$$
+
+For such a region, Fubini's theorem gives
+
+$$
+\iint_R f(x,y)\,dA
+=
+\int_a^b\int_c^d f(x,y)\,dy\,dx
+=
+\int_c^d\int_a^b f(x,y)\,dx\,dy.
+$$
+
+But many natural regions are bounded by curves:
+
+- a disk or annulus in geometry;
+- a triangular feasible set in optimization;
+- a region under a probability-density curve;
+- the set of parameters satisfying an inequality;
+- an irregular geographic region in spatial modeling;
+- a decision region in classification.
+
+For example, the region below the parabola $y=4-x^2$ and above the line $y=3x$ is not a rectangle. Its vertical height changes as $x$ changes. A double integral over this region must reflect that changing geometry.
+
+```{python}
+#| label: fig-ch14-nonrectangular-region
+#| fig-cap: 'A nonrectangular region bounded by a parabola and a line. The vertical height of the region changes with x.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 300)
+y_top = 4 - x**2
+y_bottom = 3*x
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(x, y_top, label='$y=4-x^2$')
+ax.plot(x, y_bottom, label='$y=3x$')
+ax.fill_between(x, y_bottom, y_top, alpha=0.25)
+for x0 in [0.2, 0.5, 0.8]:
+    ax.plot([x0, x0], [3*x0, 4-x0**2], linewidth=2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Region with variable vertical slices')
+ax.set_xlim(-0.2, 1.3)
+ax.set_ylim(-0.2, 4.5)
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+The key skill is to decide how to slice the region.
+
+- A **vertical slice** leads to limits $p(x)\le y\le q(x)$.
+- A **horizontal slice** leads to limits $g(y)\le x\le h(y)$.
+
+The same region may be easy in one direction and difficult in the other.
+
+## 14.2 Type I regions: vertical slicing
+
+A plane region $D$ is called a **Type I region** if it can be described as
+
+$$
+D=
+\{(x,y):a\le x\le b,\ p(x)\le y\le q(x)\},
+$$
+
+where $p$ and $q$ are continuous functions and $p(x)\le q(x)$ for $a\le x\le b$.
+
+Geometrically, we move from left to right. For each fixed $x$, the variable $y$ begins at the lower curve $y=p(x)$ and ends at the upper curve $y=q(x)$.
+
+::: {.callout-important}
+## Double integral over a Type I region
+
+If $D=\{(x,y):a\le x\le b,\ p(x)\le y\le q(x)\}$ and $f$ is continuous on $D$, then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_a^b\int_{p(x)}^{q(x)} f(x,y)\,dy\,dx.
+$$
+:::
+
+The inner integral adds along a vertical slice. The outer integral adds all slices from $x=a$ to $x=b$.
+
+```{python}
+#| label: fig-ch14-type-i-template
+#| fig-cap: 'A Type I region is described by left-to-right limits and vertical slices.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 3, 400)
+p = 0.4 + 0.2*np.sin(2*x)
+q = 2.2 + 0.25*np.cos(1.5*x)
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(x, p, label='$y=p(x)$')
+ax.plot(x, q, label='$y=q(x)$')
+ax.fill_between(x, p, q, alpha=0.25)
+for x0 in np.linspace(0.5, 2.5, 5):
+    p0 = 0.4 + 0.2*np.sin(2*x0)
+    q0 = 2.2 + 0.25*np.cos(1.5*x0)
+    ax.plot([x0, x0], [p0, q0], linewidth=2)
+ax.text(0, p[0]-0.25, '$a$', ha='center')
+ax.text(3, p[-1]-0.25, '$b$', ha='center')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Type I region')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+### Example 14.1: A region between a parabola and a line
+
+Let $D$ be the region in the first quadrant bounded by
+
+$$
+y=4-x^2
+\qquad \text{and} \qquad
+ y=3x.
+$$
+
+Compute
+
+$$
+\iint_D 2xy\,dA.
+$$
+
+**Step 1: Find the intersection points.**
+
+Set the curves equal:
+
+$$
+4-x^2=3x.
+$$
+
+Then
+
+$$
+x^2+3x-4=0,
+\qquad
+(x+4)(x-1)=0.
+$$
+
+The first-quadrant intersection has $x=1$, and then $y=3$. The region begins at $x=0$ and ends at $x=1$.
+
+**Step 2: Identify lower and upper curves.**
+
+For $0\le x\le 1$,
+
+$$
+3x\le y\le 4-x^2.
+$$
+
+Therefore
+
+$$
+D=
+\{(x,y):0\le x\le 1,\ 3x\le y\le 4-x^2\}.
+$$
+
+**Step 3: Set up and evaluate.**
+
+$$
+\begin{aligned}
+\iint_D 2xy\,dA
+&=
+\int_0^1\int_{3x}^{4-x^2} 2xy\,dy\,dx \\
+&=
+\int_0^1 x\left[y^2\right]_{3x}^{4-x^2}\,dx \\
+&=
+\int_0^1 x\left((4-x^2)^2-9x^2\right)\,dx \\
+&=
+\int_0^1 \left(16x-17x^3+x^5\right)\,dx \\
+&=
+\left[8x^2-\frac{17}{4}x^4+\frac{1}{6}x^6\right]_0^1 \\
+&=
+8-\frac{17}{4}+\frac{1}{6}
+=
+\frac{47}{12}.
+\end{aligned}
+$$
+
+The result is positive because $2xy\ge 0$ on the first-quadrant region.
+
+```{python}
+#| label: fig-ch14-parabola-line-region
+#| fig-cap: 'The region 0 <= x <= 1, 3x <= y <= 4 - x^2 used in Example 14.1.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 400)
+y_low = 3*x
+y_high = 4 - x**2
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(x, y_low, label='$y=3x$')
+ax.plot(x, y_high, label='$y=4-x^2$')
+ax.fill_between(x, y_low, y_high, alpha=0.3)
+ax.scatter([1], [3], zorder=5)
+ax.text(1.03, 3, '$(1,3)$')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('A Type I region')
+ax.set_xlim(-0.1, 1.25)
+ax.set_ylim(-0.2, 4.3)
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 14.3 Type II regions: horizontal slicing
+
+A plane region $D$ is called a **Type II region** if it can be described as
+
+$$
+D=
+\{(x,y):c\le y\le d,\ g(y)\le x\le h(y)\},
+$$
+
+where $g$ and $h$ are continuous functions and $g(y)\le h(y)$ for $c\le y\le d$.
+
+Geometrically, we move from bottom to top. For each fixed $y$, the variable $x$ begins at the left curve $x=g(y)$ and ends at the right curve $x=h(y)$.
+
+::: {.callout-important}
+## Double integral over a Type II region
+
+If $D=\{(x,y):c\le y\le d,\ g(y)\le x\le h(y)\}$ and $f$ is continuous on $D$, then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_c^d\int_{g(y)}^{h(y)} f(x,y)\,dx\,dy.
+$$
+:::
+
+```{python}
+#| label: fig-ch14-type-ii-template
+#| fig-cap: 'A Type II region is described by bottom-to-top limits and horizontal slices.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = np.linspace(0, 3, 400)
+g = 0.4 + 0.2*np.cos(2*y)
+h = 2.5 + 0.25*np.sin(1.5*y)
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(g, y, label='$x=g(y)$')
+ax.plot(h, y, label='$x=h(y)$')
+ax.fill_betweenx(y, g, h, alpha=0.25)
+for y0 in np.linspace(0.5, 2.5, 5):
+    g0 = 0.4 + 0.2*np.cos(2*y0)
+    h0 = 2.5 + 0.25*np.sin(1.5*y0)
+    ax.plot([g0, h0], [y0, y0], linewidth=2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Type II region')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+### Example 14.2: A region between $x=y$ and $x=y^2$
+
+Let $D$ be the region bounded by
+
+$$
+x=y
+\qquad \text{and} \qquad
+x=y^2.
+$$
+
+Compute
+
+$$
+\iint_D (2xy+6y^2)\,dA.
+$$
+
+**Step 1: Find the intersections.**
+
+Set $y=y^2$:
+
+$$
+y^2-y=0,
+\qquad
+ y(y-1)=0.
+$$
+
+Thus $y=0$ and $y=1$. For $0\le y\le 1$, we have
+
+$$
+y^2\le x\le y.
+$$
+
+**Step 2: Write the Type II integral.**
+
+$$
+\iint_D (2xy+6y^2)\,dA
+=
+\int_0^1\int_{y^2}^{y} (2xy+6y^2)\,dx\,dy.
+$$
+
+**Step 3: Evaluate.**
+
+$$
+\begin{aligned}
+\int_0^1\int_{y^2}^{y} (2xy+6y^2)\,dx\,dy
+&=
+\int_0^1 \left[x^2y+6xy^2\right]_{x=y^2}^{x=y}\,dy \\
+&=
+\int_0^1 \left(y^3+6y^3-y^5-6y^4\right)\,dy \\
+&=
+\int_0^1 \left(7y^3-6y^4-y^5\right)\,dy \\
+&=
+\left[\frac{7}{4}y^4-\frac{6}{5}y^5-\frac{1}{6}y^6\right]_0^1 \\
+&=
+\frac{7}{4}-\frac{6}{5}-\frac{1}{6}
+=
+\frac{23}{60}.
+\end{aligned}
+$$
+
+```{python}
+#| label: fig-ch14-y-vs-y-squared-region
+#| fig-cap: 'The region y^2 <= x <= y, 0 <= y <= 1. Horizontal slices make the limits simple.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = np.linspace(0, 1, 400)
+x_left = y**2
+x_right = y
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(x_left, y, label='$x=y^2$')
+ax.plot(x_right, y, label='$x=y$')
+ax.fill_betweenx(y, x_left, x_right, alpha=0.3)
+for y0 in [0.2, 0.5, 0.8]:
+    ax.plot([y0**2, y0], [y0, y0], linewidth=2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('A Type II region')
+ax.set_aspect('equal', adjustable='box')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 14.4 How to choose the order of integration
+
+When setting up a double integral, ask two questions.
+
+**Question 1. What does a typical slice look like?**
+
+A vertical slice is useful if a line $x=\text{constant}$ enters and exits the region in one piece. A horizontal slice is useful if a line $y=\text{constant}$ enters and exits the region in one piece.
+
+**Question 2. Which order makes the integrand easier?**
+
+Sometimes both descriptions are possible, but only one gives an elementary integral.
+
+A practical workflow is:
+
+1. sketch the curves;
+2. find intersection points;
+3. try vertical slices and horizontal slices;
+4. choose the description with simpler bounds or simpler integration;
+5. compute only after the geometry is correct.
+
+::: {.callout-tip}
+## Geometry first, algebra second
+
+Many mistakes in double integrals are not integration mistakes. They are region mistakes. Before computing, check:
+
+- Does the lower curve really lie below the upper curve?
+- Does the left curve really lie left of the right curve?
+- Are the intersection values correct?
+- Does each slice stay inside the region for the full range of the outer variable?
+:::
+
+## 14.5 Reversing the order of integration
+
+Some iterated integrals are difficult in the given order but easy after reversing the order.
+
+Consider
+
+$$
+\int_0^1\int_y^1 e^{-x^2}\,dx\,dy.
+$$
+
+The inner integral
+
+$$
+\int e^{-x^2}\,dx
+$$
+
+has no elementary antiderivative. But the integral is not hopeless. The region is
+
+$$
+D=
+\{(x,y):0\le y\le 1,\ y\le x\le 1\}.
+$$
+
+This describes the triangle below the line $y=x$ and inside the unit square. Rewriting in Type I form gives
+
+$$
+D=
+\{(x,y):0\le x\le 1,\ 0\le y\le x\}.
+$$
+
+Therefore
+
+$$
+\int_0^1\int_y^1 e^{-x^2}\,dx\,dy
+=
+\int_0^1\int_0^x e^{-x^2}\,dy\,dx.
+$$
+
+Now $e^{-x^2}$ is constant with respect to $y$:
+
+$$
+\begin{aligned}
+\int_0^1\int_0^x e^{-x^2}\,dy\,dx
+&=
+\int_0^1 xe^{-x^2}\,dx \\
+&=
+\left[-\frac{1}{2}e^{-x^2}\right]_0^1 \\
+&=
+\frac{1}{2}(1-e^{-1}).
+\end{aligned}
+$$
+
+```{python}
+#| label: fig-ch14-reversing-order-triangle
+#| fig-cap: 'The triangle 0 <= y <= x <= 1. Reversing order turns a difficult integral into an elementary one.'
+#| fig-width: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 300)
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.plot(x, x, label='$y=x$')
+ax.plot([0, 1], [0, 0], color='black')
+ax.plot([1, 1], [0, 1], color='black')
+ax.fill_between(x, 0, x, alpha=0.3)
+for x0 in [0.25, 0.5, 0.75]:
+    ax.plot([x0, x0], [0, x0], linewidth=2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Region for reversing order')
+ax.set_aspect('equal', adjustable='box')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+### Example 14.3: From region to reversed integral
+
+Rewrite the integral
+
+$$
+\int_0^4\int_{y/2}^{\sqrt{y+1}} f(x,y)\,dx\,dy
+$$
+
+with the order $dy\,dx$.
+
+The given limits describe
+
+$$
+0\le y\le 4,
+\qquad
+\frac{y}{2}\le x\le \sqrt{y+1}.
+$$
+
+Convert each boundary to $y$ as a function of $x$:
+
+$$
+x=\frac{y}{2}\quad \Longleftrightarrow \quad y=2x,
+$$
+
+and
+
+$$
+x=\sqrt{y+1}\quad \Longleftrightarrow \quad y=x^2-1.
+$$
+
+The region is between $y=x^2-1$ and $y=2x$, with $0\le y\le 4$. The horizontal band restriction causes the region to split when vertical slices change their lower boundary. We find the relevant $x$-range from the endpoints:
+
+- at $y=0$, $x$ ranges from $0$ to $1$;
+- at $y=4$, $x$ ranges from $2$ to $\sqrt{5}$.
+
+A careful sketch shows
+
+$$
+\int_0^4\int_{y/2}^{\sqrt{y+1}} f(x,y)\,dx\,dy
+=
+\int_0^1\int_0^{2x} f(x,y)\,dy\,dx
++
+\int_1^2\int_{x^2-1}^{2x} f(x,y)\,dy\,dx
++
+\int_2^{\sqrt{5}}\int_{x^2-1}^{4} f(x,y)\,dy\,dx.
+$$
+
+This example illustrates why reversing order can require splitting. The geometry decides whether one integral is enough.
+
+## 14.6 Area of a plane region
+
+The area of a plane region $D$ can be computed by integrating the constant function $1$:
+
+::: {.callout-important}
+## Area by double integral
+
+$$
+\operatorname{Area}(D)=\iint_D 1\,dA.
+$$
+:::
+
+For a Type I region,
+
+$$
+\operatorname{Area}(D)
+=
+\int_a^b\int_{p(x)}^{q(x)}1\,dy\,dx
+=
+\int_a^b(q(x)-p(x))\,dx.
+$$
+
+For a Type II region,
+
+$$
+\operatorname{Area}(D)
+=
+\int_c^d\int_{g(y)}^{h(y)}1\,dx\,dy
+=
+\int_c^d(h(y)-g(y))\,dy.
+$$
+
+### Example 14.4: Area between a line and a parabola
+
+Find the area of the region bounded by
+
+$$
+y=x-1
+\qquad \text{and} \qquad
+ y^2=2x+6.
+$$
+
+Write both curves as $x$ in terms of $y$:
+
+$$
+y=x-1 \quad \Longleftrightarrow \quad x=y+1,
+$$
+
+and
+
+$$
+y^2=2x+6 \quad \Longleftrightarrow \quad x=\frac{y^2-6}{2}.
+$$
+
+Find intersections by substituting $x=y+1$ into $y^2=2x+6$:
+
+$$
+y^2=2(y+1)+6,
+\qquad
+ y^2-2y-8=0,
+\qquad
+(y-4)(y+2)=0.
+$$
+
+Thus $-2\le y\le 4$. The parabola lies on the left and the line lies on the right, so
+
+$$
+\begin{aligned}
+\operatorname{Area}(D)
+&=
+\int_{-2}^{4}\int_{(y^2-6)/2}^{y+1} 1\,dx\,dy \\
+&=
+\int_{-2}^{4}\left(y+1-\frac{y^2-6}{2}\right)\,dy \\
+&=
+\int_{-2}^{4}\left(y+4-\frac{y^2}{2}\right)\,dy \\
+&=18.
+\end{aligned}
+$$
+
+```{python}
+#| label: fig-ch14-line-parabola-area
+#| fig-cap: 'Area between the line x = y + 1 and the parabola x = (y^2 - 6)/2.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = np.linspace(-2, 4, 400)
+x_left = (y**2 - 6)/2
+x_right = y + 1
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.plot(x_left, y, label='$x=(y^2-6)/2$')
+ax.plot(x_right, y, label='$x=y+1$')
+ax.fill_betweenx(y, x_left, x_right, alpha=0.3)
+ax.scatter([(-2**2 - 6)/2, 5], [-2, 4], zorder=5)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Area by horizontal slices')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 14.7 Splitting regions
+
+Not every region is Type I or Type II in a single piece. Some regions must be split into simpler pieces.
+
+Suppose
+
+$$
+D=D_1\cup D_2
+$$
+
+where the interiors of $D_1$ and $D_2$ do not overlap. Then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\iint_{D_1} f(x,y)\,dA
++
+\iint_{D_2} f(x,y)\,dA.
+$$
+
+This is the two-dimensional version of splitting a one-variable integral at a point.
+
+```{python}
+#| label: fig-ch14-splitting-region
+#| fig-cap: 'Some regions are best handled by splitting them into simpler Type I or Type II pieces.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x1 = np.linspace(-1, 0, 200)
+x2 = np.linspace(0, 1, 200)
+upper1 = 1 - x1**2
+upper2 = 1 - x2**2
+lower1 = -0.2 + 0*x1
+lower2 = x2 - 0.2
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.fill_between(x1, lower1, upper1, alpha=0.3, label='$D_1$')
+ax.fill_between(x2, lower2, upper2, alpha=0.3, label='$D_2$')
+ax.plot(np.r_[x1, x2], 1 - np.r_[x1, x2]**2, color='black', label='upper boundary')
+ax.plot(x1, lower1, color='black')
+ax.plot(x2, lower2, color='black')
+ax.axvline(0, linestyle='--', linewidth=1)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('A region split into two pieces')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+::: {.callout-note}
+## When splitting is necessary
+
+Splitting is needed when a single vertical or horizontal slice does not enter and exit the region through the same pair of boundary curves for the whole range. Splitting is not a failure; it is part of correct geometric modeling.
+:::
+
+## 14.8 Volume under a surface over a curved base
+
+If $f(x,y)\ge 0$ on a region $D$, then
+
+$$
+V=\iint_D f(x,y)\,dA
+$$
+
+is the volume of the solid above $D$ and below the surface $z=f(x,y)$.
+
+### Example 14.5: Volume over a triangular region
+
+Let $D$ be the triangular region with vertices $(0,0)$, $(1,0)$, and $(1,2)$. Find the volume under
+
+$$
+z=3+x+y
+$$
+
+over $D$.
+
+The region is
+
+$$
+D=\{(x,y):0\le x\le 1,\ 0\le y\le 2x\}.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+V
+&=\int_0^1\int_0^{2x}(3+x+y)\,dy\,dx \\
+&=\int_0^1\left[(3+x)y+\frac{y^2}{2}\right]_0^{2x}\,dx \\
+&=\int_0^1\left(6x+2x^2+2x^2\right)\,dx \\
+&=\int_0^1(6x+4x^2)\,dx \\
+&=3+\frac{4}{3}
+=
+\frac{13}{3}.
+\end{aligned}
+$$
+
+```{python}
+#| label: fig-ch14-volume-over-triangle
+#| fig-cap: 'A surface over a triangular base region. The double integral gives volume.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.tri import Triangulation
+
+# Triangular grid: 0 <= x <= 1, 0 <= y <= 2x
+xs = []
+ys = []
+for x0 in np.linspace(0, 1, 35):
+    for y0 in np.linspace(0, 2*x0, max(2, int(35*x0)+2)):
+        xs.append(x0)
+        ys.append(y0)
+xs = np.array(xs)
+ys = np.array(ys)
+zs = 3 + xs + ys
+tri = Triangulation(xs, ys)
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_trisurf(tri, zs, alpha=0.75, linewidth=0.2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Volume under $z=3+x+y$ over a triangle')
+plt.show()
+```
+
+## 14.9 Density, mass, and average value over general regions
+
+If a thin plate occupies a region $D$ and has density $\rho(x,y)$, then the mass is
+
+$$
+m=\iint_D \rho(x,y)\,dA.
+$$
+
+The average value of a function $f$ over $D$ is
+
+$$
+f_{\operatorname{avg}}
+=
+\frac{1}{\operatorname{Area}(D)}\iint_D f(x,y)\,dA.
+$$
+
+These formulas are the same as for rectangles, but now the geometry of $D$ must be handled carefully.
+
+### Example 14.6: Average value on a triangle
+
+Find the average value of
+
+$$
+f(x,y)=x+2y
+$$
+
+over
+
+$$
+D=\{(x,y):0\le x\le 1,\ 0\le y\le 1-x\}.
+$$
+
+The area is
+
+$$
+\operatorname{Area}(D)=\frac{1}{2}.
+$$
+
+Compute the integral:
+
+$$
+\begin{aligned}
+\iint_D (x+2y)\,dA
+&=
+\int_0^1\int_0^{1-x}(x+2y)\,dy\,dx \\
+&=
+\int_0^1\left[xy+y^2\right]_0^{1-x}\,dx \\
+&=
+\int_0^1\left(x(1-x)+(1-x)^2\right)\,dx \\
+&=
+\int_0^1(1-x)\,dx
+=
+\frac{1}{2}.
+\end{aligned}
+$$
+
+Thus
+
+$$
+f_{\operatorname{avg}}
+=
+\frac{1/2}{1/2}=1.
+$$
+
+```{python}
+#| label: fig-ch14-average-on-triangle
+#| fig-cap: 'Heatmap of f(x,y)=x+2y over the triangular region 0 <= x <= 1, 0 <= y <= 1 - x.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 300)
+y = np.linspace(0, 1, 300)
+X, Y = np.meshgrid(x, y)
+Z = X + 2*Y
+mask = Y <= 1 - X
+Z_masked = np.where(mask, Z, np.nan)
+
+fig, ax = plt.subplots(figsize=(6.5, 5))
+img = ax.imshow(Z_masked, extent=[0,1,0,1], origin='lower', aspect='equal')
+ax.plot([0,1], [1,0], color='black')
+ax.plot([0,1], [0,0], color='black')
+ax.plot([0,0], [0,1], color='black')
+fig.colorbar(img, ax=ax, label='$f(x,y)$')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Average value over a triangular region')
+plt.show()
+```
+
+## 14.10 Probability over a region
+
+In statistics, a joint density $p(x,y)$ assigns probability density to points in the plane. If $(X,Y)$ has joint density $p$, then
+
+$$
+P((X,Y)\in D)=\iint_D p(x,y)\,dA.
+$$
+
+This is one of the most important applications of double integrals over general regions.
+
+### Example 14.7: Probability over a triangular event
+
+Suppose $(X,Y)$ is uniformly distributed over the unit square $[0,1]\times[0,1]$. Since the total area is $1$, the density is $p(x,y)=1$ on the square.
+
+Find
+
+$$
+P(Y\le X^2).
+$$
+
+The event is
+
+$$
+D=\{(x,y):0\le x\le 1,\ 0\le y\le x^2\}.
+$$
+
+Thus
+
+$$
+P(Y\le X^2)
+=
+\int_0^1\int_0^{x^2}1\,dy\,dx
+=
+\int_0^1 x^2\,dx
+=
+\frac{1}{3}.
+$$
+
+```{python}
+#| label: fig-ch14-probability-event
+#| fig-cap: 'The probability P(Y <= X^2) for a uniform point in the unit square equals the area under y = x^2.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 400)
+fig, ax = plt.subplots(figsize=(6.5, 5))
+ax.fill_between(x, 0, x**2, alpha=0.3, label=r'$Y\leq X^2$')
+ax.plot(x, x**2, label='$y=x^2$')
+ax.plot([0,1,1,0,0], [0,0,1,1,0], color='black')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('A probability event as a region')
+ax.set_aspect('equal', adjustable='box')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+### A nonuniform density example
+
+Let
+
+$$
+p(x,y)=2
+$$
+
+on the triangular region
+
+$$
+T=\{(x,y):0\le x\le 1,\ 0\le y\le 1-x\},
+$$
+
+and $p(x,y)=0$ outside $T$. Since $\operatorname{Area}(T)=1/2$, the total probability is $2\cdot 1/2=1$.
+
+For the event $Y\le X$, the relevant region is
+
+$$
+0\le x\le 1,
+\qquad
+0\le y\le \min(x,1-x).
+$$
+
+The minimum changes at $x=1/2$, so split the integral:
+
+$$
+\begin{aligned}
+P(Y\le X)
+&=
+\int_0^{1/2}\int_0^x 2\,dy\,dx
++
+\int_{1/2}^{1}\int_0^{1-x}2\,dy\,dx \\
+&=
+\int_0^{1/2}2x\,dx
++
+\int_{1/2}^{1}2(1-x)\,dx \\
+&=
+\frac{1}{4}+\frac{1}{4}
+=
+\frac{1}{2}.
+\end{aligned}
+$$
+
+## 14.11 Numerical integration over irregular regions
+
+For complicated regions or complicated functions, exact integration may be difficult. Two common numerical strategies are:
+
+1. grid-based approximation;
+2. Monte Carlo integration.
+
+Suppose $D$ lies inside a rectangle $R$ of area $A(R)$. The integral can be written as
+
+$$
+\iint_D f(x,y)\,dA
+=
+\iint_R f(x,y)\mathbf 1_D(x,y)\,dA,
+$$
+
+where $\mathbf 1_D(x,y)$ is $1$ inside $D$ and $0$ outside $D$.
+
+A Monte Carlo approximation samples random points in $R$:
+
+$$
+\iint_D f(x,y)\,dA
+\approx
+A(R)\cdot \frac{1}{N}\sum_{i=1}^N f(X_i,Y_i)\mathbf 1_D(X_i,Y_i).
+$$
+
+```{python}
+#| label: fig-ch14-monte-carlo-irregular
+#| fig-cap: 'Monte Carlo integration over a curved region by sampling points in an enclosing rectangle.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(14)
+N = 6000
+x = rng.uniform(0, 1, N)
+y = rng.uniform(0, 4, N)
+inside = (y >= 3*x) & (y <= 4 - x**2)
+
+# Estimate integral of f(x,y)=2xy over D from Example 14.1
+values = 2*x*y*inside
+estimate = 4*np.mean(values)  # enclosing rectangle area = 4
+exact = 47/12
+
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.scatter(x[~inside], y[~inside], s=4, alpha=0.15, label='outside')
+ax.scatter(x[inside], y[inside], s=4, alpha=0.25, label='inside')
+xx = np.linspace(0, 1, 300)
+ax.plot(xx, 3*xx, color='black')
+ax.plot(xx, 4-xx**2, color='black')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(f'Monte Carlo estimate: {estimate:.4f}; exact: {exact:.4f}')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+Monte Carlo integration is not usually the most accurate method for low-dimensional smooth problems. However, it scales naturally to high-dimensional problems, which is why it is central in statistics, Bayesian computation, and machine learning.
+
+## 14.12 Computational workflow in Python
+
+For symbolic or numerical work, the region should be encoded explicitly. The following code computes the integral from Example 14.1 using nested numerical quadrature from `scipy` if available, and falls back to a grid approximation if not.
+
+```{python}
+#| label: ch14-computational-check
+#| fig-cap: 'Numerical verification of the integral over a Type I region.'
+#| fig-width: 6.5
+import numpy as np
+
+try:
+    from scipy.integrate import dblquad
+    val, err = dblquad(
+        lambda y, x: 2*x*y,
+        0, 1,
+        lambda x: 3*x,
+        lambda x: 4 - x**2
+    )
+    print('scipy dblquad value:', val)
+    print('estimated numerical error:', err)
+except Exception as exc:
+    print('scipy unavailable; using midpoint grid approximation')
+    m = 800
+    xs = (np.arange(m) + 0.5)/m
+    total = 0.0
+    for x0 in xs:
+        y0, y1 = 3*x0, 4 - x0**2
+        height = y1 - y0
+        # midpoint in y direction
+        ym = 0.5*(y0 + y1)
+        total += 2*x0*ym*height*(1/m)
+    print('grid approximation:', total)
+
+print('exact value:', 47/12)
+```
+
+::: {.callout-warning}
+## A common implementation mistake
+
+When using numerical integration libraries, check the order of arguments. Some libraries call the integrand as `f(y, x)` for an integral written in the order $dy\,dx$. The mathematical order and the software argument order do not always look the same.
+:::
+
+## 14.13 Checklist for setting up a double integral
+
+When solving a double-integral problem over a general region, use this checklist.
+
+1. **Sketch the region.** Mark all boundary curves.
+2. **Find intersection points.** These determine the outer limits.
+3. **Choose vertical or horizontal slices.** Decide whether the region is Type I, Type II, or must be split.
+4. **Write the inequalities.** Do not compute until the region is correct.
+5. **Check lower/upper or left/right boundaries.** Test a sample point if needed.
+6. **Set up the integral.** Put the inner variable in the inner differential.
+7. **Simplify before integrating.** Sometimes reversing order is better.
+8. **Interpret the result.** Is it area, volume, mass, average value, probability, or signed accumulation?
+
+## 14.14 Modern applications
+
+### Statistics and probability
+
+A joint density over a nonrectangular region appears when variables are constrained. Examples include:
+
+- $0\le y\le x\le 1$ for ordered random variables;
+- $x+y\le 1$ for compositional data;
+- $y\le x^2$ for nonlinear events;
+- feasible regions in Bayesian priors.
+
+The probability of an event is a double integral over the event region.
+
+### Machine learning
+
+Many models depend on two or more parameters. A double integral over a parameter region can represent average loss, expected regularized risk, or uncertainty over a feasible parameter set.
+
+For example, if $L(\theta_1,\theta_2)$ is a loss function and $D$ is a feasible set, then
+
+$$
+\frac{1}{\operatorname{Area}(D)}\iint_D L(\theta_1,\theta_2)\,dA
+$$
+
+is the average loss over $D$.
+
+### Applied mathematics
+
+In applied mathematics, regions are often determined by physical constraints: a membrane shape, a flow region, an obstacle boundary, a material interface, or a domain for a partial differential equation. Double integrals over such regions compute total mass, energy, heat, charge, and probability.
+
+## Chapter summary
+
+A double integral over a general region adds a function over a curved or constrained two-dimensional domain. The central task is translating geometry into limits.
+
+- A Type I region has the form
+
+$$
+D=\{(x,y):a\le x\le b,\ p(x)\le y\le q(x)\}.
+$$
+
+Then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_a^b\int_{p(x)}^{q(x)} f(x,y)\,dy\,dx.
+$$
+
+- A Type II region has the form
+
+$$
+D=\{(x,y):c\le y\le d,\ g(y)\le x\le h(y)\}.
+$$
+
+Then
+
+$$
+\iint_D f(x,y)\,dA
+=
+\int_c^d\int_{g(y)}^{h(y)} f(x,y)\,dx\,dy.
+$$
+
+- Area is computed by
+
+$$
+\operatorname{Area}(D)=\iint_D 1\,dA.
+$$
+
+- Regions can be split:
+
+$$
+\iint_D f\,dA
+=
+\iint_{D_1} f\,dA+
+\iint_{D_2} f\,dA.
+$$
+
+- Reversing order can turn a difficult integral into an elementary one.
+
+The strongest students do not memorize limits. They learn to see slices.
+
+## Exercises
+
+### Conceptual exercises
+
+1. In your own words, explain the difference between a Type I region and a Type II region.
+2. Why do intersection points usually determine the outer limits of integration?
+3. Explain why reversing the order of integration is a geometric operation before it is an algebraic operation.
+4. Give an example of a region that is both Type I and Type II.
+5. Give an example of a region that must be split to be described by vertical slices.
+6. What does $\iint_D 1\,dA$ compute?
+7. If $f(x,y)$ is sometimes positive and sometimes negative on $D$, why is $\iint_D f\,dA$ not necessarily a volume?
+8. Explain the role of the indicator function $\mathbf 1_D(x,y)$ in numerical integration over an irregular region.
+
+### Skill exercises
+
+9. Let $D=\{(x,y):0\le x\le 2,\ x^2\le y\le 2x\}$. Compute $\iint_D y\,dA$.
+10. Let $D=\{(x,y):0\le y\le 1,\ y\le x\le 2-y\}$. Compute $\iint_D x\,dA$.
+11. Find the area bounded by $y=x^2$ and $y=x+2$.
+12. Find the area bounded by $x=y^2$ and $x=2-y$.
+13. Write the region bounded by $y=\sqrt{x}$ and $y=x^2$ as a Type I region and as a Type II region.
+14. Evaluate $\int_0^1\int_0^{1-x} (x+y)\,dy\,dx$.
+15. Evaluate $\int_0^2\int_{x/2}^{1} xy\,dy\,dx$.
+16. Set up, but do not evaluate, the integral for the volume under $z=x^2+y^2$ over the region bounded by $y=x$ and $y=x^2$.
+
+### Reversing-order exercises
+
+17. Reverse the order of integration:
+
+$$
+\int_0^1\int_0^x f(x,y)\,dy\,dx.
+$$
+
+18. Reverse the order of integration:
+
+$$
+\int_0^4\int_{\sqrt{y}}^2 f(x,y)\,dx\,dy.
+$$
+
+19. Evaluate by reversing order:
+
+$$
+\int_0^1\int_y^1 \cos(x^2)\,dx\,dy.
+$$
+
+20. Evaluate by reversing order:
+
+$$
+\int_0^1\int_x^1 e^{y^2}\,dy\,dx.
+$$
+
+21. Rewrite the integral as one or more integrals in the opposite order:
+
+$$
+\int_0^1\int_{x^2}^{\sqrt{x}} f(x,y)\,dy\,dx.
+$$
+
+22. Rewrite the integral as one or more integrals in the opposite order:
+
+$$
+\int_0^1\int_y^{2-y} f(x,y)\,dx\,dy.
+$$
+
+### Applications
+
+23. A plate occupies $D=\{(x,y):0\le x\le 1,\ 0\le y\le 1-x\}$ and has density $\rho(x,y)=1+x+y$. Find its mass.
+24. Find the average value of $f(x,y)=xy$ over $D=\{(x,y):0\le x\le 1,\ 0\le y\le x\}$.
+25. A point is chosen uniformly from the triangle with vertices $(0,0)$, $(1,0)$, and $(0,1)$. Find the probability that $Y\le X$.
+26. A point is chosen uniformly from the unit square. Find the probability that $X^2\le Y\le X$.
+27. Let $D$ be the disk $x^2+y^2\le 1$. Without using polar coordinates, explain why this region is not naturally Type I or Type II in one simple formula unless square roots are used.
+28. Use a computer to approximate $\iint_D e^{-(x^2+y^2)}\,dA$, where $D=\{(x,y):0\le x\le 1,\ 0\le y\le x^2\}$.
+
+### Challenge exercises
+
+29. Let $D$ be the region bounded by $y=x^2$ and $y=2x-x^2$. Compute $\iint_D x\,dA$.
+30. Let $D=\{(x,y):0\le x\le 1,\ x^2\le y\le x\}$. Compute the average value of $f(x,y)=x+y$ over $D$.
+31. Find a region $D$ and an integrand $f$ for which one order of integration is elementary and the other is not.
+32. Let $D$ be the region bounded by $x=0$, $y=1$, and $y=x^2$. Set up $\iint_D f(x,y)\,dA$ in both orders.
+33. Let $D$ be the region inside the square $[-1,1]\times[-1,1]$ and above the parabola $y=x^2-1$. Set up the integral for the area of $D$.
+34. Let $L(a,b)=\iint_D (a+bx-y)^2\,dA$, where $D=\{(x,y):0\le x\le 1,\ 0\le y\le 1-x\}$. Interpret $L(a,b)$ as an average squared error over a region.
+
+## Python lab: Slicing, switching, and probability
+
+In the companion Python lab, you will:
+
+1. plot Type I and Type II regions;
+2. approximate double integrals by grid sums;
+3. reverse integration order from a plotted region;
+4. compute area and average value over triangular and parabolic regions;
+5. estimate probabilities by Monte Carlo simulation;
+6. compare symbolic, numerical, and simulation-based answers.
+
+## Looking ahead
+
+This chapter still uses rectangular coordinates. In the next chapter, we introduce polar coordinates and general changes of variables. That will make circular and radial regions much easier, and it will introduce one of the most important ideas in multivariable integration: the area element changes when coordinates change.

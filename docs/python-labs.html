@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Cloud-ready computational laboratories for the multivariable calculus book.">
+
+<title>28&nbsp; Python Labs – Multivariable Calculus in the Age of AI</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./interactive-htmls.html" rel="next">
+<link href="./chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ff1c9a7c103a38f0a783e5f97ae92635.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-d1e4b4e0c705223f570d71421add9f0a.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-ff1c9a7c103a38f0a783e5f97ae92635.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Multivariable Calculus in the Age of AI</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="./index.html" aria-current="page"> 
+<span class="menu-text">Book</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./python-labs.html"> 
+<span class="menu-text">Python Labs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./interactive-htmls.html"> 
+<span class="menu-text">Interactive HTMLs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./references.html"> 
+<span class="menu-text">References</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/wanghemath/Book-CalculusMulti"> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/wanghemath/Book-CalculusMulti" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="./Multivariable-Calculus-in-the-Age-of-AI.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item quarto-navbar-tools-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+    </div>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./python-labs.html">Resources and Appendices</a></li><li class="breadcrumb-item"><a href="./python-labs.html"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Python Labs</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Part I. Geometry, Vectors, and Spaces</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-01-from-single-variable-calculus-to-multivariable-thinking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Chapter 1. From Single-Variable Calculus to Multivariable Thinking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-02-euclidean-space-rn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Chapter 2. Euclidean Space <span class="math inline">\(\mathbb R^n\)</span></span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-03-vectors-norms-dot-products-and-projections.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Chapter 3. Vectors, Norms, Dot Products, and Projections</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-04-lines-planes-hyperplanes-and-parametric-geometry.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Chapter 4: Lines, Planes, Hyperplanes, and Parametric Geometry</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-05-cross-products-curves-and-motion-in-space.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Chapter 5: Cross Products, Curves, and Motion in Space</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Part II. Functions of Several Variables and Differentiation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-06-functions-of-several-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Chapter 6. Functions of Several Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-07-limits-and-continuity-in-several-variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Chapter 7. Limits and Continuity in Several Variables</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-08-partial-derivatives-and-the-gradient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Chapter 8. Partial Derivatives and the Gradient</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-09-linear-approximation-tangent-planes-and-differentials.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Chapter 9. Linear Approximation, Tangent Planes, and Differentials</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-10-chain-rule-jacobians-and-automatic-differentiation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Chapter 10. Chain Rule, Jacobians, and Automatic Differentiation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-11-directional-derivatives-hessians-and-optimization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Chapter 11. Directional Derivatives, Hessians, and Optimization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-12-constrained-optimization-and-lagrange-multipliers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Chapter 12. Constrained Optimization and Lagrange Multipliers</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Part III. Multiple Integrals, Probability, and Change of Variables</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-13-double-integrals-and-riemann-sums.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Chapter 13. Double Integrals and Riemann Sums</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-14-double-integrals-over-general-regions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Chapter 14. Double Integrals over General Regions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Chapter 15. Polar Coordinates and Change of Variables in the Plane</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-16-triple-integrals-and-geometry-in-r3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Chapter 16. Triple Integrals and Geometry in <span class="math inline">\(\mathbb R^3\)</span></span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-17-cylindrical-and-spherical-coordinates.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Chapter 17. Cylindrical and Spherical Coordinates</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-18-multivariable-taylor-approximation-and-quadratic-forms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Chapter 18. Multivariable Taylor Approximation and Quadratic Forms</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Part IV. Vector Calculus, Fields, and Global Theorems</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-19-vector-fields-and-gradient-fields.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Chapter 19. Vector Fields and Gradient Fields</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-20-line-integrals-and-work.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Chapter 20. Line Integrals and Work</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-21-conservative-fields-potentials-and-green-s-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Chapter 21. Conservative Fields, Potentials, and Green’s Theorem</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-22-curl-divergence-and-surface-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Chapter 22. Curl, Divergence, and Surface Integrals</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-23-stokes-theorem-and-the-divergence-theorem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Chapter 23. Stokes Theorem and the Divergence Theorem</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Part V. Modern Applications for MS Preparation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-24-multivariable-calculus-for-probability-and-statistics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Multivariable Calculus for Probability and Statistics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-25-multivariable-calculus-for-data-science-and-machine-learning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Multivariable Calculus for Data Science and Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-26-multivariable-calculus-for-applied-mathematics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Multivariable Calculus for Applied Mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Review, Synthesis, and Bridge to Graduate Study</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Resources and Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./python-labs.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Python Labs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./interactive-htmls.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Interactive HTML Pages</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices/formula-sheet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Formula Sheet</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices/python-reference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">Python Reference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">References</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#python-labs" id="toc-python-labs" class="nav-link active" data-scroll-target="#python-labs"><span class="header-section-number">29</span> Python Labs</a>
+  <ul class="collapse">
+  <li><a href="#how-to-use-the-labs" id="toc-how-to-use-the-labs" class="nav-link" data-scroll-target="#how-to-use-the-labs"><span class="header-section-number">29.1</span> How to use the labs</a></li>
+  <li><a href="#lab-index" id="toc-lab-index" class="nav-link" data-scroll-target="#lab-index"><span class="header-section-number">29.2</span> Lab index</a></li>
+  <li><a href="#suggested-workflow-for-instructors" id="toc-suggested-workflow-for-instructors" class="nav-link" data-scroll-target="#suggested-workflow-for-instructors"><span class="header-section-number">29.3</span> Suggested workflow for instructors</a></li>
+  <li><a href="#suggested-workflow-for-students" id="toc-suggested-workflow-for-students" class="nav-link" data-scroll-target="#suggested-workflow-for-students"><span class="header-section-number">29.4</span> Suggested workflow for students</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/wanghemath/Book-CalculusMulti/edit/main/python-labs.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/wanghemath/Book-CalculusMulti/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./python-labs.html">Resources and Appendices</a></li><li class="breadcrumb-item"><a href="./python-labs.html"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Python Labs</span></a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Python Labs</span></h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="python-labs" class="level1" data-number="29">
+<h1 data-number="29"><span class="header-section-number">29</span> Python Labs</h1>
+<p>This page collects the Python labs for the book. Each lab is a Jupyter notebook designed for computation, visualization, simulation, and modeling. The labs can be opened directly in Google Colab, so students can run the code in a browser without installing Python first.</p>
+<section id="how-to-use-the-labs" class="level2" data-number="29.1">
+<h2 data-number="29.1" class="anchored" data-anchor-id="how-to-use-the-labs"><span class="header-section-number">29.1</span> How to use the labs</h2>
+<ol type="1">
+<li>Click <strong>Open in Google Colab</strong> for the chapter you are studying.</li>
+<li>In Colab, choose <strong>Runtime &gt; Run all</strong> to execute the notebook from top to bottom.</li>
+<li>To edit and save your own version, choose <strong>File &gt; Save a copy in Drive</strong>.</li>
+<li>For local work, download or clone the repository and open the notebook from the <code>labs/</code> folder.</li>
+</ol>
+<p>The lab filenames are chapter-based and do not use course-number prefixes.</p>
+</section>
+<section id="lab-index" class="level2" data-number="29.2">
+<h2 data-number="29.2" class="anchored" data-anchor-id="lab-index"><span class="header-section-number">29.2</span> Lab index</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Chapter</th>
+<th>Topic</th>
+<th>Open in Google Colab</th>
+<th>Local notebook</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td>From Single Variable Calculus to Multivariable Thinking</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td>Euclidean Space <span class="math inline">\(\mathbb R^n\)</span></td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>Vectors, Norms, Dot Products, and Projections</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>Lines, Planes, Hyperplanes, and Parametric Geometry</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>Cross Products, Curves, and Motion in Space</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td>Functions of Several Variables</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter06_Functions_of_Several_Variables.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter06_Functions_of_Several_Variables.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td>Limits and Continuity in Several Variables</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td>Partial Derivatives and the Gradient</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td>Linear Approximation, Tangent Planes, and Differentials</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td>Chain Rule, Jacobians, and Automatic Differentiation</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
+<td>Directional Derivatives, Hessians, and Optimization</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td>Constrained Optimization and Lagrange Multipliers</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td>Double Integrals and Riemann Sums</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td>Double Integrals over General Regions</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter14_Double_Integrals_over_General_Regions.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter14_Double_Integrals_over_General_Regions.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td>Polar Coordinates and Change of Variables in the Plane</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td>Triple Integrals and Geometry in <span class="math inline">\(\mathbb R^3\)</span></td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td>Cylindrical and Spherical Coordinates</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">18</td>
+<td>Multivariable Taylor Approximation and Quadratic Forms</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">19</td>
+<td>Vector Fields and Gradient Fields</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td>Line Integrals and Work</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter20_Line_Integrals_and_Work.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter20_Line_Integrals_and_Work.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">21</td>
+<td>Conservative Fields, Potentials, and Green’s Theorem</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">22</td>
+<td>Curl, Divergence, and Surface Integrals</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">23</td>
+<td>Stokes’ Theorem and the Divergence Theorem</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">24</td>
+<td>Multivariable Calculus for Probability and Statistics</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td>Multivariable Calculus for Data Science and Machine Learning</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb">Notebook</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">26</td>
+<td>Multivariable Calculus for Applied Mathematics</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb">Notebook</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">27</td>
+<td>Review, Synthesis, and Bridge to Graduate Study</td>
+<td><a href="https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb">Open in Google Colab</a></td>
+<td><a href="labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb">Notebook</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="suggested-workflow-for-instructors" class="level2" data-number="29.3">
+<h2 data-number="29.3" class="anchored" data-anchor-id="suggested-workflow-for-instructors"><span class="header-section-number">29.3</span> Suggested workflow for instructors</h2>
+<p>The labs are intended to support a modern, computation-rich multivariable calculus course. A typical use pattern is:</p>
+<ul>
+<li>before class: students run selected visualization cells to prepare for geometric concepts;</li>
+<li>during class: the instructor modifies parameters live to show how formulas respond to changes;</li>
+<li>after class: students complete short computational exercises and submit selected plots, explanations, or numerical conclusions;</li>
+<li>before exams: students revisit the labs as concept maps connecting formulas, geometry, and computation.</li>
+</ul>
+</section>
+<section id="suggested-workflow-for-students" class="level2" data-number="29.4">
+<h2 data-number="29.4" class="anchored" data-anchor-id="suggested-workflow-for-students"><span class="header-section-number">29.4</span> Suggested workflow for students</h2>
+<p>Do not treat the labs as code to copy mechanically. For each notebook, focus on three questions:</p>
+<ol type="1">
+<li>What mathematical object is being computed or visualized?</li>
+<li>Which formula or theorem explains the computation?</li>
+<li>How does the output change when the parameters, region, vector field, or model are changed?</li>
+</ol>
+<p>A good lab write-up should combine code, plots, formulas, and short mathematical explanations.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/wanghemath\.github\.io\/Book-CalculusMulti\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.html" class="pagination-link" aria-label="Review, Synthesis, and Bridge to Graduate Study">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Review, Synthesis, and Bridge to Graduate Study</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./interactive-htmls.html" class="pagination-link" aria-label="Interactive HTML Pages">
+        <span class="nav-page-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Interactive HTML Pages</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Python Labs"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "Cloud-ready computational laboratories for the multivariable calculus book."</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu"># Python Labs</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>This page collects the Python labs for the book. Each lab is a Jupyter notebook designed for computation, visualization, simulation, and modeling. The labs can be opened directly in Google Colab, so students can run the code in a browser without installing Python first.</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## How to use the labs</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Click **Open in Google Colab** for the chapter you are studying.</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>In Colab, choose **Runtime &gt; Run all** to execute the notebook from top to bottom.</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>To edit and save your own version, choose **File &gt; Save a copy in Drive**.</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>For local work, download or clone the repository and open the notebook from the <span class="in">`labs/`</span> folder.</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>The lab filenames are chapter-based and do not use course-number prefixes.</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## Lab index</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Chapter <span class="pp">|</span> Topic <span class="pp">|</span> Open in Google Colab <span class="pp">|</span> Local notebook <span class="pp">|</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|---:|---|---|---|</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1 <span class="pp">|</span> From Single Variable Calculus to Multivariable Thinking <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 2 <span class="pp">|</span> Euclidean Space $\mathbb R^n$ <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 3 <span class="pp">|</span> Vectors, Norms, Dot Products, and Projections <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 4 <span class="pp">|</span> Lines, Planes, Hyperplanes, and Parametric Geometry <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 5 <span class="pp">|</span> Cross Products, Curves, and Motion in Space <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 6 <span class="pp">|</span> Functions of Several Variables <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter06_Functions_of_Several_Variables.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter06_Functions_of_Several_Variables.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 7 <span class="pp">|</span> Limits and Continuity in Several Variables <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 8 <span class="pp">|</span> Partial Derivatives and the Gradient <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 9 <span class="pp">|</span> Linear Approximation, Tangent Planes, and Differentials <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 10 <span class="pp">|</span> Chain Rule, Jacobians, and Automatic Differentiation <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 11 <span class="pp">|</span> Directional Derivatives, Hessians, and Optimization <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 12 <span class="pp">|</span> Constrained Optimization and Lagrange Multipliers <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 13 <span class="pp">|</span> Double Integrals and Riemann Sums <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 14 <span class="pp">|</span> Double Integrals over General Regions <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter14_Double_Integrals_over_General_Regions.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter14_Double_Integrals_over_General_Regions.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 15 <span class="pp">|</span> Polar Coordinates and Change of Variables in the Plane <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 16 <span class="pp">|</span> Triple Integrals and Geometry in $\mathbb R^3$ <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 17 <span class="pp">|</span> Cylindrical and Spherical Coordinates <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 18 <span class="pp">|</span> Multivariable Taylor Approximation and Quadratic Forms <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 19 <span class="pp">|</span> Vector Fields and Gradient Fields <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 20 <span class="pp">|</span> Line Integrals and Work <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter20_Line_Integrals_and_Work.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter20_Line_Integrals_and_Work.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 21 <span class="pp">|</span> Conservative Fields, Potentials, and Green's Theorem <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 22 <span class="pp">|</span> Curl, Divergence, and Surface Integrals <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 23 <span class="pp">|</span> Stokes' Theorem and the Divergence Theorem <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 24 <span class="pp">|</span> Multivariable Calculus for Probability and Statistics <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 25 <span class="pp">|</span> Multivariable Calculus for Data Science and Machine Learning <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 26 <span class="pp">|</span> Multivariable Calculus for Applied Mathematics <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 27 <span class="pp">|</span> Review, Synthesis, and Bridge to Graduate Study <span class="pp">|</span> <span class="co">[</span><span class="ot">Open in Google Colab</span><span class="co">](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb)</span> <span class="pp">|</span> <span class="co">[</span><span class="ot">Notebook</span><span class="co">](labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb)</span> <span class="pp">|</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## Suggested workflow for instructors</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>The labs are intended to support a modern, computation-rich multivariable calculus course. A typical use pattern is:</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>before class: students run selected visualization cells to prepare for geometric concepts;</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>during class: the instructor modifies parameters live to show how formulas respond to changes;</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>after class: students complete short computational exercises and submit selected plots, explanations, or numerical conclusions;</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>before exams: students revisit the labs as concept maps connecting formulas, geometry, and computation.</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="fu">## Suggested workflow for students</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>Do not treat the labs as code to copy mechanically. For each notebook, focus on three questions:</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>What mathematical object is being computed or visualized?</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Which formula or theorem explains the computation?</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>How does the output change when the parameters, region, vector field, or model are changed?</span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>A good lab write-up should combine code, plots, formulas, and short mathematical explanations.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Multivariable Calculus in the Age of AI</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/wanghemath/Book-CalculusMulti/edit/main/python-labs.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/wanghemath/Book-CalculusMulti/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/wanghemath/Book-CalculusMulti">
+<p>GitHub</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="./python-labs.html">
+<p>Python Labs</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="./interactive-htmls.html">
+<p>Interactive HTMLs</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

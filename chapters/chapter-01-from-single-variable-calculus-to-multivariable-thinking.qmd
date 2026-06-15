@@ -1,0 +1,907 @@
+
+---
+title: 'Chapter 1. From Single-Variable Calculus to Multivariable Thinking'
+subtitle: 'Overview'
+---
+
+## Chapter overview
+
+Single-variable calculus studies functions such as $f(x)$, where one input number produces one output number. Multivariable calculus studies functions whose inputs may be points, vectors, measurements, parameters, or data records:
+
+$$
+f:
+\mathbb R^n \longrightarrow \mathbb R,
+\qquad
+x=(x_1,x_2,\dots,x_n) \longmapsto f(x).
+$$
+
+This change looks small, but it changes the whole subject. In one-variable calculus, we move left or right along a line. In multivariable calculus, we can move in infinitely many directions. In one-variable calculus, the graph of $y=f(x)$ is a curve. In two-variable calculus, the graph of $z=f(x,y)$ is a surface. In higher dimensions, the graph may be impossible to draw directly, but the same ideas remain: local approximation, rate of change, accumulation, optimization, and geometric structure.
+
+This chapter is a bridge. It reviews the core ideas of single-variable calculus and explains how they become the language of multivariable calculus, applied mathematics, statistics, data science, and machine learning.
+
+::: {.callout-note title="Main idea"}
+Multivariable calculus is the calculus of **many inputs**. The output may represent temperature, height, cost, probability density, potential energy, risk, error, or loss. The input may represent spatial coordinates, model parameters, data features, or a state of a system.
+:::
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. Explain the difference between $f:\mathbb R\to\mathbb R$, $f:\mathbb R^2\to\mathbb R$, $f:\mathbb R^3\to\mathbb R$, and $f:\mathbb R^n\to\mathbb R$.
+2. Interpret a multivariable input as a point, vector, data record, parameter vector, or state.
+3. Describe a function using formulas, tables, graphs, level sets, and computation.
+4. Explain why derivatives become directional and why gradients are central.
+5. Explain why integrals become accumulation over regions, volumes, and probability spaces.
+6. Recognize the role of multivariable calculus in optimization, statistics, machine learning, and applied mathematics.
+
+## 1.1 Why multivariable calculus?
+
+In single-variable calculus, a typical function has the form
+
+$$
+f:\mathbb R\to\mathbb R,
+\qquad
+x\mapsto f(x).
+$$
+
+For example, $f(x)=x^2$ takes one number $x$ and returns one number $x^2$. This is already powerful. We can ask for slopes, tangent lines, areas under curves, maximum values, and differential equations.
+
+But modern quantitative problems rarely depend on only one variable.
+
+A temperature model may depend on longitude, latitude, altitude, and time:
+
+$$
+T=T(x,y,z,t).
+$$
+
+A statistical loss function may depend on many model parameters:
+
+$$
+L=L(\beta_0,\beta_1,\dots,\beta_p).
+$$
+
+A neural network may have millions or billions of parameters, and training means minimizing a function of all of those parameters:
+
+$$
+\text{loss} = L(w_1,w_2,\dots,w_N).
+$$
+
+A probability density for two continuous random variables is a function
+
+$$
+p:\mathbb R^2\to\mathbb R,
+\qquad
+(x,y)\mapsto p(x,y).
+$$
+
+A velocity field assigns a vector to each point in space:
+
+$$
+F:\mathbb R^3\to\mathbb R^3.
+$$
+
+So the core move is this:
+
+$$
+\text{one input} \quad \longrightarrow \quad \text{many inputs}.
+$$
+
+<div class="bridge-box">
+<strong>Bridge to MS preparation.</strong> For MS Applied Mathematics, MS Statistics, data science, AI, and machine learning, the most important mental shift is to see formulas as functions on spaces. A loss function is a surface or landscape. A density is a surface or high-dimensional object whose total mass is one. A dynamical system is motion through a state space. A machine learning model is a map from features to predictions.
+</div>
+
+## 1.2 Inputs, outputs, and spaces
+
+A function is a rule that assigns to each input exactly one output. The input set is the **domain**. The output set is the **codomain**. In calculus, the most common spaces are Euclidean spaces:
+
+$$
+\mathbb R,
+\quad
+\mathbb R^2,
+\quad
+\mathbb R^3,
+\quad
+\mathbb R^n.
+$$
+
+The space $\mathbb R^n$ consists of ordered $n$-tuples of real numbers:
+
+$$
+\mathbb R^n = \{(x_1,x_2,\dots,x_n): x_i\in \mathbb R\}.
+$$
+
+The same $n$-tuple may be interpreted in different ways depending on the model.
+
+| Mathematical object | Possible interpretation |
+|---|---|
+| $(x,y)$ | A point in the plane, longitude and latitude, two features of an observation |
+| $(x,y,z)$ | A point in space, three physical coordinates, RGB color values |
+| $(x_1,\dots,x_n)$ | A data vector, a parameter vector, a state vector, a list of measurements |
+| $f(x,y)$ | Height, temperature, cost, density, loss, utility |
+| $F(x,y,z)$ | Vector field, force field, velocity field, gradient flow |
+
+### Scalar-valued functions
+
+A **scalar-valued function** has real-number output:
+
+$$
+f:\mathbb R^n\to\mathbb R.
+$$
+
+Examples include:
+
+$$
+f(x,y)=x^2+y^2,
+\qquad
+T(x,y,z)=x^2e^y+\ln z,
+\qquad
+L(w,b)=\frac{1}{m}\sum_{i=1}^m (wx_i+b-y_i)^2.
+$$
+
+Scalar-valued functions are the main subject of partial derivatives, gradients, optimization, and multiple integrals.
+
+### Vector-valued functions
+
+A **vector-valued function** has vector output:
+
+$$
+F:\mathbb R^n\to\mathbb R^m.
+$$
+
+Examples include:
+
+$$
+r(t)=\langle \cos t,\sin t,t\rangle,
+\qquad
+F(x,y)=\langle -y,x\rangle,
+\qquad
+G(x,y,z)=\langle yz,xz,xy\rangle.
+$$
+
+Vector-valued functions appear in space curves, vector fields, motion, systems of equations, neural networks, and transformations.
+
+::: {.callout-tip title="Notation convention"}
+In this book, vectors may be written as ordered tuples $(a,b,c)$ or angle brackets $\langle a,b,c\rangle$. In applied and computational contexts, we often use a simple letter such as $x$ or $v$ for a vector when the context is clear.
+:::
+
+## 1.3 A comparison with single-variable calculus
+
+The table below gives a roadmap for the course.
+
+| Single-variable idea | Multivariable version | Modern interpretation |
+|---|---|---|
+| Number $x$ | Vector $x=(x_1,\dots,x_n)$ | Feature vector or parameter vector |
+| Function $f(x)$ | Function $f(x_1,\dots,x_n)$ | Loss, density, energy, response surface |
+| Graph $y=f(x)$ | Surface $z=f(x,y)$ or high-dimensional graph | Landscape |
+| Slope $f'(a)$ | Partial derivatives and gradient $\nabla f(a)$ | Sensitivity and learning signal |
+| Tangent line | Tangent plane or linear approximation | Local linear model |
+| Critical point $f'(a)=0$ | Critical point $\nabla f(a)=0$ | Candidate optimum or saddle point |
+| Integral $\int_a^b f(x)\,dx$ | Double/triple integral | Accumulation, mass, probability |
+| Substitution | Change of variables and Jacobian | Transformation of densities and coordinates |
+| Fundamental theorem of calculus | Green, Stokes, divergence theorem | Conservation and flow laws |
+
+The unifying theme is that calculus studies **change** and **accumulation**. Multivariable calculus studies change and accumulation when inputs live in spaces with dimension larger than one.
+
+## 1.4 Four ways to represent a function
+
+A modern calculus course should move comfortably among four representations:
+
+1. **Verbal:** a description in words.
+2. **Numerical:** a table, dataset, or sampled values.
+3. **Visual:** a graph, contour plot, heatmap, vector field, or surface.
+4. **Algebraic:** a formula.
+
+A fifth representation is now equally important:
+
+5. **Computational:** a function implemented in code.
+
+### Example: temperature on a plate
+
+Suppose the temperature on a rectangular metal plate is modeled by
+
+$$
+T(x,y)=80-2x^2-y^2.
+$$
+
+The same object can be represented in several ways.
+
+| Representation | Description |
+|---|---|
+| Verbal | Temperature is highest near the origin and decreases quadratically away from it. |
+| Algebraic | $T(x,y)=80-2x^2-y^2$ |
+| Visual | Surface plot or contour plot |
+| Numerical | Table of values on a grid of $(x,y)$ points |
+| Computational | A Python function `T(x, y)` |
+
+```{python}
+#| label: fig-ch01-temperature-contours
+#| fig-cap: "Contour plot for the temperature model $T(x,y)=80-2x^2-y^2$."
+#| fig-width: 6
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-5, 5, 200)
+y = np.linspace(-5, 5, 200)
+X, Y = np.meshgrid(x, y)
+T = 80 - 2*X**2 - Y**2
+
+plt.figure()
+cs = plt.contour(X, Y, T, levels=15)
+plt.clabel(cs, inline=True, fontsize=8)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.gca().set_aspect("equal")
+plt.title("Level curves of T(x,y)=80-2x^2-y^2")
+plt.show()
+```
+
+The contour plot does not draw the full surface in three dimensions. Instead, it draws curves where the function has constant value. These curves are called **level curves**. They are one of the most important visualization tools in multivariable calculus.
+
+## 1.5 Graphs, level curves, and level sets
+
+For a function of one variable $f:\mathbb R\to\mathbb R$, the graph is a subset of $\mathbb R^2$:
+
+$$
+\{(x,y)\in\mathbb R^2: y=f(x)\}.
+$$
+
+For a function of two variables $f:\mathbb R^2\to\mathbb R$, the graph is a subset of $\mathbb R^3$:
+
+$$
+\{(x,y,z)\in\mathbb R^3: z=f(x,y)\}.
+$$
+
+For example,
+
+$$
+f(x,y)=x^2+y^2
+$$
+
+has graph
+
+$$
+z=x^2+y^2,
+$$
+
+an elliptic paraboloid.
+
+A **level curve** is a curve where the output is constant:
+
+$$
+f(x,y)=c.
+$$
+
+For $f(x,y)=x^2+y^2$, the level curves are
+
+$$
+x^2+y^2=c,
+$$
+
+which are circles centered at the origin when $c>0$.
+
+```{python}
+#| label: fig-ch01-paraboloid
+#| fig-cap: "The surface $z=x^2+y^2$ shows a simple multivariable landscape."
+#| fig-width: 7
+#| fig-height: 5
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+x = np.linspace(-2.5, 2.5, 120)
+y = np.linspace(-2.5, 2.5, 120)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + Y**2
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True, alpha=0.9)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_zlabel("z")
+ax.set_title("Surface z = x^2 + y^2")
+plt.show()
+```
+
+::: {.callout-important title="Why level sets matter"}
+In higher dimensions, full graphs are usually impossible to draw. Level sets remain useful. For $f:\mathbb R^n\to\mathbb R$, a level set has the form
+
+$$
+\{x\in\mathbb R^n: f(x)=c\}.
+$$
+
+In statistics, level sets of a likelihood or log-likelihood show parameter values with equal fit. In machine learning, level sets of a loss function show parameter values with equal training error.
+:::
+
+## 1.6 Derivatives become directional
+
+In one-variable calculus, the derivative is the limit
+
+$$
+f'(a)=\lim_{h\to 0}\frac{f(a+h)-f(a)}{h}.
+$$
+
+This measures the instantaneous rate of change as $x$ moves along the real line.
+
+For a function $f(x,y)$, the input point $(x,y)$ can move in many directions. From $(a,b)$, it can move in the $x$ direction, the $y$ direction, diagonally, along a curve, or along any unit vector $u$.
+
+This leads to several related ideas:
+
+- **Partial derivatives:** rates of change along coordinate directions.
+- **Directional derivatives:** rates of change along arbitrary directions.
+- **Gradient:** the vector that organizes all directional derivative information.
+- **Jacobian:** the matrix that represents the derivative of a vector-valued function.
+
+For a scalar-valued function $f(x,y)$, the gradient is
+
+$$
+\nabla f(x,y)=\left\langle \frac{\partial f}{\partial x}(x,y),\frac{\partial f}{\partial y}(x,y)\right\rangle.
+$$
+
+For $f(x,y,z)$,
+
+$$
+\nabla f(x,y,z)=\left\langle \frac{\partial f}{\partial x},\frac{\partial f}{\partial y},\frac{\partial f}{\partial z}\right\rangle.
+$$
+
+The gradient points in the direction of fastest increase. This is why gradients are central in optimization and machine learning.
+
+### Example: a first gradient computation
+
+Let
+
+$$
+f(x,y)=x^2+2y^2.
+$$
+
+Then
+
+$$
+\frac{\partial f}{\partial x}=2x,
+\qquad
+\frac{\partial f}{\partial y}=4y,
+$$
+
+so
+
+$$
+\nabla f(x,y)=\langle 2x,4y\rangle.
+$$
+
+At the point $(1,1)$,
+
+$$
+\nabla f(1,1)=\langle 2,4\rangle.
+$$
+
+This means that near $(1,1)$, the function increases fastest in the direction of $\langle 2,4\rangle$.
+
+```{python}
+#| label: fig-ch01-gradient-on-contours
+#| fig-cap: "Gradient vectors are perpendicular to level curves and point toward increasing values."
+#| fig-width: 6
+#| fig-height: 5
+x = np.linspace(-2, 2, 200)
+y = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + 2*Y**2
+
+# Coarser grid for arrows
+xs = np.linspace(-2, 2, 13)
+ys = np.linspace(-2, 2, 13)
+XS, YS = np.meshgrid(xs, ys)
+U = 2*XS
+V = 4*YS
+
+plt.figure()
+plt.contour(X, Y, Z, levels=14)
+plt.quiver(XS, YS, U, V)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.gca().set_aspect("equal")
+plt.title("Gradient field for f(x,y)=x^2+2y^2")
+plt.show()
+```
+
+## 1.7 Integrals become accumulation over regions
+
+In one-variable calculus, the definite integral
+
+$$
+\int_a^b f(x)\,dx
+$$
+
+accumulates values of $f$ over an interval.
+
+In multivariable calculus, we accumulate over regions and solids:
+
+$$
+\iint_R f(x,y)\,dA,
+\qquad
+\iiint_E f(x,y,z)\,dV.
+$$
+
+If $f(x,y)\ge 0$, then
+
+$$
+\iint_R f(x,y)\,dA
+$$
+
+can be interpreted as the volume under the surface $z=f(x,y)$ above the region $R$.
+
+If $\rho(x,y,z)$ is a density, then
+
+$$
+\iiint_E \rho(x,y,z)\,dV
+$$
+
+is the mass of the object occupying the solid region $E$.
+
+If $p(x,y)$ is a joint probability density, then
+
+$$
+\iint_R p(x,y)\,dA
+$$
+
+is the probability that $(X,Y)$ lies in the region $R$.
+
+::: {.callout-note title="Statistics preview"}
+For a joint density $p(x,y)$, total probability means
+
+$$
+\iint_{\mathbb R^2} p(x,y)\,dA = 1.
+$$
+
+Expected values, variances, covariances, and conditional distributions are all built from multivariable integrals.
+:::
+
+## 1.8 The geometry of optimization
+
+Optimization is one of the main bridges from calculus to statistics and machine learning.
+
+In one variable, we minimize or maximize a curve $f(x)$. In several variables, we minimize or maximize a surface or high-dimensional landscape $f(x_1,\dots,x_n)$.
+
+A basic unconstrained optimization problem is
+
+$$
+\min_{x\in\mathbb R^n} f(x).
+$$
+
+For a differentiable function, candidate optima often satisfy
+
+$$
+\nabla f(x)=0.
+$$
+
+In machine learning, the function $f$ is often a **loss function**. Training a model means finding parameters that make the loss small.
+
+### Example: least-squares loss for a line
+
+Suppose we have data points $(x_i,y_i)$ and want to fit a line
+
+$$
+\widehat y = wx+b.
+$$
+
+The mean squared error is
+
+$$
+L(w,b)=\frac{1}{m}\sum_{i=1}^m (wx_i+b-y_i)^2.
+$$
+
+This is a function of two variables, $w$ and $b$. The input point $(w,b)$ is not a physical point in space; it is a point in **parameter space**.
+
+```{python}
+#| label: fig-ch01-least-squares-loss
+#| fig-cap: "A least-squares loss surface over slope $w$ and intercept $b$."
+#| fig-width: 7
+#| fig-height: 5
+rng = np.random.default_rng(2321)
+x_data = np.linspace(-2, 2, 20)
+y_data = 1.5*x_data - 0.4 + rng.normal(scale=0.35, size=x_data.shape)
+
+w = np.linspace(-1, 4, 120)
+b = np.linspace(-2, 2, 120)
+W, B = np.meshgrid(w, b)
+
+Loss = np.zeros_like(W)
+for xi, yi in zip(x_data, y_data):
+    Loss += (W*xi + B - yi)**2
+Loss = Loss / len(x_data)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")
+ax.plot_surface(W, B, Loss, linewidth=0, antialiased=True, alpha=0.9)
+ax.set_xlabel("w")
+ax.set_ylabel("b")
+ax.set_zlabel("L(w,b)")
+ax.set_title("Least-squares loss surface")
+plt.show()
+```
+
+The goal is to move downhill on this surface. In later chapters, gradient descent will update parameters by
+
+$$
+(w,b) \leftarrow (w,b)-\eta\nabla L(w,b),
+$$
+
+where $\eta>0$ is a step size called the learning rate.
+
+<div class="ai-box">
+<strong>AI connection.</strong> Training a neural network is conceptually similar to minimizing $L(w,b)$, but the parameter vector may have millions of components. The derivative is not just a slope. It is a high-dimensional gradient, and the chain rule becomes backpropagation.
+</div>
+
+## 1.9 Local and global viewpoints
+
+Calculus has both local and global ideas.
+
+A **local** idea describes what happens near one point. Examples include:
+
+- tangent lines;
+- tangent planes;
+- derivatives;
+- gradients;
+- linear approximation;
+- Hessian matrices;
+- local maxima, local minima, and saddle points.
+
+A **global** idea describes an entire interval, region, surface, or space. Examples include:
+
+- total area;
+- total volume;
+- total mass;
+- total probability;
+- line integrals around closed curves;
+- flux through a surface;
+- global maximum and minimum values.
+
+Both viewpoints are essential. A gradient is local, but gradient descent uses many local steps to solve a global problem. A density may be defined pointwise, but probabilities require integrating the density over a region. A vector field may assign a vector at each point, but flux and circulation describe global behavior.
+
+## 1.10 High-dimensional thinking
+
+Most of this book builds geometric intuition in $\mathbb R^2$ and $\mathbb R^3$. But the real goal is to understand ideas that work in $\mathbb R^n$.
+
+A data point with $n$ features can be written as
+
+$$
+x=(x_1,x_2,\dots,x_n)\in\mathbb R^n.
+$$
+
+A linear prediction model may have the form
+
+$$
+\widehat y=\beta_0+\beta_1x_1+\cdots+\beta_nx_n.
+$$
+
+A loss function for the parameters $\beta=(\beta_0,\beta_1,\dots,\beta_n)$ may be written as
+
+$$
+L(\beta)=\frac{1}{m}\sum_{i=1}^m (\beta_0+\beta_1x_{i1}+\cdots+\beta_nx_{in}-y_i)^2.
+$$
+
+This is a scalar-valued function on a high-dimensional parameter space. Even when we cannot draw the graph, we can still compute:
+
+$$
+\nabla L(\beta),
+\qquad
+\nabla^2 L(\beta),
+\qquad
+\min_\beta L(\beta).
+$$
+
+These are multivariable calculus objects.
+
+::: {.callout-warning title="Common misconception"}
+High-dimensional calculus is not a different subject. It is the same subject with fewer pictures and more structure. We use lower-dimensional pictures to build intuition, then rely on vectors, matrices, gradients, Jacobians, Hessians, and integrals to work in general dimensions.
+:::
+
+## 1.11 Worked examples
+
+### Example 1. Classifying functions by domain and output
+
+Classify each function by its domain and output type.
+
+1. $f(x)=x^2+1$.
+2. $g(x,y)=\sqrt{x^2+y^2}$.
+3. $T(x,y,z)=x^2e^y+\ln z$.
+4. $r(t)=\langle \cos t,\sin t,t\rangle$.
+5. $F(x,y)=\langle -y,x\rangle$.
+
+**Solution.**
+
+1. $f:\mathbb R\to\mathbb R$ is a scalar-valued function of one variable.
+2. $g:\mathbb R^2\to\mathbb R$ is a scalar-valued function of two variables.
+3. $T$ is a scalar-valued function of three variables. Its natural domain is $z>0$ because $\ln z$ is defined only for positive $z$.
+4. $r:\mathbb R\to\mathbb R^3$ is a vector-valued function of one variable. It parameterizes a curve in space.
+5. $F:\mathbb R^2\to\mathbb R^2$ is a vector field on the plane.
+
+### Example 2. Reading a level curve
+
+Let
+
+$$
+f(x,y)=x^2+2y^2.
+$$
+
+Describe the level curve $f(x,y)=8$.
+
+**Solution.**
+
+The level curve is
+
+$$
+x^2+2y^2=8.
+$$
+
+Dividing by $8$ gives
+
+$$
+\frac{x^2}{8}+\frac{y^2}{4}=1.
+$$
+
+This is an ellipse centered at the origin. The $x$-intercepts are $\pm\sqrt{8}=\pm 2\sqrt 2$, and the $y$-intercepts are $\pm 2$.
+
+**Interpretation.** On this ellipse, every point has the same function value $8$. If $f$ is a loss function, all parameter pairs on this ellipse have equal loss. If $f$ is height, all points on this ellipse have equal elevation.
+
+### Example 3. From a table to partial rates of change
+
+Suppose $T(x,y)$ is temperature on a plate. The table below gives approximate values.
+
+| $T(x,y)$ | $y=0$ | $y=1$ | $y=2$ |
+|---|---:|---:|---:|
+| $x=0$ | 80 | 78 | 72 |
+| $x=1$ | 76 | 74 | 68 |
+| $x=2$ | 64 | 62 | 56 |
+
+Estimate the rate of change in the $x$ direction near $(1,1)$ using centered differences.
+
+**Solution.**
+
+Holding $y=1$ fixed, use the values at $x=0$ and $x=2$:
+
+$$
+\frac{T(2,1)-T(0,1)}{2-0}
+=
+\frac{62-78}{2}
+=
+-8.
+$$
+
+So near $(1,1)$, the temperature decreases by about $8$ units per unit increase in $x$, with $y$ held fixed.
+
+**Interpretation.** This is the numerical idea behind a partial derivative. Instead of needing a formula, we estimate local change from nearby data.
+
+### Example 4. A loss function as a multivariable function
+
+Let one data point be $(x,y)=(2,5)$, and consider the prediction model
+
+$$
+\widehat y=wx+b.
+$$
+
+The squared error for this one point is
+
+$$
+L(w,b)=(2w+b-5)^2.
+$$
+
+Find all parameter pairs $(w,b)$ with zero loss.
+
+**Solution.**
+
+Zero loss means
+
+$$
+(2w+b-5)^2=0.
+$$
+
+Thus
+
+$$
+2w+b-5=0,
+$$
+
+or
+
+$$
+b=5-2w.
+$$
+
+So all points $(w,b)$ on the line $b=5-2w$ give perfect prediction for this single data point.
+
+**Interpretation.** A single data point does not determine a unique line. With more data points, the loss surface changes, and the best parameters usually become more constrained.
+
+## 1.12 Python mini-lab: from curves to surfaces to loss landscapes
+
+This mini-lab previews the computational style of the book. Each full chapter will also have a separate notebook in the `labs/` folder.
+
+### Task A. A one-variable curve
+
+```{python}
+#| label: fig-ch01-one-variable
+#| fig-cap: "A one-variable function gives a curve."
+#| fig-width: 6
+#| fig-height: 4
+x = np.linspace(-3, 3, 400)
+y = x**3 - 3*x
+
+plt.figure()
+plt.plot(x, y)
+plt.axhline(0, linewidth=0.8)
+plt.axvline(0, linewidth=0.8)
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("One-variable function: f(x)=x^3-3x")
+plt.show()
+```
+
+### Task B. A two-variable contour plot
+
+```{python}
+#| label: fig-ch01-two-variable-contour
+#| fig-cap: "A two-variable function can be studied through level curves."
+#| fig-width: 6
+#| fig-height: 5
+x = np.linspace(-3, 3, 250)
+y = np.linspace(-3, 3, 250)
+X, Y = np.meshgrid(x, y)
+Z = X**2 - Y**2
+
+plt.figure()
+cs = plt.contour(X, Y, Z, levels=21)
+plt.clabel(cs, inline=True, fontsize=8)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.gca().set_aspect("equal")
+plt.title("Level curves of f(x,y)=x^2-y^2")
+plt.show()
+```
+
+### Task C. A first numerical gradient
+
+The gradient can be approximated by finite differences. For
+
+$$
+f(x,y)=x^2+2y^2,
+$$
+
+we know exactly that
+
+$$
+\nabla f(x,y)=\langle 2x,4y\rangle.
+$$
+
+The following code approximates the gradient at a point.
+
+```{python}
+#| label: lst-ch01-finite-difference-gradient
+#| code-fold: false
+def f_xy(x, y):
+    return x**2 + 2*y**2
+
+def numerical_gradient(f, x0, y0, h=1e-5):
+    df_dx = (f(x0 + h, y0) - f(x0 - h, y0)) / (2*h)
+    df_dy = (f(x0, y0 + h) - f(x0, y0 - h)) / (2*h)
+    return np.array([df_dx, df_dy])
+
+point = (1.0, 1.0)
+print("Numerical gradient:", numerical_gradient(f_xy, *point))
+print("Exact gradient:    ", np.array([2*point[0], 4*point[1]]))
+```
+
+### Task D. A first gradient descent experiment
+
+```{python}
+#| label: fig-ch01-gradient-descent
+#| fig-cap: "Gradient descent paths move downhill on a loss landscape."
+#| fig-width: 6
+#| fig-height: 5
+def f_val(x, y):
+    return x**2 + 2*y**2
+
+def grad_f(x, y):
+    return np.array([2*x, 4*y])
+
+eta = 0.12
+point = np.array([2.5, 2.0])
+path = [point.copy()]
+
+for _ in range(25):
+    point = point - eta * grad_f(point[0], point[1])
+    path.append(point.copy())
+
+path = np.array(path)
+
+x = np.linspace(-3, 3, 250)
+y = np.linspace(-3, 3, 250)
+X, Y = np.meshgrid(x, y)
+Z = f_val(X, Y)
+
+plt.figure()
+plt.contour(X, Y, Z, levels=20)
+plt.plot(path[:, 0], path[:, 1], marker="o")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.gca().set_aspect("equal")
+plt.title("Gradient descent for f(x,y)=x^2+2y^2")
+plt.show()
+```
+
+## 1.13 Skills checklist
+
+By the end of this chapter, you should be able to do the following.
+
+| Skill | Can you do it? |
+|---|---|
+| Identify the domain and codomain of a function |  |
+| Distinguish scalar-valued and vector-valued functions |  |
+| Explain why $f(x,y)$ has a surface graph |  |
+| Interpret a level curve $f(x,y)=c$ |  |
+| Explain why multivariable derivatives depend on direction |  |
+| Connect gradients to steepest increase and optimization |  |
+| Connect double integrals to volume, mass, and probability |  |
+| Interpret a loss function as a function on parameter space |  |
+| Use Python to plot curves, contours, surfaces, and simple gradients |  |
+
+## 1.14 Practice problems
+
+### Conceptual problems
+
+1. Give three examples of functions of one variable and three examples of functions of several variables. For each example, identify the input and output.
+2. Explain the difference between a point in physical space and a point in parameter space.
+3. Why can $f:\mathbb R^3\to\mathbb R$ not be graphed in ordinary three-dimensional space in the same way as $f:\mathbb R^2\to\mathbb R$?
+4. Explain why a contour map is useful even when a surface plot is available.
+5. In your own words, explain why derivatives become more complicated when the input has more than one dimension.
+
+### Computation problems
+
+6. Classify each function by domain and codomain:
+   
+   a. $f(x)=e^{-x^2}$
+   
+   b. $g(x,y)=x^2-y^2$
+   
+   c. $h(x,y,z)=\sqrt{x^2+y^2+z^2}$
+   
+   d. $r(t)=\langle t,t^2,t^3\rangle$
+   
+   e. $F(x,y)=\langle x+y,x-y\rangle$
+
+7. For $f(x,y)=x^2+y^2$, describe the level curves $f(x,y)=1$, $f(x,y)=4$, and $f(x,y)=9$.
+8. For $f(x,y)=x^2+4y^2$, describe the level curve $f(x,y)=16$.
+9. Compute $\nabla f(x,y)$ for $f(x,y)=3x^2+xy+y^2$.
+10. Compute $\nabla T(x,y,z)$ for $T(x,y,z)=x^2e^y+\ln z$.
+11. Let $L(w,b)=(2w+b-5)^2+(w+b-3)^2$. Compute $L(1,1)$ and $L(2,1)$.
+12. Let $p(x,y)=Ce^{-(x^2+y^2)}$. Explain what condition $C$ must satisfy if $p$ is to be a probability density on $\mathbb R^2$.
+
+### Python problems
+
+13. Modify the contour plot for $f(x,y)=x^2+y^2$ to plot $f(x,y)=x^2+4y^2$. Describe how the level curves change.
+14. Write a Python function for $f(x,y)=\sin(xy)$. Plot its contour map on $[-3,3]\times[-3,3]$.
+15. Numerically approximate the gradient of $f(x,y)=\sin(x)+\cos(y)$ at $(0,0)$ using finite differences.
+16. Create a least-squares loss surface for data generated from $y=2x+1$ with small random noise.
+17. Run gradient descent on $f(x,y)=x^2+y^2$ from three different starting points. Plot all three paths.
+
+### Discussion and writing problems
+
+18. Write a short paragraph explaining the phrase: “A loss function is a landscape.”
+19. Write a short paragraph explaining why multiple integrals are important for probability and statistics.
+20. Choose one application area: physics, economics, biology, statistics, AI, or machine learning. Describe one natural function of several variables in that area.
+
+## 1.15 Chapter summary
+
+Single-variable calculus studies functions with one input. Multivariable calculus studies functions whose inputs live in spaces such as $\mathbb R^2$, $\mathbb R^3$, and $\mathbb R^n$. This makes the geometry richer and the applications broader.
+
+The main ideas of the book are already visible:
+
+- A function $f:\mathbb R^n\to\mathbb R$ can represent a surface, density, loss, risk, energy, or potential.
+- When there are many input directions, derivatives become partial derivatives, directional derivatives, gradients, Jacobians, and Hessians.
+- Integrals become accumulation over regions, solids, surfaces, and probability spaces.
+- Optimization becomes the study of landscapes in parameter space.
+- Python helps us visualize, approximate, and experiment with objects that are difficult or impossible to draw by hand.
+
+The next chapters build the geometric foundation: Euclidean space, vectors, dot products, projections, lines, planes, cross products, and curves. These objects are the language needed for functions, derivatives, integrals, and vector calculus.
+
+## Python lab and interactive page
+
+- Notebook lab: [Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb](../labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb)
+- Interactive HTML page: [Chapter 01 interactive page](../htmls/chapter-01.html)

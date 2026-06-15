@@ -1,0 +1,91 @@
+# Formula Sheet
+
+## Geometry and vectors
+
+$$
+|v|=\sqrt{v_1^2+\cdots+v_n^2}, \qquad d(a,b)=|a-b|.
+$$
+
+$$
+u\cdot v=|u||v|\cos\theta, \qquad {\rm proj}_v u=\frac{u\cdot v}{v\cdot v}v.
+$$
+
+A line has the form
+
+$$
+r(t)=p+tv.
+$$
+
+A plane has the form
+
+$$
+n\cdot (x-p)=0.
+$$
+
+## Differentiation
+
+$$
+\nabla f=\langle f_{x_1},\dots,f_{x_n}\rangle.
+$$
+
+$$
+D_u f(a)=\nabla f(a)\cdot u.
+$$
+
+First-order approximation:
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)^T h.
+$$
+
+Second-order approximation:
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)^T h+\frac12 h^T H_f(a)h.
+$$
+
+## Integration
+
+$$
+\iint_R f(x,y)\,dA, \qquad \iiint_E f(x,y,z)\,dV.
+$$
+
+Polar coordinates:
+
+$$
+x=r\cos\theta, \qquad y=r\sin\theta, \qquad dA=r\,dr\,d\theta.
+$$
+
+Spherical coordinates:
+
+$$
+dV=\rho^2\sin\phi\,d\rho\,d\phi\,d\theta.
+$$
+
+## Vector calculus
+
+$$
+\int_C F\cdot dr=\int_a^b F(r(t))\cdot r'(t)\,dt.
+$$
+
+$$
+\nabla\cdot F=P_x+Q_y+R_z.
+$$
+
+Green's theorem:
+
+$$
+\oint_C P\,dx+Q\,dy=\iint_D(Q_x-P_y)\,dA.
+$$
+
+Stokes' theorem:
+
+$$
+\oint_{\partial S} F\cdot dr=\iint_S(\nabla\times F)\cdot n\,dS.
+$$
+
+Divergence theorem:
+
+$$
+\iint_{\partial E}F\cdot n\,dS=\iiint_E\nabla\cdot F\,dV.
+$$

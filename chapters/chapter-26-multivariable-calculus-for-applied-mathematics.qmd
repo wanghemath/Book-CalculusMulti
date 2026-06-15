@@ -1,0 +1,1066 @@
+---
+title: "Multivariable Calculus for Applied Mathematics"
+subtitle: "Fields, flows, conservation laws, and numerical models"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+jupyter: python3
+---
+
+# Multivariable Calculus for Applied Mathematics
+
+Applied mathematics is the art of turning a real system into a mathematical model, studying the model, computing with it, and interpreting the result. Multivariable calculus is one of the main languages of this process. It tells us how quantities change in space and time, how material flows through regions, how heat diffuses, how forces produce motion, and how energy principles lead to equations.
+
+The previous chapters developed the central tools: gradients, Jacobians, Hessians, multiple integrals, vector fields, line integrals, surface integrals, and the major integral theorems. This chapter brings those ideas together from an applied mathematics point of view. The goal is not to replace a future course in differential equations, numerical analysis, or partial differential equations. The goal is to show how multivariable calculus becomes the foundation for those subjects.
+
+In this chapter we study four recurring applied themes:
+
+1. **Local change:** derivatives measure how quantities change at a point.
+2. **Accumulation:** integrals measure total amount over curves, surfaces, and regions.
+3. **Balance laws:** divergence and flux express conservation of mass, heat, probability, or charge.
+4. **Energy principles:** many equations arise by minimizing an energy.
+
+These themes appear throughout applied mathematics, statistics, scientific computing, data science, and machine learning.
+
+## Learning goals
+
+After completing this chapter, you should be able to:
+
+- interpret scalar fields, vector fields, gradient fields, divergence, curl, and the Laplacian in applied models;
+- derive simple conservation laws from flux balance;
+- connect the heat equation to diffusion, smoothing, and gradient-based dynamics;
+- use finite differences to approximate gradients, divergence, and the Laplacian on a grid;
+- explain how continuous models lead to numerical algorithms;
+- recognize variational and energy-based formulations;
+- connect applied calculus ideas to data science, image processing, probability flow, and optimization.
+
+## 26.1 The applied mathematics pipeline
+
+A useful applied mathematics workflow is:
+
+$$
+\text{system} \longrightarrow \text{variables} \longrightarrow \text{model} \longrightarrow \text{analysis} \longrightarrow \text{computation} \longrightarrow \text{interpretation}.
+$$
+
+For example, suppose $u(x,t)$ is the temperature of a thin rod at position $x$ and time $t$. A physical law says heat flows from hot regions to cold regions. A calculus model converts this statement into a differential equation. A numerical method then approximates the equation on a finite grid, and a computer simulation helps us understand the temperature evolution.
+
+The variables may be spatial variables, time variables, parameters, or data features. In modern applications, the same mathematical symbols appear in many settings:
+
+| Applied setting | Typical field | Calculus object |
+|---|---:|---|
+| heat flow | $u(x,y,t)$ | scalar field |
+| fluid velocity | $F(x,y,z,t)$ | vector field |
+| probability density | $p(x,t)$ | scalar field with integral $1$ |
+| image intensity | $I(x,y)$ | scalar field on a pixel grid |
+| model loss | $L(\theta)$ | scalar field on parameter space |
+| gradient descent | $\theta'(t)=-\nabla L(\theta)$ | vector field on parameter space |
+
+A key message of this chapter is that **the same calculus operators appear across many disciplines**.
+
+## 26.2 Scalar fields, vector fields, and operators
+
+A scalar field assigns a number to each point. Examples include temperature, pressure, density, altitude, potential energy, image brightness, or a loss function.
+
+$$
+u = u(x,y,z)
+$$
+
+A vector field assigns a vector to each point. Examples include velocity, force, heat flux, electric field, gradient direction, or parameter update direction.
+
+$$
+F(x,y,z)=\langle P(x,y,z),Q(x,y,z),R(x,y,z)\rangle.
+$$
+
+The most important differential operators in applied mathematics are:
+
+$$
+\nabla u
+= \left\langle \frac{\partial u}{\partial x},\frac{\partial u}{\partial y},\frac{\partial u}{\partial z}\right\rangle,
+$$
+
+$$
+\nabla \cdot F
+= \frac{\partial P}{\partial x}+\frac{\partial Q}{\partial y}+\frac{\partial R}{\partial z},
+$$
+
+$$
+\nabla \times F
+= \left\langle
+\frac{\partial R}{\partial y}-\frac{\partial Q}{\partial z},
+\frac{\partial P}{\partial z}-\frac{\partial R}{\partial x},
+\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}
+\right\rangle,
+$$
+
+and
+
+$$
+\Delta u = \nabla \cdot \nabla u
+= u_{xx}+u_{yy}+u_{zz}.
+$$
+
+The operator $\Delta$ is called the **Laplacian**. It is one of the central operators in applied mathematics.
+
+::: {.callout-tip}
+## Interpretation of the operators
+
+- $\nabla u$ points in the direction of fastest increase of $u$.
+- $\nabla \cdot F$ measures local expansion or compression of a vector field.
+- $\nabla \times F$ measures local rotation.
+- $\Delta u$ compares a value with nearby values and measures local curvature or imbalance.
+:::
+
+### Example 26.1: gradient, divergence, curl, and Laplacian
+
+Let
+
+$$
+u(x,y,z)=x^2+y^2+z^2.
+$$
+
+Then
+
+$$
+\nabla u = \langle 2x,2y,2z\rangle,
+$$
+
+and
+
+$$
+\Delta u = u_{xx}+u_{yy}+u_{zz}=2+2+2=6.
+$$
+
+If
+
+$$
+F(x,y,z)=\langle x,y,z\rangle,
+$$
+
+then
+
+$$
+\nabla \cdot F = 1+1+1=3,
+$$
+
+and
+
+$$
+\nabla \times F=\langle 0,0,0\rangle.
+$$
+
+This vector field expands outward from the origin but does not rotate.
+
+```{python}
+#| label: fig-ch26-gradient-laplacian
+#| fig-cap: 'A scalar field, its contours, and its gradient vectors. The gradient points uphill and is perpendicular to level curves.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 160)
+y = np.linspace(-2, 2, 160)
+X, Y = np.meshgrid(x, y)
+U = X**2 + 0.5*Y**2
+Ux = 2*X
+Uy = Y
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, U, levels=16)
+ax.clabel(cs, inline=True, fontsize=8)
+step = 18
+ax.quiver(X[::step, ::step], Y[::step, ::step], Ux[::step, ::step], Uy[::step, ::step], angles='xy')
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Contours and gradient field of u(x,y) = x^2 + 0.5 y^2')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 26.3 Balance laws and conservation
+
+Many applied models begin with a balance principle:
+
+$$
+\text{rate of change inside a region}
+=
+\text{inflow} - \text{outflow} + \text{sources}.
+$$
+
+Suppose $\rho(x,y,z,t)$ is the density of a quantity and $J(x,y,z,t)$ is its flux field. The flux field tells us how much of the quantity crosses a unit area per unit time.
+
+For a fixed region $E$, the total amount inside $E$ is
+
+$$
+\int_E \rho\,dV.
+$$
+
+The outward flux through the boundary $\partial E$ is
+
+$$
+\iint_{\partial E} J\cdot n\,dS.
+$$
+
+If there are no internal sources, conservation says
+
+$$
+\frac{d}{dt}\int_E \rho\,dV
+=
+-\iint_{\partial E} J\cdot n\,dS.
+$$
+
+Using the Divergence Theorem,
+
+$$
+\iint_{\partial E} J\cdot n\,dS
+=
+\int_E \nabla\cdot J\,dV.
+$$
+
+Therefore,
+
+$$
+\int_E \rho_t\,dV
+=
+-\int_E \nabla\cdot J\,dV.
+$$
+
+Since this should hold for every region $E$, the local form is
+
+$$
+\rho_t + \nabla\cdot J = 0.
+$$
+
+This is called a **continuity equation**.
+
+::: {.callout-important}
+## Conservation law template
+
+A large class of applied models has the form
+
+$$
+\rho_t + \nabla\cdot J = s,
+$$
+
+where $\rho$ is a density, $J$ is a flux, and $s$ is a source term.
+:::
+
+### Example 26.2: source, sink, and incompressible fields
+
+In the plane, consider the vector fields
+
+$$
+F_1(x,y)=\langle x,y\rangle,
+\qquad
+F_2(x,y)=\langle -x,-y\rangle,
+\qquad
+F_3(x,y)=\langle -y,x\rangle.
+$$
+
+Their divergences are
+
+$$
+\nabla\cdot F_1 = 2,
+\qquad
+\nabla\cdot F_2 = -2,
+\qquad
+\nabla\cdot F_3 = 0.
+$$
+
+The first field is a source, the second is a sink, and the third is rotation without local expansion.
+
+```{python}
+#| label: fig-ch26-source-sink-rotation
+#| fig-cap: 'Three basic vector fields: a source, a sink, and a rotational field. Divergence distinguishes expansion from compression.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 17)
+y = np.linspace(-2, 2, 17)
+X, Y = np.meshgrid(x, y)
+fields = [
+    (X, Y, 'source: F=<x,y>'),
+    (-X, -Y, 'sink: F=<-x,-y>'),
+    (-Y, X, 'rotation: F=<-y,x>')
+]
+
+fig, axes = plt.subplots(1, 3, figsize=(12, 4), constrained_layout=True)
+for ax, (U, V, title) in zip(axes, fields):
+    ax.quiver(X, Y, U, V, angles='xy')
+    ax.set_aspect('equal')
+    ax.set_title(title)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 26.4 Diffusion and the heat equation
+
+One of the most important applied models is the heat equation. Suppose $u(x,t)$ is temperature along a rod. Heat flows from high temperature to low temperature. A common model for heat flux is Fourier's law:
+
+$$
+J = -k\nabla u,
+$$
+
+where $k>0$ is the conductivity. The minus sign means heat flows downhill, opposite the direction of increasing temperature.
+
+If heat is conserved and $J=-k\nabla u$, then
+
+$$
+u_t + \nabla\cdot J = 0.
+$$
+
+Substituting the flux law gives
+
+$$
+u_t - k\nabla\cdot(\nabla u)=0.
+$$
+
+Thus
+
+$$
+u_t = k\Delta u.
+$$
+
+This is the **heat equation**.
+
+In one spatial dimension,
+
+$$
+u_t = k u_{xx}.
+$$
+
+In two spatial dimensions,
+
+$$
+u_t = k(u_{xx}+u_{yy}).
+$$
+
+::: {.callout-note}
+## Why the Laplacian appears
+
+The Laplacian measures whether a point is higher or lower than its neighbors. If a point is hotter than its neighbors, heat diffuses away. If it is colder than its neighbors, heat diffuses in. This local averaging behavior is exactly what the heat equation models.
+:::
+
+```{python}
+#| label: fig-ch26-heat-equation-1d
+#| fig-cap: 'Numerical solution of the one-dimensional heat equation. A localized temperature profile spreads and smooths over time.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Spatial grid
+n = 220
+x = np.linspace(0, 1, n)
+dx = x[1] - x[0]
+kappa = 0.002
+# Stable explicit time step for u_t = kappa u_xx
+dt = 0.4 * dx**2 / kappa
+steps = 1600
+
+u = np.exp(-600*(x - 0.35)**2) + 0.65*np.exp(-900*(x - 0.68)**2)
+u[0] = 0
+u[-1] = 0
+snapshots = {0: u.copy()}
+for step in range(1, steps + 1):
+    u_new = u.copy()
+    u_new[1:-1] = u[1:-1] + kappa*dt/dx**2*(u[2:] - 2*u[1:-1] + u[:-2])
+    u = u_new
+    if step in [150, 500, 1600]:
+        snapshots[step] = u.copy()
+
+fig, ax = plt.subplots()
+for step, values in snapshots.items():
+    ax.plot(x, values, label=f'step {step}')
+ax.set_xlabel('x')
+ax.set_ylabel('temperature')
+ax.set_title('Diffusion smooths temperature')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 26.5 The Laplacian as local averaging
+
+On a grid, the two-dimensional Laplacian is often approximated by
+
+$$
+\Delta u(x_i,y_j)
+\approx
+\frac{u_{i+1,j}+u_{i-1,j}+u_{i,j+1}+u_{i,j-1}-4u_{i,j}}{h^2}.
+$$
+
+This formula compares a grid value to its four nearest neighbors. It appears in numerical PDEs, image processing, graph learning, and spatial statistics.
+
+If $u_{i,j}$ is larger than the average of its neighbors, the discrete Laplacian is negative. If it is smaller than the average of its neighbors, the discrete Laplacian is positive.
+
+```{python}
+#| label: fig-ch26-heat-equation-2d
+#| fig-cap: 'Two-dimensional diffusion on a grid. Local peaks spread out because the discrete Laplacian compares each value with its neighbors.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+n = 90
+x = np.linspace(-1, 1, n)
+y = np.linspace(-1, 1, n)
+X, Y = np.meshgrid(x, y)
+h = x[1] - x[0]
+U = np.exp(-45*((X + 0.35)**2 + (Y + 0.2)**2)) + 0.8*np.exp(-70*((X - 0.3)**2 + (Y - 0.25)**2))
+alpha = 0.12
+
+def diffuse_step(A, alpha):
+    B = A.copy()
+    B[1:-1, 1:-1] = A[1:-1, 1:-1] + alpha*(
+        A[2:, 1:-1] + A[:-2, 1:-1] + A[1:-1, 2:] + A[1:-1, :-2] - 4*A[1:-1, 1:-1]
+    )
+    B[0, :] = 0
+    B[-1, :] = 0
+    B[:, 0] = 0
+    B[:, -1] = 0
+    return B
+
+snapshots = [U.copy()]
+for step in range(80):
+    U = diffuse_step(U, alpha)
+    if step in [14, 39, 79]:
+        snapshots.append(U.copy())
+
+fig, axes = plt.subplots(1, 4, figsize=(13, 3.5), constrained_layout=True)
+for ax, A, title in zip(axes, snapshots, ['initial', 'after 15 steps', 'after 40 steps', 'after 80 steps']):
+    im = ax.imshow(A, extent=[-1, 1, -1, 1], origin='lower')
+    ax.set_title(title)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+fig.colorbar(im, ax=axes, shrink=0.75)
+plt.show()
+```
+
+## 26.6 Advection and transport
+
+Diffusion describes spreading. Advection describes transport by a velocity field.
+
+Suppose $\rho(x,y,t)$ is the density of a substance moving with velocity field
+
+$$
+v(x,y)=\langle P(x,y),Q(x,y)\rangle.
+$$
+
+The flux is
+
+$$
+J = \rho v.
+$$
+
+The conservation law becomes
+
+$$
+\rho_t + \nabla\cdot(\rho v)=0.
+$$
+
+If the velocity field is incompressible, meaning $\nabla\cdot v=0$, then this becomes
+
+$$
+\rho_t + v\cdot \nabla \rho = 0.
+$$
+
+The term $v\cdot\nabla \rho$ is a directional derivative: it measures how the density changes in the direction of the flow.
+
+### Example 26.3: rotation transports density
+
+For
+
+$$
+v(x,y)=\langle -y,x\rangle,
+$$
+
+particles rotate around the origin. Since
+
+$$
+\nabla\cdot v = \frac{\partial(-y)}{\partial x}+\frac{\partial x}{\partial y}=0,
+$$
+
+this field preserves area locally.
+
+```{python}
+#| label: fig-ch26-advection-trajectories
+#| fig-cap: 'Particle trajectories in the rotational velocity field v=<-y,x>. Advection transports quantities along flow lines.'
+#| fig-width: 6
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+starts = np.array([
+    [1.0, 0.0], [0.8, 0.3], [0.5, 0.8], [-0.4, 0.9],
+    [-0.9, 0.2], [-0.8, -0.5], [0.2, -0.9], [0.9, -0.4]
+])
+t = np.linspace(0, 2*np.pi, 250)
+fig, ax = plt.subplots()
+for x0, y0 in starts:
+    x_path = x0*np.cos(t) - y0*np.sin(t)
+    y_path = x0*np.sin(t) + y0*np.cos(t)
+    ax.plot(x_path, y_path)
+    ax.scatter([x0], [y0], s=20)
+
+x = np.linspace(-1.2, 1.2, 17)
+y = np.linspace(-1.2, 1.2, 17)
+X, Y = np.meshgrid(x, y)
+ax.quiver(X, Y, -Y, X, alpha=0.35)
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Advection by a rotational field')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 26.7 Steady states and Laplace's equation
+
+A steady state is a solution that does not change with time. For the heat equation
+
+$$
+u_t = k\Delta u,
+$$
+
+a steady state satisfies
+
+$$
+\Delta u = 0.
+$$
+
+This is **Laplace's equation**. Functions satisfying $\Delta u=0$ are called **harmonic functions**.
+
+Laplace's equation appears in heat conduction, electrostatics, gravitational potential, fluid flow, and image interpolation.
+
+### Example 26.4: a harmonic function
+
+Let
+
+$$
+u(x,y)=x^2-y^2.
+$$
+
+Then
+
+$$
+u_{xx}=2,
+\qquad
+u_{yy}=-2,
+$$
+
+so
+
+$$
+\Delta u = u_{xx}+u_{yy}=0.
+$$
+
+Thus $u(x,y)=x^2-y^2$ is harmonic.
+
+```{python}
+#| label: fig-ch26-harmonic-function
+#| fig-cap: 'The harmonic function u=x^2-y^2 has zero Laplacian. It bends upward in one direction and downward in the other.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 160)
+y = np.linspace(-2, 2, 160)
+X, Y = np.meshgrid(x, y)
+U = X**2 - Y**2
+Ux, Uy = 2*X, -2*Y
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, U, levels=18)
+ax.clabel(cs, inline=True, fontsize=8)
+step = 20
+ax.quiver(X[::step, ::step], Y[::step, ::step], Ux[::step, ::step], Uy[::step, ::step], alpha=0.65)
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Level curves and gradient field for u=x^2-y^2')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 26.8 Numerical derivatives on grids
+
+In applied mathematics, functions are often known only through sampled values. For example, an image is a function sampled on pixels, and a simulation stores values on a grid.
+
+For grid spacing $h$, common finite-difference approximations are:
+
+$$
+u_x(x_i,y_j) \approx \frac{u_{i+1,j}-u_{i-1,j}}{2h},
+$$
+
+$$
+u_y(x_i,y_j) \approx \frac{u_{i,j+1}-u_{i,j-1}}{2h},
+$$
+
+and
+
+$$
+\Delta u(x_i,y_j)\approx
+\frac{u_{i+1,j}+u_{i-1,j}+u_{i,j+1}+u_{i,j-1}-4u_{i,j}}{h^2}.
+$$
+
+These approximations convert calculus into linear algebra. A differential operator becomes a matrix or a stencil.
+
+::: {.callout-tip}
+## Continuous-discrete dictionary
+
+| Continuous calculus | Discrete computation |
+|---|---|
+| function $u(x,y)$ | array of values |
+| derivative $u_x$ | finite difference |
+| gradient $\nabla u$ | pair of arrays |
+| Laplacian $\Delta u$ | stencil or sparse matrix |
+| integral | sum times area element |
+| PDE | update rule or linear system |
+:::
+
+```{python}
+#| label: fig-ch26-finite-difference-operators
+#| fig-cap: 'Finite differences approximate gradient magnitude and Laplacian from sampled values on a grid.'
+#| fig-width: 8
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+n = 140
+x = np.linspace(-2, 2, n)
+y = np.linspace(-2, 2, n)
+X, Y = np.meshgrid(x, y)
+h = x[1] - x[0]
+U = np.sin(2*X)*np.cos(Y) + 0.3*np.exp(-3*((X-0.8)**2 + (Y+0.4)**2))
+
+Ux = np.zeros_like(U)
+Uy = np.zeros_like(U)
+Lap = np.zeros_like(U)
+Ux[:, 1:-1] = (U[:, 2:] - U[:, :-2])/(2*h)
+Uy[1:-1, :] = (U[2:, :] - U[:-2, :])/(2*h)
+Lap[1:-1, 1:-1] = (U[2:, 1:-1] + U[:-2, 1:-1] + U[1:-1, 2:] + U[1:-1, :-2] - 4*U[1:-1, 1:-1])/(h**2)
+GradMag = np.sqrt(Ux**2 + Uy**2)
+
+fig, axes = plt.subplots(1, 3, figsize=(13, 4), constrained_layout=True)
+images = [U, GradMag, Lap]
+titles = ['sampled scalar field', 'gradient magnitude', 'discrete Laplacian']
+for ax, img, title in zip(axes, images, titles):
+    im = ax.imshow(img, extent=[-2, 2, -2, 2], origin='lower')
+    ax.set_title(title)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+fig.colorbar(im, ax=axes, shrink=0.75)
+plt.show()
+```
+
+## 26.9 Variational principles and energy minimization
+
+Many equations in applied mathematics come from minimizing an energy. This is a deep idea connecting calculus, optimization, differential equations, physics, and machine learning.
+
+A simple example is the Dirichlet energy
+
+$$
+E[u]=\frac12\int_D |\nabla u|^2\,dA.
+$$
+
+A function that minimizes this energy subject to fixed boundary values satisfies Laplace's equation
+
+$$
+\Delta u=0
+$$
+
+inside the domain.
+
+The intuition is that minimizing $\int |\nabla u|^2$ favors smooth functions. The minimizer is as smooth as possible while still matching the boundary constraints.
+
+This idea appears in:
+
+- elastic membranes;
+- electrostatic potentials;
+- image denoising and interpolation;
+- smoothing splines;
+- graph-based semi-supervised learning;
+- regularization in inverse problems.
+
+### Example 26.5: smoothing by energy minimization
+
+Suppose we observe noisy data $y_i$ and want a smooth curve $u_i$. A discrete energy is
+
+$$
+E(u)=\sum_i (u_i-y_i)^2 + \lambda\sum_i (u_{i+1}-u_i)^2.
+$$
+
+The first term keeps $u$ close to the data. The second term penalizes roughness. The parameter $\lambda$ controls the tradeoff.
+
+```{python}
+#| label: fig-ch26-smoothing-energy
+#| fig-cap: 'Energy-based smoothing balances fidelity to noisy data with a penalty on roughness.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(26)
+n = 140
+x = np.linspace(0, 1, n)
+true_signal = np.sin(2*np.pi*x) + 0.4*np.sin(6*np.pi*x)
+y_obs = true_signal + rng.normal(scale=0.25, size=n)
+
+lam = 20.0
+# Build difference penalty matrix D^T D for first differences.
+D = np.zeros((n-1, n))
+for i in range(n-1):
+    D[i, i] = -1
+    D[i, i+1] = 1
+A = np.eye(n) + lam * (D.T @ D)
+u_smooth = np.linalg.solve(A, y_obs)
+
+fig, ax = plt.subplots()
+ax.scatter(x, y_obs, s=12, alpha=0.55, label='noisy data')
+ax.plot(x, true_signal, linewidth=2, label='true signal')
+ax.plot(x, u_smooth, linewidth=2, label='smoothed estimate')
+ax.set_xlabel('x')
+ax.set_ylabel('value')
+ax.set_title('Regularized smoothing as energy minimization')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 26.10 Gradient flows
+
+Optimization can also be viewed as an applied dynamical system. Given an energy or loss function $E(x)$, gradient flow is the differential equation
+
+$$
+\frac{dx}{dt}=-\nabla E(x).
+$$
+
+This equation moves downhill as quickly as possible in continuous time. Gradient descent is a discrete approximation:
+
+$$
+x_{k+1}=x_k-\eta\nabla E(x_k).
+$$
+
+Thus optimization algorithms are closely related to differential equations.
+
+### Example 26.6: gradient flow toward a minimum
+
+Let
+
+$$
+E(x,y)=\frac14(x^2+y^2-1)^2+\frac12(y-0.2x)^2.
+$$
+
+The gradient flow follows the vector field $-\nabla E$.
+
+```{python}
+#| label: fig-ch26-gradient-flow
+#| fig-cap: 'Gradient flow follows the vector field -grad E and moves downhill on an energy landscape.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 180)
+y = np.linspace(-2, 2, 180)
+X, Y = np.meshgrid(x, y)
+E = 0.25*(X**2 + Y**2 - 1)**2 + 0.5*(Y - 0.2*X)**2
+Ex = X*(X**2 + Y**2 - 1) - 0.2*(Y - 0.2*X)
+Ey = Y*(X**2 + Y**2 - 1) + (Y - 0.2*X)
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, E, levels=24)
+ax.clabel(cs, inline=True, fontsize=8)
+step = 18
+ax.quiver(X[::step, ::step], Y[::step, ::step], -Ex[::step, ::step], -Ey[::step, ::step], alpha=0.6)
+
+# Simulate one path by Euler's method.
+p = np.array([1.7, 1.6], dtype=float)
+path = [p.copy()]
+eta = 0.03
+for _ in range(180):
+    x0, y0 = p
+    grad = np.array([
+        x0*(x0**2 + y0**2 - 1) - 0.2*(y0 - 0.2*x0),
+        y0*(x0**2 + y0**2 - 1) + (y0 - 0.2*x0)
+    ])
+    p = p - eta*grad
+    path.append(p.copy())
+path = np.array(path)
+ax.plot(path[:, 0], path[:, 1], marker='o', markersize=2, linewidth=2)
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Energy contours and gradient flow')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 26.11 From continuous models to numerical algorithms
+
+Applied mathematics often converts a continuous model into a finite-dimensional computation. The common steps are:
+
+1. **Choose variables.** Decide what the unknown function represents.
+2. **State a law.** Use balance, geometry, probability, or energy.
+3. **Write equations.** Express the law using derivatives and integrals.
+4. **Choose boundary and initial conditions.** Models need enough information to determine a solution.
+5. **Discretize.** Replace derivatives by finite differences, finite elements, or spectral approximations.
+6. **Compute.** Solve a system of algebraic equations or run an update rule.
+7. **Validate.** Compare against data, units, limiting cases, or known solutions.
+
+This is the path from calculus to scientific computing.
+
+### A finite-difference heat equation algorithm
+
+For the one-dimensional heat equation
+
+$$
+u_t = k u_{xx},
+$$
+
+a simple explicit method is
+
+$$
+u_i^{n+1}=u_i^n + r(u_{i+1}^n-2u_i^n+u_{i-1}^n),
+$$
+
+where
+
+$$
+r=\frac{k\Delta t}{(\Delta x)^2}.
+$$
+
+This formula says: update each value using the difference between the value and its neighbors.
+
+::: {.callout-warning}
+## Stability matters
+
+A numerical formula can be mathematically reasonable but computationally unstable. For the explicit heat equation scheme, the time step must be sufficiently small relative to the spatial grid size. This is a first glimpse of numerical analysis.
+:::
+
+## 26.12 Applied mathematics examples
+
+### Example 26.7: image denoising
+
+An image can be viewed as a scalar field $I(x,y)$. Diffusion smooths the image by reducing sharp local variations. A simple denoising model is
+
+$$
+I_t = \Delta I.
+$$
+
+This smooths noise but may also blur edges. More advanced models modify the diffusion coefficient so smoothing happens more strongly in flat regions and less strongly near edges.
+
+### Example 26.8: probability diffusion
+
+A probability density $p(x,t)$ can evolve by diffusion:
+
+$$
+p_t = D p_{xx}.
+$$
+
+This equation preserves total probability under appropriate boundary conditions:
+
+$$
+\int p(x,t)\,dx=1.
+$$
+
+This connects calculus to stochastic processes, Brownian motion, and statistical physics.
+
+### Example 26.9: inverse problems
+
+In an inverse problem, we infer hidden causes from observed effects. A common regularized model minimizes
+
+$$
+\|Au-y\|^2+\lambda\|Lu\|^2,
+$$
+
+where $A$ models the measurement process, $y$ is observed data, and $L$ measures roughness. This is the finite-dimensional version of balancing data fidelity with smoothness.
+
+### Example 26.10: conservation in networks
+
+Even when a system is not spatially continuous, conservation ideas remain. In a network, mass or probability may flow along edges. The graph divergence at a node measures net outflow. The graph Laplacian plays the role of the continuous Laplacian. This is why Laplacian ideas appear in spectral clustering, graph signal processing, semi-supervised learning, and diffusion maps.
+
+```{python}
+#| label: fig-ch26-discrete-diffusion-matrix
+#| fig-cap: 'Discrete diffusion on a one-dimensional network. Repeated averaging behaves like a graph version of the heat equation.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+n = 80
+u0 = np.zeros(n)
+u0[20] = 1.0
+u0[55] = 0.7
+
+# Path graph Laplacian L = degree - adjacency.
+L = np.zeros((n, n))
+for i in range(n):
+    if i > 0:
+        L[i, i-1] = -1
+        L[i, i] += 1
+    if i < n-1:
+        L[i, i+1] = -1
+        L[i, i] += 1
+
+alpha = 0.18
+U = u0.copy()
+snaps = [U.copy()]
+for k in range(100):
+    U = U - alpha*(L @ U)
+    if k in [9, 29, 99]:
+        snaps.append(U.copy())
+
+fig, ax = plt.subplots()
+for values, label in zip(snaps, ['initial', '10 steps', '30 steps', '100 steps']):
+    ax.plot(np.arange(n), values, label=label)
+ax.set_xlabel('node index')
+ax.set_ylabel('amount')
+ax.set_title('Discrete diffusion on a path graph')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 26.13 Common modeling mistakes
+
+Applied mathematics is powerful, but models require judgment. Common mistakes include:
+
+- confusing density with total amount;
+- forgetting units when defining flux or source terms;
+- using a local equation without appropriate boundary conditions;
+- assuming a numerical solution is accurate without checking stability or convergence;
+- treating a model as reality rather than as a simplified representation;
+- ignoring whether a vector field is conservative, divergence-free, or rotational;
+- applying a theorem without checking orientation, smoothness, or region assumptions.
+
+A good model should be mathematically consistent, computationally feasible, and interpretable in context.
+
+## 26.14 Python lab: finite differences and diffusion
+
+The following lab builds a small numerical calculus toolkit for scalar fields on a grid.
+
+```{python}
+#| label: ch26-lab-finite-difference-toolkit
+#| echo: true
+import numpy as np
+
+def central_gradient(U, h):
+    Ux = np.zeros_like(U)
+    Uy = np.zeros_like(U)
+    Ux[:, 1:-1] = (U[:, 2:] - U[:, :-2])/(2*h)
+    Uy[1:-1, :] = (U[2:, :] - U[:-2, :])/(2*h)
+    return Ux, Uy
+
+def five_point_laplacian(U, h):
+    Lap = np.zeros_like(U)
+    Lap[1:-1, 1:-1] = (
+        U[2:, 1:-1] + U[:-2, 1:-1]
+        + U[1:-1, 2:] + U[1:-1, :-2]
+        - 4*U[1:-1, 1:-1]
+    )/(h**2)
+    return Lap
+
+# Test on u(x,y)=x^2+y^2, where Delta u = 4.
+n = 81
+x = np.linspace(-1, 1, n)
+y = np.linspace(-1, 1, n)
+X, Y = np.meshgrid(x, y)
+h = x[1] - x[0]
+U = X**2 + Y**2
+Lap = five_point_laplacian(U, h)
+print('Mean interior Laplacian:', Lap[2:-2, 2:-2].mean())
+```
+
+The exact value is $\Delta(x^2+y^2)=4$. The numerical value should be close to $4$ on the interior grid points.
+
+## 26.15 Chapter summary
+
+This chapter connected multivariable calculus to applied mathematics. The central ideas are:
+
+- scalar fields describe quantities such as temperature, density, potential, image intensity, and loss;
+- vector fields describe forces, velocities, fluxes, and gradient flows;
+- conservation laws combine time derivatives with flux integrals;
+- the Divergence Theorem converts global flux balance into local differential equations;
+- diffusion and the heat equation arise from conservation plus a flux law;
+- the Laplacian measures local imbalance and acts like a continuous averaging operator;
+- finite differences turn derivatives into computational formulas;
+- energy minimization leads to differential equations and regularized algorithms;
+- gradient flow connects optimization with dynamical systems.
+
+The main conceptual bridge is:
+
+$$
+\text{calculus operators} \longrightarrow \text{models} \longrightarrow \text{algorithms}.
+$$
+
+## 26.16 Exercises
+
+### Conceptual exercises
+
+1. Explain the difference between a scalar field and a vector field. Give two examples of each from applied mathematics.
+2. What does $\nabla u$ measure? Why is it perpendicular to level curves?
+3. What does $\nabla\cdot F$ measure physically?
+4. What does $\Delta u$ measure intuitively?
+5. Explain why heat should flow in the direction $-\nabla u$ rather than $\nabla u$.
+6. What is the difference between diffusion and advection?
+7. Why does a conservation law naturally involve flux through the boundary of a region?
+8. Explain why a steady-state heat equation leads to $\Delta u=0$.
+9. Why do numerical models require boundary conditions?
+10. Explain the connection between gradient descent and gradient flow.
+
+### Computational exercises
+
+11. For $u(x,y)=e^{-x^2-y^2}$, compute $\nabla u$ and $\Delta u$.
+12. For $F(x,y)=\langle x^2,xy\rangle$, compute $\nabla\cdot F$ and interpret the result.
+13. For $F(x,y)=\langle -y,x\rangle$, compute divergence and curl.
+14. Use finite differences to approximate $u_x$ and $u_y$ for $u(x,y)=\sin x\cos y$ on a grid.
+15. Use the five-point stencil to approximate $\Delta u$ for $u(x,y)=x^2+y^2$.
+16. Simulate one-dimensional diffusion with a different initial condition.
+17. Simulate two-dimensional diffusion from a square-shaped hot region.
+18. Compare numerical diffusion using two different time step sizes.
+19. Implement gradient descent for $E(x,y)=x^2+4y^2$ and plot the path.
+20. Solve a smoothing problem using the energy
+    $$
+    E(u)=\sum_i (u_i-y_i)^2+\lambda\sum_i (u_{i+1}-u_i)^2
+    $$
+    for several values of $\lambda$.
+
+### Applied exercises
+
+21. Derive the heat equation from the conservation law $\rho_t+\nabla\cdot J=0$ and Fourier's law $J=-k\nabla u$.
+22. Suppose $p(x,t)$ is a probability density satisfying $p_t=D p_{xx}$ on a closed interval with no-flux boundary conditions. Explain why total probability is conserved.
+23. A pollutant concentration $c(x,y,t)$ moves with velocity $v(x,y)$ and diffuses with coefficient $D$. A common model is
+    $$
+    c_t+v\cdot\nabla c = D\Delta c.
+    $$
+    Explain the meaning of each term.
+24. In image processing, why might ordinary diffusion blur edges? How might one modify the model to reduce edge blurring?
+25. In a loss landscape $L(\theta)$, explain the difference between gradient flow and Newton's method.
+
+### Challenge exercises
+
+26. Let $u(x,y)=\log\sqrt{x^2+y^2}$ for $(x,y)\neq(0,0)$. Show that $\Delta u=0$ away from the origin.
+27. Let $F=\nabla u$. Show that $\nabla\cdot F=\Delta u$.
+28. Let $v(x,y)=\langle -y,x\rangle$. Show that the flow preserves $x^2+y^2$.
+29. Derive the finite-difference update
+    $$
+    u_i^{n+1}=u_i^n+r(u_{i+1}^n-2u_i^n+u_{i-1}^n)
+    $$
+    from $u_t=k u_{xx}$.
+30. For the smoothing energy
+    $$
+    E(u)=\|u-y\|^2+\lambda\|Du\|^2,
+    $$
+    show that the minimizer satisfies
+    $$
+    (I+\lambda D^TD)u=y.
+    $$

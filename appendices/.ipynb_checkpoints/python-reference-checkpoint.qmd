@@ -1,0 +1,48 @@
+# Python Reference
+
+## Core imports
+
+```{python}
+#| eval: false
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
+## Vectors and matrices
+
+```{python}
+#| eval: false
+u = np.array([1.0, 2.0, 3.0])
+v = np.array([4.0, 5.0, 6.0])
+
+u + v
+u @ v
+np.linalg.norm(u)
+np.cross(u, v)
+```
+
+## Meshgrids for surfaces and contours
+
+```{python}
+#| eval: false
+x = np.linspace(-2, 2, 200)
+y = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + Y**2
+plt.contour(X, Y, Z)
+plt.show()
+```
+
+## Finite-difference gradient
+
+```{python}
+#| eval: false
+def finite_grad(f, x, h=1e-6):
+    x = np.array(x, dtype=float)
+    g = np.zeros_like(x)
+    for j in range(len(x)):
+        e = np.zeros_like(x)
+        e[j] = 1
+        g[j] = (f(x+h*e) - f(x-h*e))/(2*h)
+    return g
+```

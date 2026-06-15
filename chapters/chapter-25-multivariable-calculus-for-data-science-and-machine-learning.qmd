@@ -1,0 +1,879 @@
+---
+title: "Multivariable Calculus for Data Science and Machine Learning " 
+format:
+  html:
+    toc: true
+    toc-depth: 3
+jupyter: python3
+---
+
+## Learning goals
+
+By the end of this chapter, you should be able to:
+
+- translate a learning problem into a multivariable function of parameters;
+- identify loss functions, empirical risk, gradients, Jacobians, and Hessians;
+- derive gradients for linear regression, logistic regression, and simple neural-network models;
+- interpret gradient descent as motion on a high-dimensional surface;
+- explain the role of regularization in optimization and statistical learning;
+- use Python to visualize loss landscapes and implement gradient-based training;
+- connect calculus ideas to automatic differentiation, backpropagation, and modern AI workflows.
+
+## 25.1 Why machine learning is multivariable calculus
+
+A supervised learning problem begins with data
+
+$$
+(x_1,y_1), (x_2,y_2), \ldots, (x_n,y_n),
+$$
+
+where each input $x_i$ is often a vector in $\mathbb R^d$ and each output $y_i$ may be a number, a class label, or another vector. A model is a family of functions
+
+$$
+f_\theta : \mathbb R^d \to \mathbb R^m,
+$$
+
+where $\theta$ is a vector of parameters. Training the model means choosing $\theta$ so that $f_\theta(x_i)$ is close to $y_i$ for the observed data and hopefully remains accurate on new data.
+
+The central object is a **loss function**:
+
+$$
+L(\theta) = \frac{1}{n}\sum_{i=1}^n \ell(f_\theta(x_i),y_i).
+$$
+
+This is a function from parameter space to the real line:
+
+$$
+L : \mathbb R^p \to \mathbb R.
+$$
+
+So machine learning training is not mysterious from the viewpoint of calculus: it is an optimization problem for a function of many variables.
+
+::: {.callout-note}
+## Main principle
+
+A model turns inputs into predictions. A loss function turns predictions into a number measuring error. Optimization changes the parameters to reduce that number.
+:::
+
+The phrase **high-dimensional calculus** is not just a metaphor. In a small linear regression model, the parameter vector may have 3 or 10 components. In a modern neural network, it may have millions or billions. The basic mathematical objects remain the same:
+
+| Calculus object | Machine learning role |
+|---|---|
+| Point $\theta \in \mathbb R^p$ | Current parameter values |
+| Function $L(\theta)$ | Loss or objective |
+| Gradient $\nabla L(\theta)$ | Direction of steepest increase |
+| Negative gradient $-\nabla L(\theta)$ | Direction of steepest local decrease |
+| Hessian $H_L(\theta)$ | Local curvature of the loss |
+| Jacobian $J_f(\theta)$ | Sensitivity of a vector-valued model |
+| Chain rule | Backpropagation and automatic differentiation |
+
+## 25.2 A first loss function: least squares
+
+Suppose the data are approximately linear:
+
+$$
+y_i \approx \beta_0 + \beta_1 x_i.
+$$
+
+The model has two parameters:
+
+$$
+\theta = (\beta_0,\beta_1).
+$$
+
+For a single data point, the prediction error is
+
+$$
+e_i(\beta_0,\beta_1)=y_i-(\beta_0+\beta_1x_i).
+$$
+
+The least-squares loss is
+
+$$
+L(\beta_0,\beta_1)=\frac{1}{n}\sum_{i=1}^n \left(y_i-(\beta_0+\beta_1x_i)\right)^2.
+$$
+
+This is a surface over the $(\beta_0,\beta_1)$-plane. Training means finding the lowest point on this surface.
+
+### Worked example: gradient of the least-squares loss
+
+For
+
+$$
+L(\beta_0,\beta_1)=\frac{1}{n}\sum_{i=1}^n \left(y_i-\beta_0-\beta_1x_i\right)^2,
+$$
+
+let
+
+$$
+r_i = y_i-\beta_0-\beta_1x_i.
+$$
+
+Then
+
+$$
+L=\frac{1}{n}\sum_{i=1}^n r_i^2.
+$$
+
+Differentiate with respect to $\beta_0$:
+
+$$
+\frac{\partial L}{\partial \beta_0}
+=\frac{1}{n}\sum_{i=1}^n 2r_i\frac{\partial r_i}{\partial \beta_0}
+=\frac{1}{n}\sum_{i=1}^n 2r_i(-1)
+=-\frac{2}{n}\sum_{i=1}^n r_i.
+$$
+
+Differentiate with respect to $\beta_1$:
+
+$$
+\frac{\partial L}{\partial \beta_1}
+=\frac{1}{n}\sum_{i=1}^n 2r_i\frac{\partial r_i}{\partial \beta_1}
+=\frac{1}{n}\sum_{i=1}^n 2r_i(-x_i)
+=-\frac{2}{n}\sum_{i=1}^n x_i r_i.
+$$
+
+Therefore
+
+$$
+\nabla L(\beta_0,\beta_1)
+=
+\left\langle
+-\frac{2}{n}\sum_{i=1}^n r_i,
+-\frac{2}{n}\sum_{i=1}^n x_i r_i
+\right\rangle.
+$$
+
+The gradient is zero when the residuals satisfy the normal-equation conditions
+
+$$
+\sum_{i=1}^n r_i=0,
+\qquad
+\sum_{i=1}^n x_i r_i=0.
+$$
+
+Geometrically, the residual vector is orthogonal to the columns of the design matrix.
+
+```{python}
+#| label: fig-ch25-least-squares-loss
+#| fig-cap: 'A least-squares loss surface. Training searches for the lowest point in parameter space.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(25)
+x = np.linspace(-2, 2, 45)
+y = 1.2 + 2.1*x + rng.normal(scale=0.35, size=x.shape)
+
+b0 = np.linspace(-1.0, 3.5, 140)
+b1 = np.linspace(0.0, 4.2, 140)
+B0, B1 = np.meshgrid(b0, b1)
+Loss = np.zeros_like(B0)
+for xi, yi in zip(x, y):
+    Loss += (yi - (B0 + B1*xi))**2
+Loss = Loss / len(x)
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(B0, B1, Loss, alpha=0.85, linewidth=0, antialiased=True)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_zlabel(r'$L(\beta_0,\beta_1)$')
+ax.set_title('Least-squares loss surface')
+plt.show()
+```
+
+The same loss can be viewed by contours. The contour view is often more useful because optimization paths can be drawn on top of it.
+
+```{python}
+#| label: fig-ch25-least-squares-contours
+#| fig-cap: 'Contour lines of the least-squares loss. The gradient is perpendicular to the contours.'
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contour(B0, B1, Loss, levels=25)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Least-squares loss contours')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 25.3 Matrix form and the geometry of linear models
+
+For multiple features, place the data in a design matrix
+
+$$
+X =
+\begin{bmatrix}
+- & x_1^T & - \\
+- & x_2^T & - \\
+& \vdots & \\
+- & x_n^T & -
+\end{bmatrix},
+\qquad
+w \in \mathbb R^d,
+\qquad
+\hat y = Xw.
+$$
+
+The mean squared error loss is
+
+$$
+L(w)=\frac{1}{n}\|Xw-y\|^2.
+$$
+
+The gradient is
+
+$$
+\nabla L(w)=\frac{2}{n}X^T(Xw-y).
+$$
+
+This formula is one of the most important bridges between multivariable calculus and linear algebra. The residual vector $Xw-y$ lives in data space $\mathbb R^n$, while the gradient lives in parameter space $\mathbb R^d$.
+
+At a critical point,
+
+$$
+X^T(Xw-y)=0.
+$$
+
+So the residual vector is orthogonal to every column of $X$. This is the projection geometry behind least squares.
+
+::: {.callout-tip}
+## Geometry of least squares
+
+The least-squares solution chooses $Xw$ to be the orthogonal projection of $y$ onto the column space of $X$. The calculus condition $\nabla L(w)=0$ is the same as the linear algebra condition that the residual is orthogonal to the model space.
+:::
+
+### Worked example: gradient descent for linear regression
+
+Gradient descent updates parameters by
+
+$$
+w_{k+1}=w_k-\eta \nabla L(w_k),
+$$
+
+where $\eta>0$ is the learning rate. For the mean squared error,
+
+$$
+w_{k+1}=w_k-\eta\frac{2}{n}X^T(Xw_k-y).
+$$
+
+If the learning rate is too small, training is slow. If it is too large, the method may oscillate or diverge.
+
+```{python}
+#| label: fig-ch25-gradient-descent-path
+#| fig-cap: 'Gradient descent follows the negative gradient direction across the loss contours.'
+import numpy.linalg as la
+
+X = np.column_stack([np.ones_like(x), x])
+y_vec = y
+
+def loss_vec(w):
+    r = X @ w - y_vec
+    return np.mean(r**2)
+
+def grad_vec(w):
+    return (2 / len(y_vec)) * X.T @ (X @ w - y_vec)
+
+w = np.array([-0.6, 0.3])
+eta = 0.12
+path = [w.copy()]
+for k in range(40):
+    w = w - eta * grad_vec(w)
+    path.append(w.copy())
+path = np.array(path)
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contour(B0, B1, Loss, levels=25)
+ax.plot(path[:, 0], path[:, 1], marker='o', markersize=3)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Gradient descent path')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 25.4 Empirical risk and the structure of training problems
+
+Most supervised learning problems can be written as empirical risk minimization:
+
+$$
+\min_\theta \; L(\theta)
+=\min_\theta \frac{1}{n}\sum_{i=1}^n \ell(f_\theta(x_i),y_i).
+$$
+
+There are three layers:
+
+1. **Model layer:** $f_\theta(x)$ converts an input into a prediction.
+2. **Loss layer:** $\ell(f_\theta(x_i),y_i)$ measures the error on one data point.
+3. **Optimization layer:** the average loss is minimized over $\theta$.
+
+For a scalar-output model, the chain rule gives the gradient of one training example:
+
+$$
+\nabla_\theta \ell(f_\theta(x_i),y_i)
+=\frac{\partial \ell}{\partial \hat y_i}\nabla_\theta f_\theta(x_i),
+$$
+
+where $\hat y_i=f_\theta(x_i)$.
+
+For a vector-output model $f_\theta(x_i)\in \mathbb R^m$, the Jacobian appears:
+
+$$
+\nabla_\theta \ell(f_\theta(x_i),y_i)
+=J_{f_\theta}(x_i)^T \nabla_{\hat y_i}\ell(\hat y_i,y_i).
+$$
+
+This is the central calculus identity behind backpropagation.
+
+## 25.5 Logistic regression and classification
+
+For binary classification, labels are often $y_i\in\{0,1\}$. Logistic regression uses
+
+$$
+p_i = \sigma(w^Tx_i+b),
+$$
+
+where
+
+$$
+\sigma(z)=\frac{1}{1+e^{-z}}.
+$$
+
+The output $p_i$ is interpreted as a probability that $y_i=1$. The binary cross-entropy loss is
+
+$$
+L(w,b)
+=-\frac{1}{n}\sum_{i=1}^n
+\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right].
+$$
+
+Let $z_i=w^Tx_i+b$ and $p_i=\sigma(z_i)$. A useful derivative is
+
+$$
+\frac{d}{dz}\sigma(z)=\sigma(z)(1-\sigma(z)).
+$$
+
+For the cross-entropy loss, the derivative simplifies beautifully:
+
+$$
+\frac{\partial L}{\partial z_i}=\frac{1}{n}(p_i-y_i).
+$$
+
+Therefore
+
+$$
+\nabla_w L(w,b)=\frac{1}{n}\sum_{i=1}^n (p_i-y_i)x_i,
+\qquad
+\frac{\partial L}{\partial b}=\frac{1}{n}\sum_{i=1}^n(p_i-y_i).
+$$
+
+```{python}
+#| label: fig-ch25-logistic-sigmoid
+#| fig-cap: 'The logistic sigmoid transforms real-valued scores into probabilities between 0 and 1.'
+z = np.linspace(-8, 8, 400)
+sigma = 1 / (1 + np.exp(-z))
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(z, sigma)
+ax.axhline(0.5, linestyle='--', linewidth=1)
+ax.axvline(0, linestyle='--', linewidth=1)
+ax.set_xlabel(r'$z$')
+ax.set_ylabel(r'$\sigma(z)$')
+ax.set_title('Logistic sigmoid')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+```{python}
+#| label: fig-ch25-logistic-decision-boundary
+#| fig-cap: 'A logistic regression model learns a linear decision boundary in feature space.'
+rng = np.random.default_rng(250)
+n = 160
+X0 = rng.normal(loc=[-1.2, -0.8], scale=0.65, size=(n//2, 2))
+X1 = rng.normal(loc=[1.2, 0.9], scale=0.75, size=(n//2, 2))
+Xc = np.vstack([X0, X1])
+yc = np.r_[np.zeros(n//2), np.ones(n//2)]
+
+w = np.zeros(2)
+b = 0.0
+eta = 0.45
+for k in range(800):
+    z = Xc @ w + b
+    p = 1 / (1 + np.exp(-z))
+    grad_w = Xc.T @ (p - yc) / len(yc)
+    grad_b = np.mean(p - yc)
+    w -= eta * grad_w
+    b -= eta * grad_b
+
+xx = np.linspace(Xc[:, 0].min()-0.5, Xc[:, 0].max()+0.5, 200)
+yy = np.linspace(Xc[:, 1].min()-0.5, Xc[:, 1].max()+0.5, 200)
+XX, YY = np.meshgrid(xx, yy)
+ZZ = 1 / (1 + np.exp(-(w[0]*XX + w[1]*YY + b)))
+
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.contourf(XX, YY, ZZ, levels=20, alpha=0.45)
+ax.contour(XX, YY, ZZ, levels=[0.5], linewidths=2)
+ax.scatter(X0[:, 0], X0[:, 1], s=18, label='class 0')
+ax.scatter(X1[:, 0], X1[:, 1], s=18, label='class 1')
+ax.set_xlabel(r'$x_1$')
+ax.set_ylabel(r'$x_2$')
+ax.set_title('Logistic regression decision boundary')
+ax.legend()
+ax.grid(True, alpha=0.2)
+plt.show()
+```
+
+## 25.6 Regularization and the bias--variance tradeoff
+
+A loss function measures fit to data. A regularization term measures model complexity. A common objective is
+
+$$
+J(\theta)=L(\theta)+\lambda R(\theta),
+$$
+
+where $\lambda\ge 0$ controls the strength of regularization.
+
+For ridge regression,
+
+$$
+R(w)=\|w\|^2.
+$$
+
+The regularized objective is
+
+$$
+J(w)=\frac{1}{n}\|Xw-y\|^2+\lambda\|w\|^2.
+$$
+
+Its gradient is
+
+$$
+\nabla J(w)=\frac{2}{n}X^T(Xw-y)+2\lambda w.
+$$
+
+The term $2\lambda w$ pulls the parameter vector toward the origin. This often improves generalization by preventing unstable parameter estimates.
+
+::: {.callout-note}
+## Calculus interpretation of regularization
+
+Regularization changes the geometry of the loss surface. It adds curvature that penalizes large parameter values, often making the optimization problem better conditioned.
+:::
+
+```{python}
+#| label: fig-ch25-ridge-regularization
+#| fig-cap: 'Ridge regularization adds circular penalty contours to the data-fitting loss.'
+W0, W1 = np.meshgrid(np.linspace(-1, 3, 180), np.linspace(-1, 4, 180))
+DataLoss = np.zeros_like(W0)
+for xi, yi in zip(x, y):
+    DataLoss += (yi - (W0 + W1*xi))**2
+DataLoss = DataLoss / len(x)
+Penalty = W0**2 + W1**2
+RidgeLoss = DataLoss + 0.25 * Penalty
+
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.contour(W0, W1, DataLoss, levels=12, linestyles='dashed')
+ax.contour(W0, W1, RidgeLoss, levels=12)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Data loss contours and ridge-regularized contours')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 25.7 Stochastic gradient descent
+
+For large data sets, computing the full gradient
+
+$$
+\nabla L(\theta)=\frac{1}{n}\sum_{i=1}^n \nabla_\theta \ell_i(\theta)
+$$
+
+may be expensive. Stochastic gradient descent replaces the full average by a random estimate:
+
+$$
+\theta_{k+1}=\theta_k-\eta_k g_k,
+$$
+
+where $g_k$ is computed from one data point or a mini-batch.
+
+A mini-batch gradient has the form
+
+$$
+g_k=\frac{1}{|B_k|}\sum_{i\in B_k}\nabla_\theta \ell_i(\theta_k).
+$$
+
+This introduces noise into the path. The noise can slow convergence near a minimum, but it can also help training move through complicated landscapes.
+
+```{python}
+#| label: fig-ch25-batch-vs-stochastic-gradient
+#| fig-cap: 'Batch gradient descent follows a smooth path; stochastic gradient descent follows a noisier path.'
+rng = np.random.default_rng(251)
+
+# Reuse linear regression data X and y_vec.
+def grad_one(w, i):
+    xi = X[i]
+    ri = xi @ w - y_vec[i]
+    return 2 * xi * ri
+
+w_batch = np.array([-0.5, 0.2])
+w_sgd = np.array([-0.5, 0.2])
+eta_batch = 0.12
+eta_sgd = 0.025
+path_batch = [w_batch.copy()]
+path_sgd = [w_sgd.copy()]
+
+for k in range(70):
+    w_batch = w_batch - eta_batch * grad_vec(w_batch)
+    path_batch.append(w_batch.copy())
+    i = rng.integers(len(y_vec))
+    w_sgd = w_sgd - eta_sgd * grad_one(w_sgd, i)
+    path_sgd.append(w_sgd.copy())
+
+path_batch = np.array(path_batch)
+path_sgd = np.array(path_sgd)
+
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.contour(B0, B1, Loss, levels=24)
+ax.plot(path_batch[:, 0], path_batch[:, 1], marker='o', markersize=3, label='batch')
+ax.plot(path_sgd[:, 0], path_sgd[:, 1], marker='.', markersize=3, label='stochastic')
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Batch and stochastic gradient paths')
+ax.legend()
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 25.8 Neural networks and the chain rule
+
+A neural network is a composition of functions. A simple one-hidden-layer network has the form
+
+$$
+f_\theta(x)=W_2\,\phi(W_1x+b_1)+b_2,
+$$
+
+where $\phi$ is an activation function applied componentwise. The parameters are
+
+$$
+\theta=(W_1,b_1,W_2,b_2).
+$$
+
+The main calculus idea is not new: the derivative of a composition is computed by the chain rule. What changes is scale. A network may have many layers:
+
+$$
+x \mapsto h_1 \mapsto h_2 \mapsto \cdots \mapsto h_K \mapsto \hat y \mapsto L.
+$$
+
+Backpropagation computes derivatives from the output backward through the computational graph.
+
+### A scalar example
+
+Let
+
+$$
+\hat y = a\,\phi(wx+b),
+\qquad
+L=\frac{1}{2}(\hat y-y)^2.
+$$
+
+Let $z=wx+b$ and $h=\phi(z)$. Then $\hat y=ah$. By the chain rule,
+
+$$
+\frac{\partial L}{\partial a}
+=(\hat y-y)h,
+$$
+
+$$
+\frac{\partial L}{\partial w}
+=(\hat y-y)a\phi'(z)x,
+$$
+
+and
+
+$$
+\frac{\partial L}{\partial b}
+=(\hat y-y)a\phi'(z).
+$$
+
+Every large backpropagation computation is built from this same pattern.
+
+```{python}
+#| label: fig-ch25-activation-functions
+#| fig-cap: 'Common activation functions shape how neural networks bend space.'
+z = np.linspace(-4, 4, 400)
+relu = np.maximum(0, z)
+tanh = np.tanh(z)
+sigmoid = 1 / (1 + np.exp(-z))
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(z, relu, label='ReLU')
+ax.plot(z, tanh, label='tanh')
+ax.plot(z, sigmoid, label='sigmoid')
+ax.set_xlabel(r'$z$')
+ax.set_ylabel('activation')
+ax.set_title('Activation functions')
+ax.legend()
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 25.9 Numerical gradient checking
+
+Even when gradients are computed automatically, it is useful to understand numerical checks. For a differentiable function $L:\mathbb R^p\to\mathbb R$, the central difference approximation to the $j$th partial derivative is
+
+$$
+\frac{\partial L}{\partial \theta_j}(\theta)
+\approx
+\frac{L(\theta+h e_j)-L(\theta-h e_j)}{2h}.
+$$
+
+This checks whether an analytic or automatic gradient is plausible.
+
+```{python}
+#| label: tbl-ch25-gradient-check
+#| tbl-cap: 'Analytic and numerical gradients for a least-squares loss.'
+import pandas as pd
+
+w0 = np.array([0.4, 1.1])
+h = 1e-5
+analytic = grad_vec(w0)
+numerical = np.zeros_like(w0)
+for j in range(len(w0)):
+    e = np.zeros_like(w0)
+    e[j] = 1.0
+    numerical[j] = (loss_vec(w0 + h*e) - loss_vec(w0 - h*e)) / (2*h)
+
+pd.DataFrame({
+    'component': ['beta_0', 'beta_1'],
+    'analytic_gradient': analytic,
+    'numerical_gradient': numerical,
+    'absolute_error': np.abs(analytic - numerical)
+})
+```
+
+A small difference between the analytic and numerical gradients gives confidence that the derivative was implemented correctly. A large difference suggests an algebra error, a coding error, or a nondifferentiability issue.
+
+## 25.10 Hessians, curvature, and learning rates
+
+Near a point $\theta_0$, a twice differentiable loss has the second-order approximation
+
+$$
+L(\theta_0+u)
+\approx
+L(\theta_0)+\nabla L(\theta_0)^T u+rac{1}{2}u^T H_L(\theta_0)u.
+$$
+
+The Hessian tells us how curved the loss is in different directions. If the Hessian has eigenvalues with very different sizes, the level sets are long and narrow. Gradient descent may zigzag.
+
+For least squares,
+
+$$
+L(w)=\frac{1}{n}\|Xw-y\|^2,
+$$
+
+the Hessian is constant:
+
+$$
+H_L(w)=\frac{2}{n}X^TX.
+$$
+
+The eigenvalues of $X^TX$ control the conditioning of the optimization problem.
+
+```{python}
+#| label: fig-ch25-conditioning
+#| fig-cap: 'Poor conditioning creates narrow valleys, making gradient descent sensitive to learning rate.'
+u = np.linspace(-3, 3, 220)
+v = np.linspace(-3, 3, 220)
+U, V = np.meshgrid(u, v)
+Good = U**2 + V**2
+Bad = 10*U**2 + 0.2*V**2
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+axes[0].contour(U, V, Good, levels=18)
+axes[0].set_title('well-conditioned')
+axes[0].set_aspect('equal')
+axes[0].grid(True, alpha=0.25)
+axes[1].contour(U, V, Bad, levels=18)
+axes[1].set_title('poorly conditioned')
+axes[1].set_aspect('equal')
+axes[1].grid(True, alpha=0.25)
+for ax in axes:
+    ax.set_xlabel(r'$u_1$')
+    ax.set_ylabel(r'$u_2$')
+plt.show()
+```
+
+## 25.11 Feature maps and nonlinear models
+
+A model can be nonlinear in the input but linear in parameters. For example,
+
+$$
+f_w(x)=w_0+w_1x+w_2x^2.
+$$
+
+This is linear regression after replacing $x$ by the feature vector
+
+$$
+\phi(x)=(1,x,x^2).
+$$
+
+More generally, a feature map
+
+$$
+\phi:\mathbb R^d\to\mathbb R^m
+$$
+
+transforms the original input into a space where a simpler model may work better.
+
+```{python}
+#| label: fig-ch25-feature-map
+#| fig-cap: 'A nonlinear feature map can turn a curved pattern into a linear problem in a transformed space.'
+rng = np.random.default_rng(252)
+x1 = rng.uniform(-2, 2, 120)
+y_true = 0.5 - 1.0*x1 + 1.4*x1**2
+noise = rng.normal(scale=0.6, size=x1.shape)
+y_obs = y_true + noise
+Phi = np.column_stack([np.ones_like(x1), x1, x1**2])
+w_poly = la.solve(Phi.T @ Phi, Phi.T @ y_obs)
+xs = np.linspace(-2.2, 2.2, 300)
+ys = w_poly[0] + w_poly[1]*xs + w_poly[2]*xs**2
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.scatter(x1, y_obs, s=18, alpha=0.75)
+ax.plot(xs, ys, linewidth=2)
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title('Quadratic features for nonlinear regression')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+This example is important because it separates two ideas:
+
+- **nonlinear in the input** means the graph may bend;
+- **linear in the parameters** means the loss may still be a convex quadratic.
+
+Neural networks are more complicated because they are usually nonlinear in both inputs and parameters.
+
+## 25.12 What calculus tells us about machine learning
+
+Multivariable calculus gives a precise language for several major questions in machine learning.
+
+### Sensitivity
+
+How much does the output change when the input or parameters change? This is measured by derivatives and Jacobians.
+
+### Training
+
+How should parameters be changed to reduce the loss? This is guided by gradients and optimization algorithms.
+
+### Curvature
+
+Why is one learning problem easy and another hard? Hessians, eigenvalues, and conditioning provide part of the answer.
+
+### Generalization
+
+Why might a model fit training data but fail on new data? Regularization, model complexity, and stability are connected to the geometry of the parameter space.
+
+### Computation
+
+How can derivatives be computed for huge composed functions? The answer is the chain rule organized as automatic differentiation.
+
+::: {.callout-important}
+## The big picture
+
+Machine learning does not replace calculus. It scales calculus. The same gradient, Jacobian, Hessian, and chain-rule ideas from this book become computational tools for learning from data.
+:::
+
+## Common mistakes
+
+1. **Confusing feature space and parameter space.** Inputs $x$ live in feature space; parameters $\theta$ live in parameter space. Gradients of the loss are usually taken with respect to parameters.
+2. **Using the gradient direction instead of the negative gradient direction.** The gradient points toward steepest increase. Gradient descent moves in the negative gradient direction.
+3. **Choosing a learning rate without checking behavior.** A learning rate can be too small, useful, unstable, or divergent.
+4. **Assuming every loss is convex.** Least squares is convex in linear parameters, but neural-network losses are usually nonconvex.
+5. **Ignoring scaling.** Feature scaling changes the geometry of the loss surface and can strongly affect optimization.
+6. **Trusting code without gradient checks.** Numerical derivatives are useful for debugging small models.
+
+## Practice problems
+
+### Conceptual problems
+
+1. Explain the difference between feature space and parameter space for a linear model $f_w(x)=w^Tx$.
+2. What does the loss surface represent in linear regression?
+3. Why is the negative gradient direction used in gradient descent?
+4. Explain why the chain rule is the mathematical foundation of backpropagation.
+5. In logistic regression, why is the output interpreted as a probability?
+6. What is the purpose of regularization?
+7. Why can poor conditioning slow down gradient descent?
+8. What is the difference between batch gradient descent and stochastic gradient descent?
+
+### Computational problems
+
+9. For
+
+$$
+L(w_1,w_2)=3w_1^2+2w_1w_2+w_2^2,
+$$
+
+compute $\nabla L$ and perform three steps of gradient descent starting at $(1,2)$ with learning rate $\eta=0.1$.
+
+10. Let
+
+$$
+L(\beta_0,\beta_1)=\frac{1}{3}\left[(1-\beta_0)^2+(2-\beta_0-\beta_1)^2+(4-\beta_0-2\beta_1)^2\right].
+$$
+
+Compute $\nabla L$ and solve $\nabla L=0$.
+
+11. For logistic regression with one feature,
+
+$$
+p_i=\sigma(wx_i+b),
+$$
+
+show that
+
+$$
+\frac{\partial L}{\partial w}=\frac{1}{n}\sum_{i=1}^n(p_i-y_i)x_i.
+$$
+
+12. For ridge regression,
+
+$$
+J(w)=\frac{1}{n}\|Xw-y\|^2+\lambda\|w\|^2,
+$$
+
+compute the Hessian.
+
+13. Let $f_w(x)=w_0+w_1x+w_2x^2$. Write the design matrix for data points $x_1,\ldots,x_n$.
+
+14. Suppose $L(\theta)=\frac12(f(\theta)-y)^2$. Show that
+
+$$
+\nabla L(\theta)=(f(\theta)-y)\nabla f(\theta).
+$$
+
+### Python problems
+
+15. Modify the gradient descent code in this chapter to use a smaller learning rate and compare the path.
+16. Modify the logistic regression simulation so that the two classes overlap more. What happens to the decision boundary?
+17. Implement ridge regression by gradient descent and compare the result for $\lambda=0$, $\lambda=0.1$, and $\lambda=1$.
+18. Write a numerical gradient checker for the logistic regression loss.
+19. Simulate stochastic gradient descent with different mini-batch sizes.
+20. Create a polynomial regression example with features $1,x,x^2,x^3$ and compare the fit to a linear model.
+
+### Project problems
+
+21. **Loss landscape project.** Choose a two-parameter model and create a contour plot of its loss surface. Overlay several gradient descent paths with different learning rates.
+22. **Classification project.** Generate a two-class data set, train logistic regression from scratch, and visualize the learned decision boundary.
+23. **Regularization project.** Fit polynomial models of several degrees and compare training error, testing error, and coefficient size.
+24. **Backpropagation project.** Implement the scalar neural-network example from Section 25.8 and compare analytic gradients with numerical gradients.
+
+## Python lab and interactive page
+
+- Notebook lab: [Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb](../labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb)
+- Interactive HTML page: [Chapter 25 interactive page](../htmls/chapter-25.html)
+
+## Chapter summary
+
+This chapter connected multivariable calculus to data science and machine learning. A model is a function with parameters, and training is the problem of minimizing a loss function on parameter space. Gradients guide local improvement, Hessians describe curvature, Jacobians measure sensitivity, and the chain rule powers backpropagation. Linear regression, logistic regression, regularization, stochastic gradient descent, and neural networks all use the same core calculus ideas developed throughout this book.

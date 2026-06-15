@@ -1,0 +1,1333 @@
+---
+title: "Chapter 12. Constrained Optimization and Lagrange Multipliers"
+subtitle: "Optimizing under equations, budgets, geometry, and model constraints"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> **Chapter goal.** Many important optimization problems are not free optimization problems. A model may need to satisfy a budget, a probability vector must have total mass $1$, a point may be required to lie on a curve or surface, and a physical system may preserve mass or energy. This chapter develops the method of Lagrange multipliers, a geometric and computational tool for optimizing a function subject to one or more constraints.
+
+In the previous chapter we studied optimization when the variables can move freely. If $f$ is differentiable and has a local maximum or minimum at an interior point, then
+
+$$
+\nabla f=0.
+$$
+
+Constrained optimization is different. If a point is required to stay on a curve such as $x^2+y^2=10$, the variables cannot move independently. The gradient of $f$ does not have to be zero. Instead, at an optimal constrained point, the level curve of $f$ is tangent to the constraint curve. Equivalently, the normal vectors are parallel.
+
+That simple geometric sentence is the heart of Lagrange multipliers.
+
+## Learning objectives
+
+After studying this chapter, you should be able to:
+
+1. distinguish unconstrained and constrained optimization problems;
+2. explain the geometric meaning of the condition $\nabla f=\lambda \nabla g$;
+3. solve constrained optimization problems with one equality constraint;
+4. combine interior critical points with boundary candidates for absolute extrema;
+5. solve distance, area, volume, and budget problems using constraints;
+6. use Lagrange multipliers with two equality constraints;
+7. recognize when the method needs regularity assumptions such as $\nabla g\ne 0$;
+8. interpret constrained optimization in statistics, machine learning, and applied mathematics.
+
+## 12.1 What makes an optimization problem constrained?
+
+A typical unconstrained optimization problem asks:
+
+> Find the maximum or minimum of $f(x,y)$ over a region where $(x,y)$ can move freely.
+
+A typical constrained optimization problem asks:
+
+> Find the maximum or minimum of $f(x,y)$ subject to $g(x,y)=k$.
+
+The function $f$ is called the **objective function**. The equation $g(x,y)=k$ is called the **constraint**. The set of all points satisfying the constraint is the **constraint set**.
+
+For example:
+
+$$
+f(x,y)=2x+6y, \qquad x^2+y^2=10
+$$
+
+asks us to optimize a linear function along a circle. We are not allowed to move anywhere in the plane; we may only move along the circle.
+
+::: {.callout-tip}
+## The optimization question has two parts
+
+Every constrained optimization problem should be read as:
+
+1. **Objective:** What quantity are we trying to maximize or minimize?
+2. **Constraint:** What equations or restrictions must the variables satisfy?
+
+Most mistakes come from confusing the objective with the constraint.
+:::
+
+## 12.2 The geometry of tangency
+
+Suppose $f(x,y)$ is to be optimized subject to
+
+$$
+g(x,y)=k.
+$$
+
+The constraint is a level curve of $g$. The objective also has level curves
+
+$$
+f(x,y)=c.
+$$
+
+At a constrained maximum or minimum, the level curve of $f$ usually just touches the constraint curve. If the two curves crossed transversely, then moving along the constraint would move $f$ both upward and downward, so the point would not be an extremum.
+
+Gradients are normal to level curves. Therefore, at a regular constrained extremum,
+
+$$
+\nabla f \quad \text{is parallel to} \quad \nabla g.
+$$
+
+This means that there is a scalar $\lambda$ such that
+
+$$
+\nabla f=\lambda \nabla g.
+$$
+
+The number $\lambda$ is called a **Lagrange multiplier**.
+
+```{python}
+#| label: fig-ch12-level-curve-tangency
+#| fig-cap: 'At a constrained extremum, a level curve of the objective is tangent to the constraint curve.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-4, 4, 500)
+y = np.linspace(-4, 4, 500)
+X, Y = np.meshgrid(x, y)
+F = 2*X + 6*Y
+G = X**2 + Y**2
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.contour(X, Y, F, levels=np.arange(-24, 25, 6), linestyles='--')
+ax.contour(X, Y, G, levels=[10], linewidths=2)
+
+# Extremal points for f=2x+6y on x^2+y^2=10.
+normal = np.array([2.0, 6.0])
+point_max = np.sqrt(10) * normal / np.linalg.norm(normal)
+point_min = -point_max
+ax.scatter([point_max[0], point_min[0]], [point_max[1], point_min[1]], s=60)
+ax.annotate('maximum', point_max + np.array([0.2, 0.2]))
+ax.annotate('minimum', point_min + np.array([0.2, -0.5]))
+
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Level curves of f and the constraint circle')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.3 The method of Lagrange multipliers: one constraint
+
+Let $f$ and $g$ be differentiable functions of $x$ and $y$. To find extrema of $f(x,y)$ subject to
+
+$$
+g(x,y)=k,
+$$
+
+solve the system
+
+$$
+\nabla f(x,y)=\lambda \nabla g(x,y),
+\qquad
+ g(x,y)=k.
+$$
+
+Equivalently,
+
+$$
+\begin{cases}
+f_x=\lambda g_x,\\
+f_y=\lambda g_y,\\
+g(x,y)=k.
+\end{cases}
+$$
+
+For a function of three variables subject to one constraint $g(x,y,z)=k$, solve
+
+$$
+\begin{cases}
+f_x=\lambda g_x,\\
+f_y=\lambda g_y,\\
+f_z=\lambda g_z,\\
+g(x,y,z)=k.
+\end{cases}
+$$
+
+::: {.callout-important}
+## Regularity assumption
+
+The standard Lagrange multiplier condition assumes that the constraint is regular at the point, meaning
+
+$$
+\nabla g \ne 0.
+$$
+
+If $\nabla g=0$ somewhere on the constraint set, the method may miss an extremum or produce incomplete information. Such points must be checked separately.
+:::
+
+### Algorithm 12.1: equality-constrained extrema
+
+To optimize $f$ subject to $g=k$:
+
+1. Compute $\nabla f$ and $\nabla g$.
+2. Set up $\nabla f=\lambda \nabla g$ together with $g=k$.
+3. Solve for the variables and $\lambda$.
+4. Evaluate $f$ at all candidate points.
+5. If the constraint set is closed and bounded and $f$ is continuous, the largest value is the absolute maximum and the smallest value is the absolute minimum.
+
+## 12.4 A first worked example: a linear objective on a circle
+
+Find the maximum and minimum values of
+
+$$
+f(x,y)=2x+6y
+$$
+
+subject to
+
+$$
+x^2+y^2=10.
+$$
+
+Let
+
+$$
+g(x,y)=x^2+y^2.
+$$
+
+Then
+
+$$
+\nabla f=\langle 2,6\rangle,
+\qquad
+\nabla g=\langle 2x,2y\rangle.
+$$
+
+The Lagrange equations are
+
+$$
+\langle 2,6\rangle=\lambda \langle 2x,2y\rangle,
+\qquad
+x^2+y^2=10.
+$$
+
+Thus
+
+$$
+2=2\lambda x,
+\qquad
+6=2\lambda y.
+$$
+
+Assuming $\lambda\ne 0$,
+
+$$
+x=\frac{1}{\lambda},
+\qquad
+ y=\frac{3}{\lambda}.
+$$
+
+Substitute into the constraint:
+
+$$
+\frac{1}{\lambda^2}+\frac{9}{\lambda^2}=10,
+$$
+
+so
+
+$$
+\lambda^2=1.
+$$
+
+Therefore $\lambda=1$ gives $(x,y)=(1,3)$, and $\lambda=-1$ gives $(x,y)=(-1,-3)$.
+
+Evaluate the objective:
+
+$$
+f(1,3)=20,
+\qquad
+f(-1,-3)=-20.
+$$
+
+So the maximum value is $20$, and the minimum value is $-20$.
+
+```{python}
+#| label: fig-ch12-linear-circle-values
+#| fig-cap: 'The restricted function f(cosine parameter, sine parameter) has one maximum and one minimum on the circle.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+theta = np.linspace(0, 2*np.pi, 500)
+r = np.sqrt(10)
+x = r*np.cos(theta)
+y = r*np.sin(theta)
+f = 2*x + 6*y
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(theta, f)
+ax.scatter([np.arctan2(3, 1), np.arctan2(-3, -1) % (2*np.pi)], [20, -20], s=60)
+ax.set_xlabel(r'$\theta$')
+ax.set_ylabel(r'$f(\sqrt{10}\cos\theta,\sqrt{10}\sin\theta)$')
+ax.set_title('Objective restricted to the constraint circle')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.5 Why $\nabla f=\lambda \nabla g$ means no feasible first-order change
+
+Suppose $r(t)$ is a path that stays on the constraint set:
+
+$$
+g(r(t))=k.
+$$
+
+Differentiating with respect to $t$ gives
+
+$$
+\nabla g(r(t))\cdot r'(t)=0.
+$$
+
+Thus the velocity vector $r'(t)$ is tangent to the constraint set. At a constrained extremum, $f(r(t))$ should have derivative zero for every feasible tangent direction:
+
+$$
+\frac{d}{dt}f(r(t))=\nabla f(r(t))\cdot r'(t)=0.
+$$
+
+So $\nabla f$ must be perpendicular to every tangent direction. But $\nabla g$ is also perpendicular to every tangent direction. Therefore, in the one-constraint case, $\nabla f$ and $\nabla g$ must be parallel.
+
+This is the geometric reason for the equation
+
+$$
+\nabla f=\lambda \nabla g.
+$$
+
+## 12.6 Distance problems
+
+Distance problems are among the cleanest applications of Lagrange multipliers.
+
+### Worked example 12.2: closest point on a parabola
+
+Find the point on the curve
+
+$$
+y=x^2
+$$
+
+closest to the point $(0,1)$.
+
+The distance from $(x,y)$ to $(0,1)$ is
+
+$$
+\sqrt{x^2+(y-1)^2}.
+$$
+
+It is easier to minimize the squared distance
+
+$$
+f(x,y)=x^2+(y-1)^2.
+$$
+
+The constraint is
+
+$$
+g(x,y)=y-x^2=0.
+$$
+
+Compute gradients:
+
+$$
+\nabla f=\langle 2x,2(y-1)\rangle,
+\qquad
+\nabla g=\langle -2x,1\rangle.
+$$
+
+The Lagrange equations are
+
+$$
+\begin{cases}
+2x=-2\lambda x,\\
+2(y-1)=\lambda,\\
+y=x^2.
+\end{cases}
+$$
+
+The first equation gives
+
+$$
+x(1+\lambda)=0.
+$$
+
+So either $x=0$ or $\lambda=-1$.
+
+If $x=0$, then $y=0$, giving $(0,0)$.
+
+If $\lambda=-1$, then
+
+$$
+2(y-1)=-1,
+$$
+
+so $y=1/2$. Since $y=x^2$, we get
+
+$$
+x=\pm \frac{1}{\sqrt{2}}.
+$$
+
+The candidate points are
+
+$$
+(0,0),
+\qquad
+\left(\frac{1}{\sqrt{2}},\frac12\right),
+\qquad
+\left(-\frac{1}{\sqrt{2}},\frac12\right).
+$$
+
+Evaluate the squared distance:
+
+$$
+f(0,0)=1,
+$$
+
+and
+
+$$
+f\left(\pm\frac{1}{\sqrt{2}},\frac12\right)
+=\frac12+\frac14=\frac34.
+$$
+
+Therefore, the closest points are
+
+$$
+\left(\frac{1}{\sqrt{2}},\frac12\right)
+\quad \text{and} \quad
+\left(-\frac{1}{\sqrt{2}},\frac12\right).
+$$
+
+```{python}
+#| label: fig-ch12-closest-parabola
+#| fig-cap: 'The closest points on the parabola y=x^2 to (0,1) occur where the distance circle is tangent to the curve.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.8, 1.8, 500)
+y = x**2
+p = np.array([0.0, 1.0])
+q1 = np.array([1/np.sqrt(2), 0.5])
+q2 = np.array([-1/np.sqrt(2), 0.5])
+rad = np.linalg.norm(q1 - p)
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.plot(x, y, label=r'$y=x^2$')
+circle_theta = np.linspace(0, 2*np.pi, 500)
+ax.plot(p[0] + rad*np.cos(circle_theta), p[1] + rad*np.sin(circle_theta), linestyle='--', label='distance circle')
+ax.scatter([p[0], q1[0], q2[0]], [p[1], q1[1], q2[1]], s=60)
+ax.annotate('(0,1)', p + np.array([0.06, 0.06]))
+ax.annotate('closest', q1 + np.array([0.06, -0.12]))
+ax.annotate('closest', q2 + np.array([-0.55, -0.12]))
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Closest points on a curve')
+ax.legend()
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.7 Absolute extrema on closed bounded regions
+
+For a closed bounded region $D$, absolute extrema of a continuous function $f$ can occur:
+
+1. at interior critical points, where $\nabla f=0$;
+2. on smooth boundary pieces, where Lagrange multipliers apply;
+3. at corners or nonsmooth boundary points.
+
+This is a practical workflow:
+
+::: {.callout-note}
+## Interior-boundary-corner checklist
+
+To find absolute maxima and minima on a closed bounded region:
+
+1. Find all interior critical points.
+2. Analyze each boundary piece.
+3. Use Lagrange multipliers on curved or implicit boundary pieces.
+4. Check corners and endpoints.
+5. Evaluate $f$ at every candidate.
+:::
+
+### Worked example 12.3: a quadratic function on a disk
+
+Find the maximum and minimum of
+
+$$
+f(x,y)=x^2+2y^2+2
+$$
+
+on the disk
+
+$$
+D=\{(x,y):x^2+y^2\le 1\}.
+$$
+
+First, find interior critical points:
+
+$$
+\nabla f=\langle 2x,4y\rangle.
+$$
+
+Thus $\nabla f=0$ only at $(0,0)$, which lies inside the disk. The value is
+
+$$
+f(0,0)=2.
+$$
+
+Now consider the boundary circle
+
+$$
+x^2+y^2=1.
+$$
+
+Let $g(x,y)=x^2+y^2$. The Lagrange equations are
+
+$$
+\langle 2x,4y\rangle=\lambda \langle 2x,2y\rangle,
+\qquad
+x^2+y^2=1.
+$$
+
+Thus
+
+$$
+2x=2\lambda x,
+\qquad
+4y=2\lambda y.
+$$
+
+From these equations, either $x=0$ or $\lambda=1$, and either $y=0$ or $\lambda=2$. The boundary candidates are
+
+$$
+(\pm1,0),\qquad (0,\pm1).
+$$
+
+Evaluate:
+
+$$
+f(\pm1,0)=3,
+\qquad
+f(0,\pm1)=4,
+\qquad
+f(0,0)=2.
+$$
+
+Therefore, the absolute minimum is $2$ at $(0,0)$, and the absolute maximum is $4$ at $(0,\pm1)$.
+
+```{python}
+#| label: fig-ch12-disk-extrema
+#| fig-cap: 'Absolute extrema on a disk require checking both the interior and the boundary.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.2, 1.2, 400)
+y = np.linspace(-1.2, 1.2, 400)
+X, Y = np.meshgrid(x, y)
+F = X**2 + 2*Y**2 + 2
+
+fig, ax = plt.subplots(figsize=(7, 6))
+levels = np.linspace(2, 4.5, 12)
+cs = ax.contour(X, Y, F, levels=levels)
+ax.clabel(cs, inline=True, fontsize=8)
+theta = np.linspace(0, 2*np.pi, 500)
+ax.plot(np.cos(theta), np.sin(theta), linewidth=2)
+points = np.array([[0,0], [1,0], [-1,0], [0,1], [0,-1]])
+ax.scatter(points[:,0], points[:,1], s=55)
+for px, py in points:
+    ax.annotate(f'({px},{py})', (px, py), xytext=(5, 5), textcoords='offset points')
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title(r'$f(x,y)=x^2+2y^2+2$ on the unit disk')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.8 Area and volume under constraints
+
+Many modeling problems involve maximizing or minimizing a geometric quantity while preserving a resource.
+
+### Worked example 12.4: maximum area with fixed perimeter
+
+A rectangle has perimeter $12$. Find the dimensions that maximize its area.
+
+Let $x$ and $y$ be side lengths. The area is
+
+$$
+A(x,y)=xy.
+$$
+
+The perimeter constraint is
+
+$$
+2x+2y=12,
+$$
+
+or
+
+$$
+g(x,y)=2x+2y=12.
+$$
+
+Compute gradients:
+
+$$
+\nabla A=\langle y,x\rangle,
+\qquad
+\nabla g=\langle 2,2\rangle.
+$$
+
+The Lagrange equations are
+
+$$
+\langle y,x\rangle=\lambda \langle 2,2\rangle,
+\qquad
+2x+2y=12.
+$$
+
+Thus
+
+$$
+y=2\lambda,
+\qquad
+x=2\lambda.
+$$
+
+So $x=y$. From the perimeter constraint,
+
+$$
+4x=12,
+$$
+
+so
+
+$$
+x=y=3.
+$$
+
+The maximum-area rectangle is a square of side length $3$, and the maximum area is $9$.
+
+```{python}
+#| label: fig-ch12-rectangle-area
+#| fig-cap: 'With fixed perimeter 12, the rectangle area xy is maximized when x=y=3.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0.1, 5.9, 400)
+y = 6 - x
+area = x*y
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(x, area)
+ax.scatter([3], [9], s=70)
+ax.annotate('maximum at x=y=3', (3, 9), xytext=(3.2, 8.0))
+ax.set_xlabel('x')
+ax.set_ylabel('Area = x(6-x)')
+ax.set_title('Area under fixed perimeter')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Worked example 12.5: minimizing material for a box with fixed volume
+
+A box with no top has volume $4$. Find the dimensions that minimize the cardboard area.
+
+Let $x$, $y$, and $z$ be the length, width, and height. The volume constraint is
+
+$$
+xyz=4.
+$$
+
+The area of cardboard is
+
+$$
+A(x,y,z)=xy+2xz+2yz.
+$$
+
+One method is to solve the constraint for $z$:
+
+$$
+z=\frac{4}{xy}.
+$$
+
+Then
+
+$$
+A(x,y)=xy+2x\frac{4}{xy}+2y\frac{4}{xy}
+=xy+\frac{8}{y}+\frac{8}{x}.
+$$
+
+Set partial derivatives equal to zero:
+
+$$
+A_x=y-\frac{8}{x^2}=0,
+\qquad
+A_y=x-\frac{8}{y^2}=0.
+$$
+
+By symmetry, $x=y$. Then
+
+$$
+x=\frac{8}{x^2},
+$$
+
+so
+
+$$
+x^3=8,
+\qquad
+x=2.
+$$
+
+Thus $y=2$, and the volume constraint gives
+
+$$
+z=1.
+$$
+
+So the minimal cardboard dimensions are
+
+$$
+2\times 2\times 1.
+$$
+
+This problem can also be solved using Lagrange multipliers directly from $A(x,y,z)$ subject to $xyz=4$.
+
+## 12.9 Lagrange multipliers in three variables
+
+For one constraint in three variables, the method is exactly the same:
+
+$$
+\nabla f(x,y,z)=\lambda \nabla g(x,y,z),
+\qquad
+ g(x,y,z)=k.
+$$
+
+### Worked example 12.6: closest point on a plane
+
+Find the point on the plane
+
+$$
+2x+y-z=1
+$$
+
+closest to the point $(0,1,3)$.
+
+Minimize squared distance:
+
+$$
+f(x,y,z)=x^2+(y-1)^2+(z-3)^2.
+$$
+
+The constraint is
+
+$$
+g(x,y,z)=2x+y-z=1.
+$$
+
+Compute gradients:
+
+$$
+\nabla f=\langle 2x,2(y-1),2(z-3)\rangle,
+\qquad
+\nabla g=\langle 2,1,-1\rangle.
+$$
+
+The Lagrange equations are
+
+$$
+\langle 2x,2(y-1),2(z-3)\rangle
+=
+\lambda \langle 2,1,-1\rangle.
+$$
+
+Thus
+
+$$
+2x=2\lambda,
+\qquad
+2(y-1)=\lambda,
+\qquad
+2(z-3)=-\lambda.
+$$
+
+So
+
+$$
+x=\lambda,
+\qquad
+ y=1+\frac{\lambda}{2},
+\qquad
+ z=3-\frac{\lambda}{2}.
+$$
+
+Substitute into the plane equation:
+
+$$
+2\lambda+1+\frac{\lambda}{2}-3+\frac{\lambda}{2}=1.
+$$
+
+This simplifies to
+
+$$
+3\lambda-2=1,
+$$
+
+so $\lambda=1$. Therefore,
+
+$$
+(x,y,z)=\left(1,\frac32,\frac52\right).
+$$
+
+```{python}
+#| label: fig-ch12-plane-projection
+#| fig-cap: 'The closest point on a plane is obtained by moving from the given point in the normal direction.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+xx = np.linspace(-0.5, 2.0, 18)
+yy = np.linspace(0.0, 2.5, 18)
+XX, YY = np.meshgrid(xx, yy)
+ZZ = 2*XX + YY - 1
+ax.plot_surface(XX, YY, ZZ, alpha=0.45, edgecolor='none')
+
+p = np.array([0.0, 1.0, 3.0])
+q = np.array([1.0, 1.5, 2.5])
+ax.scatter([p[0]], [p[1]], [p[2]], s=70, label='given point')
+ax.scatter([q[0]], [q[1]], [q[2]], s=70, label='closest point')
+ax.plot([p[0], q[0]], [p[1], q[1]], [p[2], q[2]], linewidth=2)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Projection onto a plane')
+ax.legend()
+plt.show()
+```
+
+## 12.10 Hot and cold spots in a solid ball
+
+Constrained optimization is often combined with interior optimization.
+
+Suppose the temperature in a solid ball of radius $2$ is
+
+$$
+T(x,y,z)=x^2+y^2+2z^2-2x+2y.
+$$
+
+The solid ball is
+
+$$
+x^2+y^2+z^2\le 4.
+$$
+
+To find the hottest and coldest spots, we must check:
+
+1. interior critical points, where $\nabla T=0$;
+2. boundary points on the sphere $x^2+y^2+z^2=4$.
+
+Interior:
+
+$$
+\nabla T=\langle 2x-2,2y+2,4z\rangle.
+$$
+
+So
+
+$$
+2x-2=0,
+\qquad
+2y+2=0,
+\qquad
+4z=0.
+$$
+
+The interior critical point is
+
+$$
+(1,-1,0),
+$$
+
+and it lies inside the ball because
+
+$$
+1^2+(-1)^2+0^2=2<4.
+$$
+
+Boundary:
+
+Let
+
+$$
+g(x,y,z)=x^2+y^2+z^2.
+$$
+
+On the sphere $g=4$, solve
+
+$$
+\nabla T=\lambda \nabla g.
+$$
+
+That is,
+
+$$
+\begin{cases}
+2x-2=2\lambda x,\\
+2y+2=2\lambda y,\\
+4z=2\lambda z,\\
+x^2+y^2+z^2=4.
+\end{cases}
+$$
+
+This system illustrates a common feature of three-variable Lagrange multiplier problems: algebra may split into cases. The method gives the candidate points; then we evaluate the temperature at all candidates and compare.
+
+```{python}
+#| label: fig-ch12-temperature-ball
+#| fig-cap: 'A temperature function on a ball requires checking the interior and the spherical boundary.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Plot a few level contours of T on the slice z=0, together with the disk boundary.
+x = np.linspace(-2.3, 2.3, 400)
+y = np.linspace(-2.3, 2.3, 400)
+X, Y = np.meshgrid(x, y)
+T = X**2 + Y**2 - 2*X + 2*Y
+mask = X**2 + Y**2 <= 4
+T_masked = np.where(mask, T, np.nan)
+
+fig, ax = plt.subplots(figsize=(7, 6))
+cs = ax.contour(X, Y, T_masked, levels=14)
+ax.clabel(cs, inline=True, fontsize=8)
+theta = np.linspace(0, 2*np.pi, 500)
+ax.plot(2*np.cos(theta), 2*np.sin(theta), linewidth=2)
+ax.scatter([1], [-1], s=70)
+ax.annotate('interior critical point', (1, -1), xytext=(1.15, -0.75))
+ax.set_aspect('equal')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Slice z=0 of the temperature field')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.11 Multiple constraints
+
+Now suppose $f(x,y,z)$ is to be optimized subject to two constraints:
+
+$$
+g(x,y,z)=k,
+\qquad
+h(x,y,z)=c.
+$$
+
+The constraint set is often a curve in space: the intersection of two surfaces.
+
+At a regular constrained extremum, $\nabla f$ is perpendicular to the tangent direction of the constraint curve. The gradients $\nabla g$ and $\nabla h$ are also perpendicular to that tangent direction. Therefore, $\nabla f$ lies in the span of $\nabla g$ and $\nabla h$:
+
+$$
+\nabla f=\lambda \nabla g+\mu \nabla h.
+$$
+
+So the system is
+
+$$
+\begin{cases}
+f_x=\lambda g_x+\mu h_x,\\
+f_y=\lambda g_y+\mu h_y,\\
+f_z=\lambda g_z+\mu h_z,\\
+g(x,y,z)=k,\\
+h(x,y,z)=c.
+\end{cases}
+$$
+
+::: {.callout-note}
+## Geometric meaning of two constraints
+
+With one constraint in $\mathbb R^3$, the feasible set is usually a surface.
+
+With two constraints in $\mathbb R^3$, the feasible set is usually a curve.
+
+At an extremum on that curve, $\nabla f$ must be orthogonal to the curve's tangent direction, so it must be a linear combination of the two constraint normals.
+:::
+
+### Worked example 12.7: two constraints
+
+Find the extreme values of
+
+$$
+f(x,y,z)=xy+yz
+$$
+
+subject to
+
+$$
+xy=1,
+\qquad
+ y^2+z^2=9.
+$$
+
+Let
+
+$$
+g(x,y,z)=xy,
+\qquad
+h(x,y,z)=y^2+z^2.
+$$
+
+Then
+
+$$
+\nabla f=\langle y,x+z,y\rangle,
+$$
+
+$$
+\nabla g=\langle y,x,0\rangle,
+\qquad
+\nabla h=\langle 0,2y,2z\rangle.
+$$
+
+The Lagrange equations are
+
+$$
+\langle y,x+z,y\rangle
+=
+\lambda \langle y,x,0\rangle+
+\mu \langle 0,2y,2z\rangle,
+$$
+
+together with
+
+$$
+xy=1,
+\qquad
+ y^2+z^2=9.
+$$
+
+The constraints give $x=1/y$ and $z^2=9-y^2$, so $y\ne 0$ and $-3\le y\le 3$. On the constraint set,
+
+$$
+f=xy+yz=1+yz.
+$$
+
+Since $y^2+z^2=9$, the product $yz$ is maximized when $y=z=3/\sqrt2$ and minimized when $y=-z=3/\sqrt2$ up to signs. Thus
+
+$$
+-\frac{9}{2}\le yz\le \frac{9}{2}.
+$$
+
+Therefore
+
+$$
+f_{\max}=1+\frac{9}{2}=\frac{11}{2},
+\qquad
+f_{\min}=1-\frac{9}{2}=-\frac{7}{2}.
+$$
+
+The corresponding points are obtained from $x=1/y$ and the sign choices for $y$ and $z$.
+
+```{python}
+#| label: fig-ch12-two-constraint-curve
+#| fig-cap: 'Two constraints in three variables often define a curve; here the objective varies along that feasible curve.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+theta = np.linspace(0.01, 2*np.pi - 0.01, 1000)
+y = 3*np.cos(theta)
+z = 3*np.sin(theta)
+# Exclude points where y is near zero for x=1/y.
+mask = np.abs(y) > 0.18
+y = y[mask]
+z = z[mask]
+x = 1/y
+f = 1 + y*z
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.scatter(theta[mask], f, s=8)
+ax.axhline(11/2, linestyle='--')
+ax.axhline(-7/2, linestyle='--')
+ax.set_xlabel('theta parameter on y^2 + z^2 = 9')
+ax.set_ylabel(r'$f=xy+yz$')
+ax.set_title('Objective values along a two-constraint feasible curve')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.12 Lagrange multipliers and machine learning constraints
+
+Many machine-learning and statistics problems are constrained optimization problems.
+
+### Probability simplex
+
+A probability vector
+
+$$
+p=(p_1,\dots,p_n)
+$$
+
+must satisfy
+
+$$
+p_i\ge 0,
+\qquad
+\sum_{i=1}^n p_i=1.
+$$
+
+The equality constraint is
+
+$$
+g(p)=\sum_{i=1}^n p_i=1.
+$$
+
+When maximizing entropy
+
+$$
+H(p)=-\sum_{i=1}^n p_i\log p_i
+$$
+
+subject to $\sum_i p_i=1$, the Lagrange multiplier equation leads to the uniform distribution when there are no additional constraints.
+
+### Normalized parameters
+
+Some models impose a normalization constraint such as
+
+$$
+\|w\|^2=1.
+$$
+
+Optimizing a quadratic form
+
+$$
+f(w)=w^T A w
+$$
+
+subject to $w^T w=1$ leads to
+
+$$
+Aw=\lambda w,
+$$
+
+which is an eigenvalue problem. This is one reason eigenvectors appear naturally in principal component analysis, spectral methods, and constrained variance maximization.
+
+### Regularization versus hard constraints
+
+A constrained problem might look like
+
+$$
+\min_w L(w) \quad \text{subject to} \quad \|w\|^2\le c.
+$$
+
+A related unconstrained problem is
+
+$$
+\min_w L(w)+\alpha \|w\|^2.
+$$
+
+The constrained version uses a hard budget on model complexity. The regularized version uses a penalty. Lagrange multipliers explain why these two viewpoints are closely related.
+
+```{python}
+#| label: fig-ch12-quadratic-form-circle
+#| fig-cap: 'Optimizing a quadratic form on the unit circle leads to eigenvector directions.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[3.0, 1.0], [1.0, 2.0]])
+theta = np.linspace(0, 2*np.pi, 600)
+W = np.vstack([np.cos(theta), np.sin(theta)])
+values = np.einsum('ij,ji->i', W.T @ A, W)
+
+eigvals, eigvecs = np.linalg.eigh(A)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(theta, values)
+for val, vec in zip(eigvals, eigvecs.T):
+    ang = np.arctan2(vec[1], vec[0]) % (2*np.pi)
+    ax.scatter([ang], [val], s=70)
+    ax.scatter([(ang + np.pi) % (2*np.pi)], [val], s=70)
+ax.set_xlabel(r'$\theta$')
+ax.set_ylabel(r'$w^T A w$ for $\|w\|=1$')
+ax.set_title('Quadratic form restricted to the unit circle')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 12.13 Numerical search on a constraint
+
+Even when exact algebra is difficult, the geometry remains useful. A curve constraint can often be parameterized, sampled, or solved numerically.
+
+For example, consider
+
+$$
+f(x,y)=x^2-xy+2y^2
+$$
+
+on the ellipse
+
+$$
+\frac{x^2}{4}+y^2=1.
+$$
+
+A parameterization is
+
+$$
+x=2\cos t,
+\qquad
+ y=\sin t.
+$$
+
+Then the constrained problem becomes a one-variable problem:
+
+$$
+F(t)=f(2\cos t,\sin t).
+$$
+
+This parameterization method does not replace Lagrange multipliers, but it is an excellent way to check answers and build intuition.
+
+```{python}
+#| label: fig-ch12-numerical-ellipse-search
+#| fig-cap: 'A constrained problem can be checked numerically by parameterizing the constraint.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.linspace(0, 2*np.pi, 2000)
+x = 2*np.cos(t)
+y = np.sin(t)
+f = x**2 - x*y + 2*y**2
+imin = np.argmin(f)
+imax = np.argmax(f)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(t, f)
+ax.scatter([t[imin], t[imax]], [f[imin], f[imax]], s=70)
+ax.annotate('minimum', (t[imin], f[imin]), xytext=(t[imin]+0.2, f[imin]+0.2))
+ax.annotate('maximum', (t[imax], f[imax]), xytext=(t[imax]+0.2, f[imax]-0.5))
+ax.set_xlabel('t')
+ax.set_ylabel(r'$f(2\cos t,\sin t)$')
+ax.set_title('Numerical search along an ellipse')
+ax.grid(True, alpha=0.25)
+plt.show()
+
+print('Approximate minimum point:', (x[imin], y[imin]), 'value:', f[imin])
+print('Approximate maximum point:', (x[imax], y[imax]), 'value:', f[imax])
+```
+
+## 12.14 When Lagrange multipliers may fail or need care
+
+The equation $\nabla f=\lambda \nabla g$ is powerful, but it is not magic. It requires a smooth constraint and a nonzero constraint gradient.
+
+Be careful in the following situations:
+
+1. **The constraint gradient vanishes.** If $\nabla g=0$ at a feasible point, check that point separately.
+2. **The constraint has corners or cusps.** A nonsmooth boundary may not have a well-defined normal vector.
+3. **The feasible set is not closed or not bounded.** Absolute extrema may fail to exist.
+4. **The constraint is an inequality.** Lagrange multipliers handle equality constraints directly. Inequality constraints require checking interiors, active boundaries, and sometimes more advanced conditions.
+5. **Solving the equations gives candidates, not conclusions.** Always evaluate the objective and compare values when looking for absolute extrema.
+
+::: {.callout-warning}
+## Candidate points are not automatically extrema
+
+Solving the Lagrange equations gives possible constrained extrema. It does not automatically classify them. For absolute extrema, evaluate $f$ at all candidates and compare values. For local classification, additional second-order constrained tests or local analysis may be needed.
+:::
+
+## 12.15 Summary
+
+The central idea of constrained optimization is that variables are not free to move in all directions. At an optimal feasible point, all allowable first-order changes fail to increase or decrease the objective in the relevant direction.
+
+For one equality constraint,
+
+$$
+g(x)=k,
+$$
+
+the condition is
+
+$$
+\nabla f=\lambda \nabla g.
+$$
+
+For two equality constraints in three variables,
+
+$$
+g(x,y,z)=k,
+\qquad
+h(x,y,z)=c,
+$$
+
+the condition is
+
+$$
+\nabla f=\lambda \nabla g+\mu \nabla h.
+$$
+
+The method is used across mathematics, statistics, economics, physics, engineering, machine learning, and artificial intelligence. It explains why optimum solutions often occur where level sets are tangent, why normalization constraints lead to eigenvalue problems, and why penalties and constraints are two sides of the same modeling idea.
+
+## Exercises
+
+### Conceptual exercises
+
+1. Explain in your own words why $\nabla f=0$ is not usually true at a constrained maximum or minimum.
+2. Draw a picture showing why the level curve of $f$ should be tangent to the constraint curve $g=k$ at a constrained extremum.
+3. What does the condition $\nabla g\ne 0$ mean geometrically?
+4. In a closed disk, why must one check both interior critical points and the boundary?
+5. Explain the difference between a hard constraint and a penalty term in an optimization problem.
+
+### Computational exercises
+
+6. Use Lagrange multipliers to find the maximum and minimum of $f(x,y)=x+2y$ subject to $x^2+y^2=5$.
+7. Use Lagrange multipliers to find the maximum and minimum of $f(x,y)=xy$ subject to $x^2+y^2=8$.
+8. Find the point on the line $3x+4y=12$ closest to the origin.
+9. Find the point on the plane $x+y+z=1$ closest to $(2,0,0)$.
+10. Find the maximum area of a rectangle with perimeter $20$.
+11. Find the dimensions of a closed rectangular box of volume $64$ with minimum surface area.
+12. Find the maximum and minimum of $f(x,y)=x^2+4y^2$ on the circle $x^2+y^2=1$.
+13. Find the maximum and minimum of $f(x,y)=x^2+y^2$ subject to $x+2y=4$.
+14. Find the constrained critical points of $f(x,y)=x^3+y^2$ subject to $3x+2y=0$.
+15. Find the closest point on the parabola $y=x^2$ to the point $(0,2)$.
+
+### Applied exercises
+
+16. A company has a budget constraint $4L+9K=360$, where $L$ is labor and $K$ is capital. Suppose production is $P(L,K)=L^{1/2}K^{1/2}$. Use Lagrange multipliers to maximize production.
+17. A probability vector $(p_1,p_2,p_3)$ satisfies $p_1+p_2+p_3=1$ and $p_i>0$. Use Lagrange multipliers to maximize $H(p)=-\sum p_i\log p_i$.
+18. Maximize $w^T A w$ subject to $w^T w=1$ for $A=\begin{pmatrix}2&0\\0&5\end{pmatrix}$. Interpret the answer geometrically.
+19. A cylindrical can has fixed volume $V$. Use constrained optimization to find the radius and height that minimize surface area.
+20. A point must lie on the sphere $x^2+y^2+z^2=9$. Find the maximum and minimum of $f(x,y,z)=x+2y+2z$.
+
+### Python exercises
+
+21. Numerically parameterize the circle $x^2+y^2=10$ and confirm the extrema of $f(x,y)=2x+6y$.
+22. Parameterize the ellipse $x^2/9+y^2/4=1$ and numerically optimize $f(x,y)=xy$.
+23. Use a grid search on the unit disk to approximate the maximum and minimum of $f(x,y)=x^2+2y^2+2$. Compare with the exact solution.
+24. Write a function that takes a parameterization $r(t)$ and an objective $f(x,y)$ and returns approximate constrained extrema.
+25. Numerically explore the entropy function on the probability simplex $p_1+p_2+p_3=1$.

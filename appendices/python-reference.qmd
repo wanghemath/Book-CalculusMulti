@@ -1,0 +1,949 @@
+# Python Reference
+
+This appendix is a practical reference for the Python code used throughout the book. It is not meant to replace a full programming textbook. Its purpose is to give a compact set of patterns for multivariable calculus, geometry, numerical approximation, probability, statistics, data science, and applied mathematics.
+
+The most important habit is to connect code with mathematical meaning. A vector in code should represent a vector in the problem. A meshgrid should represent a region in the plane. A contour plot should represent a level set. A numerical derivative should be checked against the analytic derivative when possible.
+
+## A minimal working environment
+
+The labs use the standard scientific Python stack.
+
+```{python}
+#| eval: false
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
+For symbolic checks, use SymPy.
+
+```{python}
+#| eval: false
+import sympy as sp
+```
+
+For numerical integration, optimization, and scientific computing, use SciPy when available.
+
+```{python}
+#| eval: false
+from scipy import integrate, optimize
+```
+
+In Google Colab, these packages are usually already installed. If a package is missing, install it in a notebook cell with:
+
+```{python}
+#| eval: false
+%pip install numpy matplotlib scipy sympy pandas scikit-learn
+```
+
+## Reproducible random numbers
+
+Many labs use simulation. Use a random number generator with a fixed seed when you want reproducible results.
+
+```{python}
+#| eval: false
+rng = np.random.default_rng(2026)
+
+x = rng.normal(loc=0.0, scale=1.0, size=5)
+print(x)
+```
+
+Changing the seed changes the simulated data, but keeping the seed fixed makes your results repeatable.
+
+## Arrays as vectors
+
+A vector such as $v=(1,2,3)$ can be represented by a NumPy array.
+
+```{python}
+#| eval: false
+v = np.array([1.0, 2.0, 3.0])
+w = np.array([4.0, -1.0, 2.0])
+
+print(v + w)        # vector addition
+print(3*v)          # scalar multiplication
+print(v - w)        # displacement-like difference
+```
+
+Use floating-point numbers when you expect numerical computations.
+
+```{python}
+#| eval: false
+v = np.array([1.0, 2.0, 3.0])   # good for numerical calculus
+```
+
+## Norms, distances, dot products, and angles
+
+The Euclidean norm of $v$ is $|v|=\sqrt{v_1^2+\cdots+v_n^2}$ in mathematical notation and `np.linalg.norm(v)` in NumPy.
+
+```{python}
+#| eval: false
+v = np.array([1.0, 2.0, 3.0])
+w = np.array([4.0, -1.0, 2.0])
+
+norm_v = np.linalg.norm(v)
+distance = np.linalg.norm(v - w)
+dot_product = np.dot(v, w)      # same as v @ w
+
+cos_theta = dot_product / (np.linalg.norm(v) * np.linalg.norm(w))
+theta = np.arccos(np.clip(cos_theta, -1.0, 1.0))
+
+print(norm_v, distance, dot_product, theta)
+```
+
+The `np.clip` step protects against small floating-point errors that may make a cosine slightly larger than $1$ or slightly smaller than $-1$.
+
+## Projections
+
+The projection of $u$ onto the direction of $v$ is
+
+$$
+\operatorname{proj}_v(u)=\frac{u\cdot v}{v\cdot v}v.
+$$
+
+```{python}
+#| eval: false
+def projection(u, v):
+    u = np.array(u, dtype=float)
+    v = np.array(v, dtype=float)
+    return (u @ v) / (v @ v) * v
+
+u = np.array([3.0, 2.0])
+v = np.array([1.0, 4.0])
+
+proj = projection(u, v)
+residual = u - proj
+
+print('projection =', proj)
+print('residual =', residual)
+print('dot residual with v =', residual @ v)
+```
+
+The residual should be orthogonal to $v$, up to numerical roundoff.
+
+## Cross products and scalar triple products
+
+In $\mathbb R^3$, the cross product gives a normal vector and an area vector.
+
+```{python}
+#| eval: false
+a = np.array([1.0, 2.0, 3.0])
+b = np.array([3.0, 0.0, 1.0])
+
+cross = np.cross(a, b)
+area_parallelogram = np.linalg.norm(cross)
+area_triangle = 0.5 * area_parallelogram
+
+print(cross)
+print(area_parallelogram)
+print(area_triangle)
+```
+
+The scalar triple product $a\cdot (b\times c)$ gives signed volume.
+
+```{python}
+#| eval: false
+c = np.array([0.0, 2.0, 1.0])
+volume = abs(a @ np.cross(b, c))
+print(volume)
+```
+
+## Lines, planes, and parameterized objects
+
+A line through point $p$ with direction $v$ is $r(t)=p+tv$.
+
+```{python}
+#| eval: false
+p = np.array([1.0, 2.0, 0.0])
+v = np.array([2.0, -1.0, 3.0])
+
+t = np.linspace(-2, 2, 100)
+R = p[None, :] + t[:, None] * v[None, :]
+
+x, y, z = R[:, 0], R[:, 1], R[:, 2]
+```
+
+A parameterized plane through $p$ with directions $u$ and $v$ is $r(s,t)=p+su+tv$.
+
+```{python}
+#| eval: false
+p = np.array([0.0, 0.0, 1.0])
+u = np.array([1.0, 0.0, 1.0])
+v = np.array([0.0, 1.0, -1.0])
+
+s = np.linspace(-1, 1, 40)
+t = np.linspace(-1, 1, 40)
+S, T = np.meshgrid(s, t)
+
+X = p[0] + S*u[0] + T*v[0]
+Y = p[1] + S*u[1] + T*v[1]
+Z = p[2] + S*u[2] + T*v[2]
+```
+
+## Basic 2D plots
+
+```{python}
+#| eval: false
+x = np.linspace(-3, 3, 400)
+y = x**2
+
+fig, ax = plt.subplots()
+ax.plot(x, y)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('A basic plot')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## Contour plots and heatmaps
+
+For a function $z=f(x,y)$, a contour plot shows level curves $f(x,y)=c$.
+
+```{python}
+#| eval: false
+x = np.linspace(-3, 3, 300)
+y = np.linspace(-3, 3, 300)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + 2*Y**2
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, Z, levels=20)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Contour plot')
+plt.show()
+```
+
+A heatmap represents function values by color.
+
+```{python}
+#| eval: false
+fig, ax = plt.subplots()
+im = ax.imshow(
+    Z,
+    extent=[x.min(), x.max(), y.min(), y.max()],
+    origin='lower',
+    aspect='auto'
+)
+fig.colorbar(im, ax=ax, label='f(x,y)')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Heatmap')
+plt.show()
+```
+
+## Surface plots
+
+```{python}
+#| eval: false
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+x = np.linspace(-2, 2, 120)
+y = np.linspace(-2, 2, 120)
+X, Y = np.meshgrid(x, y)
+Z = np.sin(X) * np.cos(Y)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Surface plot')
+plt.show()
+```
+
+For surfaces, avoid extremely large grids unless necessary. A grid of $100\times 100$ is often enough for teaching visuals.
+
+## Vector fields in the plane
+
+```{python}
+#| eval: false
+x = np.linspace(-2, 2, 17)
+y = np.linspace(-2, 2, 17)
+X, Y = np.meshgrid(x, y)
+U = -Y
+V = X
+
+fig, ax = plt.subplots()
+ax.quiver(X, Y, U, V)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Vector field F(x,y)=<-y,x>')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## Vector fields in space
+
+```{python}
+#| eval: false
+x = np.linspace(-1, 1, 5)
+y = np.linspace(-1, 1, 5)
+z = np.linspace(-1, 1, 5)
+X, Y, Z = np.meshgrid(x, y, z)
+U = X
+V = Y
+W = Z
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.quiver(X, Y, Z, U, V, W, length=0.2, normalize=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('3D radial vector field')
+plt.show()
+```
+
+## Parameterized curves
+
+A curve $r(t)=(x(t),y(t),z(t))$ can be sampled by evaluating each coordinate on a grid of $t$ values.
+
+```{python}
+#| eval: false
+t = np.linspace(0, 6*np.pi, 600)
+x = np.cos(t)
+y = np.sin(t)
+z = t / (2*np.pi)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(x, y, z)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('A helix')
+plt.show()
+```
+
+## Numerical derivatives in one variable
+
+The centered difference formula is usually more accurate than the forward difference formula.
+
+```{python}
+#| eval: false
+def derivative_1d(f, x, h=1e-6):
+    return (f(x + h) - f(x - h)) / (2*h)
+
+f = lambda x: np.exp(x) * np.sin(x)
+print(derivative_1d(f, 1.0))
+```
+
+## Numerical gradients
+
+For $f:\mathbb R^n\to\mathbb R$, the gradient can be approximated coordinate by coordinate.
+
+```{python}
+#| eval: false
+def finite_gradient(f, x, h=1e-6):
+    x = np.array(x, dtype=float)
+    grad = np.zeros_like(x)
+    for j in range(len(x)):
+        e = np.zeros_like(x)
+        e[j] = 1.0
+        grad[j] = (f(x + h*e) - f(x - h*e)) / (2*h)
+    return grad
+
+f = lambda x: x[0]**2 + 3*x[0]*x[1] + np.sin(x[1])
+point = np.array([1.0, 0.5])
+print(finite_gradient(f, point))
+```
+
+Use finite differences to check hand derivatives and gradients in optimization code.
+
+## Numerical Jacobians
+
+For $F:\mathbb R^n\to\mathbb R^m$, the Jacobian matrix has entries $J_{ij}=\partial F_i/\partial x_j$.
+
+```{python}
+#| eval: false
+def finite_jacobian(F, x, h=1e-6):
+    x = np.array(x, dtype=float)
+    Fx = np.array(F(x), dtype=float)
+    m = len(Fx)
+    n = len(x)
+    J = np.zeros((m, n))
+    for j in range(n):
+        e = np.zeros_like(x)
+        e[j] = 1.0
+        J[:, j] = (np.array(F(x + h*e)) - np.array(F(x - h*e))) / (2*h)
+    return J
+
+F = lambda x: np.array([x[0]**2 + x[1], np.exp(x[0]*x[1])])
+print(finite_jacobian(F, np.array([1.0, 2.0])))
+```
+
+## Numerical Hessians
+
+For second-order methods, the Hessian matrix can be approximated by applying finite differences to the gradient.
+
+```{python}
+#| eval: false
+def finite_hessian(f, x, h=1e-5):
+    x = np.array(x, dtype=float)
+    n = len(x)
+    H = np.zeros((n, n))
+    for j in range(n):
+        e = np.zeros_like(x)
+        e[j] = 1.0
+        grad_plus = finite_gradient(f, x + h*e, h=h)
+        grad_minus = finite_gradient(f, x - h*e, h=h)
+        H[:, j] = (grad_plus - grad_minus) / (2*h)
+    return 0.5 * (H + H.T)
+
+f = lambda x: x[0]**2 + x[0]*x[1] + 4*x[1]**2
+print(finite_hessian(f, np.array([1.0, 1.0])))
+```
+
+Symmetrizing with `0.5*(H + H.T)` reduces small numerical asymmetries.
+
+## Symbolic differentiation with SymPy
+
+SymPy is useful for checking formulas before writing numerical code.
+
+```{python}
+#| eval: false
+x, y = sp.symbols('x y')
+f = x**2 * sp.exp(y) + sp.sin(x*y)
+
+fx = sp.diff(f, x)
+fy = sp.diff(f, y)
+H = sp.hessian(f, (x, y))
+
+print(fx)
+print(fy)
+print(H)
+```
+
+Convert symbolic expressions to numerical functions with `lambdify`.
+
+```{python}
+#| eval: false
+f_num = sp.lambdify((x, y), f, 'numpy')
+print(f_num(1.0, 0.5))
+```
+
+## Linear approximation
+
+For $f:\mathbb R^n\to\mathbb R$, the first-order approximation near $a$ is
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h.
+$$
+
+```{python}
+#| eval: false
+def linear_approx(f, grad_f, a, x):
+    a = np.array(a, dtype=float)
+    x = np.array(x, dtype=float)
+    return f(a) + grad_f(a) @ (x - a)
+
+f = lambda x: np.exp(x[0] + x[1])
+grad_f = lambda x: np.exp(x[0] + x[1]) * np.array([1.0, 1.0])
+
+a = np.array([0.0, 0.0])
+x_new = np.array([0.05, -0.02])
+print(linear_approx(f, grad_f, a, x_new))
+print(f(x_new))
+```
+
+## Taylor approximation with a Hessian
+
+The second-order Taylor approximation is
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h+\frac12 h^T H_f(a)h.
+$$
+
+```{python}
+#| eval: false
+def quadratic_approx(f, grad_f, hess_f, a, x):
+    a = np.array(a, dtype=float)
+    x = np.array(x, dtype=float)
+    h = x - a
+    return f(a) + grad_f(a) @ h + 0.5 * h @ hess_f(a) @ h
+```
+
+## Gradient descent
+
+Gradient descent updates parameters by moving opposite the gradient:
+
+$$
+x_{k+1}=x_k-\alpha \nabla f(x_k).
+$$
+
+```{python}
+#| eval: false
+def gradient_descent(grad_f, x0, alpha=0.1, steps=100):
+    x = np.array(x0, dtype=float)
+    path = [x.copy()]
+    for _ in range(steps):
+        x = x - alpha * grad_f(x)
+        path.append(x.copy())
+    return np.array(path)
+
+grad_f = lambda x: np.array([2*x[0], 8*x[1]])
+path = gradient_descent(grad_f, x0=[2.0, 2.0], alpha=0.1, steps=40)
+print(path[-1])
+```
+
+## Newton's method in several variables
+
+Newton's method uses the Hessian to correct for curvature:
+
+$$
+x_{k+1}=x_k-H_f(x_k)^{-1}\nabla f(x_k).
+$$
+
+In numerical code, solve a linear system rather than computing an inverse.
+
+```{python}
+#| eval: false
+def newton_method(grad_f, hess_f, x0, steps=10):
+    x = np.array(x0, dtype=float)
+    path = [x.copy()]
+    for _ in range(steps):
+        step = np.linalg.solve(hess_f(x), grad_f(x))
+        x = x - step
+        path.append(x.copy())
+    return np.array(path)
+```
+
+## Least squares from scratch
+
+For a linear model $y\approx X\beta$, the least-squares objective is
+
+$$
+L(\beta)=\|y-X\beta\|^2.
+$$
+
+```{python}
+#| eval: false
+rng = np.random.default_rng(0)
+x = np.linspace(-2, 2, 80)
+y = 1.5 + 2.0*x + rng.normal(scale=0.4, size=x.shape)
+
+X = np.column_stack([np.ones_like(x), x])
+beta_hat = np.linalg.lstsq(X, y, rcond=None)[0]
+print(beta_hat)
+```
+
+The gradient of $L(\beta)$ is $2X^T(X\beta-y)$.
+
+```{python}
+#| eval: false
+def least_squares_grad(beta, X, y):
+    return 2 * X.T @ (X @ beta - y)
+```
+
+## Logistic regression building blocks
+
+```{python}
+#| eval: false
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def logistic_loss(beta, X, y):
+    z = X @ beta
+    p = sigmoid(z)
+    eps = 1e-12
+    return -np.sum(y*np.log(p + eps) + (1-y)*np.log(1-p + eps))
+
+def logistic_grad(beta, X, y):
+    p = sigmoid(X @ beta)
+    return X.T @ (p - y)
+```
+
+Use stable formulas for serious large-scale work. The version above is transparent for learning.
+
+## Numerical integration in one variable
+
+```{python}
+#| eval: false
+f = lambda x: np.exp(-x**2)
+value, error = integrate.quad(f, 0, 1)
+print(value, error)
+```
+
+## Double integrals with SciPy
+
+For a Type I region $a\le x\le b$, $g_1(x)\le y\le g_2(x)$, use `dblquad`.
+
+```{python}
+#| eval: false
+f = lambda y, x: x**2 + y**2      # note the order y, x for dblquad
+lower_y = lambda x: 0
+upper_y = lambda x: 1 - x
+
+value, error = integrate.dblquad(f, 0, 1, lower_y, upper_y)
+print(value, error)
+```
+
+## Triple integrals with SciPy
+
+```{python}
+#| eval: false
+f = lambda z, y, x: x + y + z
+z_lower = lambda y, x: 0
+z_upper = lambda y, x: 1 - x - y
+y_lower = lambda x: 0
+y_upper = lambda x: 1 - x
+
+value, error = integrate.tplquad(f, 0, 1, y_lower, y_upper, z_lower, z_upper)
+print(value, error)
+```
+
+The order of arguments in SciPy integration functions can be confusing. Check the documentation and test on simple examples.
+
+## Monte Carlo integration
+
+Monte Carlo integration estimates an average by random sampling.
+
+```{python}
+#| eval: false
+rng = np.random.default_rng(1)
+N = 100_000
+x = rng.uniform(0, 1, N)
+y = rng.uniform(0, 1, N)
+
+f_values = np.exp(-(x**2 + y**2))
+estimate = f_values.mean()   # area of unit square is 1
+print(estimate)
+```
+
+For a region $R$ inside a box, sample from the box and keep points in $R$.
+
+```{python}
+#| eval: false
+rng = np.random.default_rng(2)
+N = 200_000
+x = rng.uniform(-1, 1, N)
+y = rng.uniform(-1, 1, N)
+inside = x**2 + y**2 <= 1
+
+f_values = x[inside]**2 + y[inside]**2
+area_box = 4
+estimate = area_box * inside.mean() * f_values.mean()
+print(estimate)
+```
+
+## Polar, cylindrical, and spherical coordinates
+
+Polar coordinates:
+
+$$
+x=r\cos\theta,\qquad y=r\sin\theta,\qquad dA=r\,dr\,d\theta.
+$$
+
+```{python}
+#| eval: false
+r = np.linspace(0, 2, 100)
+theta = np.linspace(0, 2*np.pi, 200)
+R, TH = np.meshgrid(r, theta)
+X = R*np.cos(TH)
+Y = R*np.sin(TH)
+```
+
+Spherical coordinates:
+
+$$
+x=\rho\sin\phi\cos\theta,\qquad
+ y=\rho\sin\phi\sin\theta,\qquad
+ z=\rho\cos\phi.
+$$
+
+```{python}
+#| eval: false
+rho = 1.0
+phi = np.linspace(0, np.pi, 80)
+theta = np.linspace(0, 2*np.pi, 160)
+PHI, TH = np.meshgrid(phi, theta)
+X = rho*np.sin(PHI)*np.cos(TH)
+Y = rho*np.sin(PHI)*np.sin(TH)
+Z = rho*np.cos(PHI)
+```
+
+## Change of variables and Jacobians
+
+For a transformation $T(u,v)=(x(u,v),y(u,v))$, the area-scaling factor is the absolute value of the Jacobian determinant.
+
+```{python}
+#| eval: false
+def jacobian_det_2d(T, uv, h=1e-6):
+    J = finite_jacobian(T, np.array(uv, dtype=float), h=h)
+    return np.linalg.det(J)
+
+T = lambda uv: np.array([uv[0]*np.cos(uv[1]), uv[0]*np.sin(uv[1])])
+print(jacobian_det_2d(T, [2.0, 0.7]))   # should be close to r = 2
+```
+
+## Line integrals by numerical sampling
+
+For a scalar line integral,
+
+$$
+\int_C f\,ds = \int_a^b f(r(t))|r'(t)|\,dt.
+$$
+
+```{python}
+#| eval: false
+def scalar_line_integral(f, r, rp, a, b, n=10_000):
+    t = np.linspace(a, b, n)
+    pts = r(t)
+    speeds = np.linalg.norm(rp(t), axis=0)
+    values = f(pts) * speeds
+    return np.trapz(values, t)
+
+r = lambda t: np.vstack([np.cos(t), np.sin(t)])
+rp = lambda t: np.vstack([-np.sin(t), np.cos(t)])
+f = lambda pts: 1 + pts[0]**2
+
+print(scalar_line_integral(f, r, rp, 0, 2*np.pi))
+```
+
+For a vector line integral,
+
+$$
+\int_C F\cdot dr = \int_a^b F(r(t))\cdot r'(t)\,dt.
+$$
+
+```{python}
+#| eval: false
+def vector_line_integral(F, r, rp, a, b, n=10_000):
+    t = np.linspace(a, b, n)
+    pts = r(t)
+    field = F(pts)
+    tangent = rp(t)
+    values = np.sum(field * tangent, axis=0)
+    return np.trapz(values, t)
+
+F = lambda pts: np.vstack([-pts[1], pts[0]])
+print(vector_line_integral(F, r, rp, 0, 2*np.pi))
+```
+
+## Surface parameterization and surface area
+
+For a parameterized surface $r(u,v)$, the surface-area factor is $|r_u\times r_v|$.
+
+```{python}
+#| eval: false
+def sphere_param(u, v):
+    return np.array([
+        np.sin(u)*np.cos(v),
+        np.sin(u)*np.sin(v),
+        np.cos(u)
+    ])
+
+def sphere_ru(u, v):
+    return np.array([
+        np.cos(u)*np.cos(v),
+        np.cos(u)*np.sin(v),
+        -np.sin(u)
+    ])
+
+def sphere_rv(u, v):
+    return np.array([
+        -np.sin(u)*np.sin(v),
+        np.sin(u)*np.cos(v),
+        0*u
+    ])
+```
+
+For numerical surface integrals, sample a grid in parameter space and integrate the area factor.
+
+```{python}
+#| eval: false
+u = np.linspace(0, np.pi, 300)
+v = np.linspace(0, 2*np.pi, 300)
+U, V = np.meshgrid(u, v, indexing='ij')
+
+RU = sphere_ru(U, V)
+RV = sphere_rv(U, V)
+cross = np.cross(RU.reshape(3, -1).T, RV.reshape(3, -1).T)
+area_factor = np.linalg.norm(cross, axis=1).reshape(U.shape)
+
+area_u = np.trapz(area_factor, u, axis=0)
+area = np.trapz(area_u, v)
+print(area)       # close to 4*pi
+```
+
+## Curl, divergence, and Laplacian on a grid
+
+For gridded data, use finite differences. Suppose $F=(P,Q)$ is a vector field in the plane.
+
+```{python}
+#| eval: false
+x = np.linspace(-2, 2, 200)
+y = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x, y, indexing='xy')
+P = -Y
+Q = X
+
+dx = x[1] - x[0]
+dy = y[1] - y[0]
+
+Q_y, Q_x = np.gradient(Q, dy, dx)
+P_y, P_x = np.gradient(P, dy, dx)
+
+curl_2d = Q_x - P_y
+divergence = P_x + Q_y
+```
+
+For a scalar field $u(x,y)$, the Laplacian is $u_{xx}+u_{yy}$.
+
+```{python}
+#| eval: false
+U = np.exp(-(X**2 + Y**2))
+U_y, U_x = np.gradient(U, dy, dx)
+U_yy, U_yx = np.gradient(U_y, dy, dx)
+U_xy, U_xx = np.gradient(U_x, dy, dx)
+Laplacian = U_xx + U_yy
+```
+
+## Probability simulation
+
+Simulate samples from a bivariate normal distribution.
+
+```{python}
+#| eval: false
+rng = np.random.default_rng(3)
+mean = np.array([0.0, 0.0])
+cov = np.array([[1.0, 0.7], [0.7, 2.0]])
+
+samples = rng.multivariate_normal(mean, cov, size=5000)
+
+fig, ax = plt.subplots()
+ax.scatter(samples[:, 0], samples[:, 1], s=5, alpha=0.3)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Simulated bivariate normal samples')
+plt.show()
+```
+
+Estimate expectations by sample averages.
+
+```{python}
+#| eval: false
+estimate = np.mean(samples[:, 0]**2 + samples[:, 1]**2)
+print(estimate)
+```
+
+## Data frames for tabular data
+
+```{python}
+#| eval: false
+import pandas as pd
+
+df = pd.DataFrame({
+    'x': samples[:, 0],
+    'y': samples[:, 1]
+})
+
+print(df.head())
+print(df.describe())
+```
+
+## Train-test split and scaling
+
+```{python}
+#| eval: false
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_data, y_data, test_size=0.25, random_state=0
+)
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+```
+
+In machine learning, fit the scaler on the training set only, then apply it to the test set. This avoids data leakage.
+
+## Common plotting patterns
+
+Use equal aspect ratio when geometry matters.
+
+```{python}
+#| eval: false
+ax.set_aspect('equal', adjustable='box')
+```
+
+Add a colorbar for heatmaps and filled contours.
+
+```{python}
+#| eval: false
+fig.colorbar(im, ax=ax, label='value')
+```
+
+Use raw strings for LaTeX labels with backslashes.
+
+```{python}
+#| eval: false
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+```
+
+This avoids Python interpreting sequences such as `\b` as escape characters.
+
+## Common numerical mistakes
+
+1. **Confusing points and arrays.** A point, a vector, and a row of data may all be stored as arrays, but they play different mathematical roles.
+2. **Forgetting the Jacobian factor.** In polar coordinates, $dA$ becomes $r\,dr\,d\theta$, not just $dr\,d\theta$.
+3. **Using matrix inverse unnecessarily.** Prefer `np.linalg.solve(A, b)` over `np.linalg.inv(A) @ b`.
+4. **Using too large a finite-difference step.** Large $h$ causes truncation error; tiny $h$ causes roundoff error. Values such as $10^{-5}$ or $10^{-6}$ are often reasonable starting points.
+5. **Ignoring shape errors.** Print array shapes when code behaves unexpectedly.
+
+```{python}
+#| eval: false
+print(X.shape)
+print(y.shape)
+print(beta.shape)
+```
+
+## Recommended workflow for labs
+
+1. Read the mathematical goal first.
+2. Run the starter code without changes.
+3. Identify which line represents the mathematical object being studied.
+4. Change one parameter and rerun the cell.
+5. Explain what changed in the plot or output.
+6. Check a numerical result against a hand computation when possible.
+7. Save a clean copy of the notebook before experimenting heavily.
+
+## A compact starter template
+
+```{python}
+#| eval: false
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(2026)
+
+# Define a mathematical object.
+def f(x, y):
+    return x**2 + y**2
+
+# Build a grid.
+x = np.linspace(-2, 2, 200)
+y = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x, y)
+Z = f(X, Y)
+
+# Visualize.
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, Z, levels=20)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Level curves of f(x,y)')
+plt.show()
+```
+
+This small template contains the central computational pattern of multivariable calculus: define a mathematical object, sample it, compute from it, and visualize its geometry.

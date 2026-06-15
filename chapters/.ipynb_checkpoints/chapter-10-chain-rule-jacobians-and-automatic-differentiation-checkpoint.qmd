@@ -1,0 +1,1360 @@
+---
+title: 'Chapter 10. Chain Rule, Jacobians, and Automatic Differentiation'
+subtitle: 'Compositions, sensitivity, computational graphs, and backpropagation'
+---
+
+## Chapter overview
+
+The chain rule is the rule for differentiating a function built from other functions. In single-variable calculus, it says that if $y=f(u)$ and $u=g(t)$, then
+
+$$
+\frac{dy}{dt}=\frac{dy}{du}\frac{du}{dt}.
+$$
+
+In multivariable calculus, the same idea becomes more powerful because each intermediate quantity may depend on several variables, and each output may have several components. The derivative is no longer just one number. It may be a gradient vector, a Jacobian matrix, or a linear transformation.
+
+::: {.callout-important title='Core principle'}
+The multivariable chain rule says that derivatives propagate through compositions by multiplying the correct local linear maps.
+:::
+
+This chapter is one of the main bridges from classical Calculus III to modern computation. The chain rule explains:
+
+- how changes in inputs propagate through a model;
+- why Jacobian matrices describe local sensitivity;
+- how coordinate transformations are differentiated;
+- how gradients of statistical loss functions are computed;
+- why backpropagation in neural networks is repeated use of the chain rule.
+
+In earlier chapters, we studied functions of several variables, partial derivatives, gradients, and tangent-plane approximation. Now we organize all of these ideas around **composition**. A modern data model is often a long composition of simpler maps:
+
+$$
+\text{parameters} \longmapsto \text{linear score} \longmapsto \text{nonlinear activation} \longmapsto \text{loss}.
+$$
+
+The chain rule is the calculus of that pipeline.
+
+::: {.callout-note title='Teaching-material connection'}
+This chapter develops the material on partial derivatives, gradients, tangent-plane approximation, directional derivatives, and implicit differentiation into a systematic treatment of chain rules and Jacobians. The same notation later supports change of variables, optimization, statistics, machine learning, and vector calculus.
+:::
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. recognize compositions of one-variable, two-variable, and vector-valued functions;
+2. apply the chain rule when $z=f(x,y)$ and $x=x(t)$, $y=y(t)$;
+3. apply the chain rule when $z=f(x,y)$ and $x=x(s,t)$, $y=y(s,t)$;
+4. compute Jacobian matrices for maps $F:\mathbb R^n\to \mathbb R^m$;
+5. write the multivariable chain rule in matrix form;
+6. interpret the Jacobian as the local linear map of a nonlinear function;
+7. compute and verify Jacobians numerically using finite differences;
+8. understand computational graphs as organized compositions;
+9. explain reverse-mode automatic differentiation and backpropagation at a conceptual level;
+10. use Python to visualize sensitivity, Jacobians, and gradient propagation.
+
+## 10.1 Why composition matters
+
+A function of several variables often appears indirectly. For example, suppose
+
+$$
+z=f(x,y)=x^2y+\sin y,
+$$
+
+but $x$ and $y$ themselves depend on time:
+
+$$
+x=t^2, \qquad y=e^t.
+$$
+
+Then $z$ is ultimately a function of $t$:
+
+$$
+z(t)=f(x(t),y(t))=t^4e^t+\sin(e^t).
+$$
+
+We could substitute first and then differentiate. But in applications, substitution may be inconvenient or impossible. The chain rule lets us compute the derivative by following the dependencies.
+
+```{python}
+#| label: fig-ch10-composition-map
+#| fig-cap: 'A composed function passes information from input variables through intermediate variables to the final output.'
+#| fig-width: 7
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(7, 2.6))
+ax.axis('off')
+
+boxes = {
+    't': (0.08, 0.50),
+    'x(t)': (0.33, 0.72),
+    'y(t)': (0.33, 0.28),
+    'z=f(x,y)': (0.70, 0.50),
+}
+
+for label, (x, y) in boxes.items():
+    ax.text(x, y, label, ha='center', va='center', fontsize=13,
+            bbox=dict(boxstyle='round,pad=0.35', fc='white', ec='black'))
+
+arrowprops = dict(arrowstyle='->', lw=1.8)
+ax.annotate('', xy=boxes['x(t)'], xytext=boxes['t'], arrowprops=arrowprops)
+ax.annotate('', xy=boxes['y(t)'], xytext=boxes['t'], arrowprops=arrowprops)
+ax.annotate('', xy=boxes['z=f(x,y)'], xytext=boxes['x(t)'], arrowprops=arrowprops)
+ax.annotate('', xy=boxes['z=f(x,y)'], xytext=boxes['y(t)'], arrowprops=arrowprops)
+
+ax.text(0.20, 0.79, r'$dx/dt$', fontsize=11)
+ax.text(0.20, 0.21, r'$dy/dt$', fontsize=11)
+ax.text(0.52, 0.78, r'$\partial f/\partial x$', fontsize=11)
+ax.text(0.52, 0.20, r'$\partial f/\partial y$', fontsize=11)
+plt.show()
+```
+
+The diagram should be read as a dependency graph. The input $t$ affects $x$ and $y$. Then $x$ and $y$ affect $z$. Therefore a small change in $t$ changes $z$ through two routes:
+
+$$
+t \to x \to z, \qquad t \to y \to z.
+$$
+
+The chain rule adds the contributions from all routes.
+
+## 10.2 Chain rule along a curve
+
+Suppose $z=f(x,y)$ is differentiable, and $x=x(t)$ and $y=y(t)$ are differentiable functions of $t$. Then the composition
+
+$$
+z(t)=f(x(t),y(t))
+$$
+
+has derivative
+
+$$
+\frac{dz}{dt}=\frac{\partial f}{\partial x}\frac{dx}{dt}+\frac{\partial f}{\partial y}\frac{dy}{dt}.
+$$
+
+All partial derivatives are evaluated at $(x(t),y(t))$.
+
+Equivalently, using the gradient,
+
+$$
+\frac{dz}{dt}=\nabla f(x(t),y(t))\cdot \frac{d}{dt}\langle x(t),y(t)\rangle.
+$$
+
+This form is especially important:
+
+$$
+\boxed{\frac{d}{dt}f(r(t))=\nabla f(r(t))\cdot r'(t)}.
+$$
+
+It says that the rate of change of a scalar field along a curve is the gradient dotted with the velocity vector.
+
+### Worked example 10.1: Chain rule along a curve
+
+Let
+
+$$
+f(x,y)=x^2y+\sin y, \qquad x(t)=t^2, \qquad y(t)=e^t.
+$$
+
+Find $dz/dt$ at $t=0$.
+
+First compute the partial derivatives:
+
+$$
+f_x(x,y)=2xy, \qquad f_y(x,y)=x^2+\cos y.
+$$
+
+At $t=0$,
+
+$$
+x(0)=0, \qquad y(0)=1,
+$$
+
+and
+
+$$
+x'(t)=2t, \qquad y'(t)=e^t.
+$$
+
+Therefore
+
+$$
+x'(0)=0, \qquad y'(0)=1.
+$$
+
+The chain rule gives
+
+$$
+\frac{dz}{dt}\bigg|_{t=0}
+=f_x(0,1)x'(0)+f_y(0,1)y'(0)
+=0\cdot 0+\cos(1)\cdot 1
+=\cos(1).
+$$
+
+The function changes at rate $\cos(1)$ along the curve at $t=0$.
+
+```{python}
+#| label: fig-ch10-chain-rule-along-curve
+#| fig-cap: 'The chain rule measures the rate at which a surface changes along a parameterized curve in the domain.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Surface z = f(x,y)
+def f_xy(x, y):
+    return x**2 * y + np.sin(y)
+
+x = np.linspace(-0.2, 1.4, 80)
+y = np.linspace(0.5, 3.2, 80)
+X, Y = np.meshgrid(x, y)
+Z = f_xy(X, Y)
+
+t = np.linspace(-0.5, 1.0, 160)
+xc = t**2
+yc = np.exp(t)
+zc = f_xy(xc, yc)
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.55, linewidth=0, antialiased=True)
+ax.plot(xc, yc, zc, linewidth=3)
+ax.scatter([0], [1], [f_xy(0, 1)], s=50)
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_zlabel(r'$z$')
+ax.set_title(r'Curve $r(t)=(t^2,e^t)$ on the surface')
+plt.show()
+```
+
+### A numerical check
+
+Substitution gives
+
+$$
+z(t)=t^4e^t+\sin(e^t).
+$$
+
+The derivative at $t=0$ is indeed $\cos(1)$. The following code compares the analytic result with a central difference approximation.
+
+```{python}
+import numpy as np
+
+def z_of_t(t):
+    return t**4 * np.exp(t) + np.sin(np.exp(t))
+
+h = 1e-6
+numerical = (z_of_t(h) - z_of_t(-h)) / (2*h)
+analytic = np.cos(1.0)
+print('Central difference:', numerical)
+print('Analytic chain-rule value:', analytic)
+print('Absolute error:', abs(numerical - analytic))
+```
+
+## 10.3 The tree form of the chain rule
+
+Now suppose
+
+$$
+z=f(x,y), \qquad x=x(s,t), \qquad y=y(s,t).
+$$
+
+Then $z$ is a function of two variables $s$ and $t$:
+
+$$
+z(s,t)=f(x(s,t),y(s,t)).
+$$
+
+The partial derivatives of $z$ are
+
+$$
+\frac{\partial z}{\partial s}
+=
+\frac{\partial f}{\partial x}\frac{\partial x}{\partial s}
++
+\frac{\partial f}{\partial y}\frac{\partial y}{\partial s},
+$$
+
+and
+
+$$
+\frac{\partial z}{\partial t}
+=
+\frac{\partial f}{\partial x}\frac{\partial x}{\partial t}
++
+\frac{\partial f}{\partial y}\frac{\partial y}{\partial t}.
+$$
+
+A useful memory device is the dependency tree:
+
+$$
+(s,t) \longrightarrow (x,y) \longrightarrow z.
+$$
+
+To differentiate $z$ with respect to one input variable, follow every path from that variable to $z$, multiply derivatives along each path, and add the path contributions.
+
+### Worked example 10.2: Two-parameter chain rule
+
+Let
+
+$$
+f(x,y)=x^2+y^3,
+$$
+
+where
+
+$$
+x=s+t, \qquad y=st.
+$$
+
+Find $\partial z/\partial s$ and $\partial z/\partial t$.
+
+We have
+
+$$
+f_x=2x, \qquad f_y=3y^2.
+$$
+
+Also,
+
+$$
+x_s=1, \qquad x_t=1, \qquad y_s=t, \qquad y_t=s.
+$$
+
+Therefore
+
+$$
+z_s=2x\cdot 1+3y^2\cdot t=2x+3ty^2,
+$$
+
+and
+
+$$
+z_t=2x\cdot 1+3y^2\cdot s=2x+3sy^2.
+$$
+
+Substituting $x=s+t$ and $y=st$ gives
+
+$$
+z_s=2(s+t)+3t(s^2t^2),
+$$
+
+and
+
+$$
+z_t=2(s+t)+3s(s^2t^2).
+$$
+
+## 10.4 Jacobian matrices
+
+The cleanest way to organize the multivariable chain rule is with matrices.
+
+Let
+
+$$
+F:\mathbb R^n\to \mathbb R^m,
+$$
+
+where
+
+$$
+F(x_1,\dots,x_n)=
+\begin{bmatrix}
+F_1(x_1,\dots,x_n)\\
+\vdots\\
+F_m(x_1,\dots,x_n)
+\end{bmatrix}.
+$$
+
+The **Jacobian matrix** of $F$ is
+
+$$
+J_F(x)=
+\begin{bmatrix}
+\frac{\partial F_1}{\partial x_1} & \frac{\partial F_1}{\partial x_2} & \cdots & \frac{\partial F_1}{\partial x_n}\\
+\frac{\partial F_2}{\partial x_1} & \frac{\partial F_2}{\partial x_2} & \cdots & \frac{\partial F_2}{\partial x_n}\\
+\vdots & \vdots & \ddots & \vdots\\
+\frac{\partial F_m}{\partial x_1} & \frac{\partial F_m}{\partial x_2} & \cdots & \frac{\partial F_m}{\partial x_n}
+\end{bmatrix}.
+$$
+
+The entry in row $i$, column $j$ tells how the $i$th output changes when the $j$th input changes.
+
+::: {.callout-note title='Dimensions matter'}
+If $F:\mathbb R^n\to\mathbb R^m$, then $J_F$ is an $m\times n$ matrix. It maps small input displacements $\Delta x\in\mathbb R^n$ to small output displacements $\Delta F\in\mathbb R^m$:
+
+$$
+\Delta F\approx J_F(x)\Delta x.
+$$
+:::
+
+### Worked example 10.3: A Jacobian matrix
+
+Let
+
+$$
+F(x,y)=
+\begin{bmatrix}
+x^2y\\
+e^{x+y}\\
+\sin(xy)
+\end{bmatrix}.
+$$
+
+Then $F:\mathbb R^2\to\mathbb R^3$. Its Jacobian is a $3\times 2$ matrix:
+
+$$
+J_F(x,y)=
+\begin{bmatrix}
+2xy & x^2\\
+e^{x+y} & e^{x+y}\\
+y\cos(xy) & x\cos(xy)
+\end{bmatrix}.
+$$
+
+At $(1,0)$,
+
+$$
+J_F(1,0)=
+\begin{bmatrix}
+0 & 1\\
+e & e\\
+0 & 1
+\end{bmatrix}.
+$$
+
+Thus if $(x,y)$ moves by a small vector $\Delta x=\langle h,k\rangle$, then
+
+$$
+\Delta F \approx
+\begin{bmatrix}
+0 & 1\\
+e & e\\
+0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+h\\k
+\end{bmatrix}
+=
+\begin{bmatrix}
+k\\e(h+k)\\k
+\end{bmatrix}.
+$$
+
+This is the local linear approximation to a vector-valued nonlinear function.
+
+## 10.5 The Jacobian as a local linear map
+
+For a scalar function $f:\mathbb R^n\to\mathbb R$, the derivative at a point is encoded by the gradient. For a vector-valued function $F:\mathbb R^n\to\mathbb R^m$, the derivative is encoded by the Jacobian.
+
+Near a point $a$, we have the first-order approximation
+
+$$
+F(a+h)\approx F(a)+J_F(a)h.
+$$
+
+This means that the nonlinear function behaves like an affine linear map near $a$.
+
+### Worked example 10.4: Local effect of a nonlinear map
+
+Let
+
+$$
+F(x,y)=\begin{bmatrix}x+y\\x^2-y\end{bmatrix}.
+$$
+
+Then
+
+$$
+J_F(x,y)=
+\begin{bmatrix}
+1 & 1\\
+2x & -1
+\end{bmatrix}.
+$$
+
+At $a=(1,1)$,
+
+$$
+J_F(1,1)=
+\begin{bmatrix}
+1 & 1\\
+2 & -1
+\end{bmatrix}.
+$$
+
+Therefore a small square around $(1,1)$ in the input plane is approximately mapped to a parallelogram in the output plane.
+
+```{python}
+#| label: fig-ch10-jacobian-local-linear-map
+#| fig-cap: 'Near a point, a nonlinear map is approximated by its Jacobian linear map.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+# nonlinear map F: R^2 -> R^2
+def F_map(P):
+    x, y = P[..., 0], P[..., 1]
+    return np.stack([x + y, x**2 - y], axis=-1)
+
+a = np.array([1.0, 1.0])
+Fa = F_map(a)
+J = np.array([[1.0, 1.0], [2.0, -1.0]])
+
+# small square around a
+h = 0.18
+square = np.array([
+    [-h, -h], [h, -h], [h, h], [-h, h], [-h, -h]
+])
+input_square = a + square
+nonlinear_image = F_map(input_square)
+linear_image = Fa + square @ J.T
+
+fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+
+axes[0].plot(input_square[:, 0], input_square[:, 1], marker='o')
+axes[0].scatter([a[0]], [a[1]], s=60)
+axes[0].set_title('Small input square')
+axes[0].set_xlabel(r'$x$')
+axes[0].set_ylabel(r'$y$')
+axes[0].axis('equal')
+axes[0].grid(True, alpha=0.3)
+
+axes[1].plot(nonlinear_image[:, 0], nonlinear_image[:, 1], marker='o', label='Nonlinear image')
+axes[1].plot(linear_image[:, 0], linear_image[:, 1], marker='x', linestyle='--', label='Jacobian approximation')
+axes[1].scatter([Fa[0]], [Fa[1]], s=60)
+axes[1].set_title('Image in output plane')
+axes[1].set_xlabel(r'$u$')
+axes[1].set_ylabel(r'$v$')
+axes[1].axis('equal')
+axes[1].grid(True, alpha=0.3)
+axes[1].legend()
+plt.tight_layout()
+plt.show()
+```
+
+## 10.6 Matrix form of the chain rule
+
+Suppose
+
+$$
+F:\mathbb R^n\to\mathbb R^m,
+\qquad
+G:\mathbb R^m\to\mathbb R^p.
+$$
+
+Then the composition
+
+$$
+G\circ F:\mathbb R^n\to\mathbb R^p
+$$
+
+has Jacobian
+
+$$
+\boxed{J_{G\circ F}(x)=J_G(F(x))J_F(x)}.
+$$
+
+The order is important. We first apply $F$, then apply $G$, but the Jacobian matrices multiply as
+
+$$
+\text{outer derivative} \times \text{inner derivative}.
+$$
+
+This is the multivariable version of
+
+$$
+(g\circ f)'(x)=g'(f(x))f'(x).
+$$
+
+### Worked example 10.5: Matrix chain rule
+
+Let
+
+$$
+F(s,t)=
+\begin{bmatrix}
+x\\y
+\end{bmatrix}
+=
+\begin{bmatrix}
+s+t\\st
+\end{bmatrix},
+$$
+
+and
+
+$$
+G(x,y)=x^2+y^3.
+$$
+
+Then $G\circ F$ is a scalar function of $(s,t)$.
+
+The Jacobian of $F$ is
+
+$$
+J_F(s,t)=
+\begin{bmatrix}
+1 & 1\\
+t & s
+\end{bmatrix}.
+$$
+
+The Jacobian of $G$ is the row vector
+
+$$
+J_G(x,y)=
+\begin{bmatrix}
+2x & 3y^2
+\end{bmatrix}.
+$$
+
+Therefore
+
+$$
+J_{G\circ F}(s,t)
+=
+\begin{bmatrix}
+2x & 3y^2
+\end{bmatrix}
+\begin{bmatrix}
+1 & 1\\
+t & s
+\end{bmatrix}
+=
+\begin{bmatrix}
+2x+3ty^2 & 2x+3sy^2
+\end{bmatrix}.
+$$
+
+Substituting $x=s+t$ and $y=st$ gives the same result as the tree form of the chain rule.
+
+## 10.7 Gradients through linear maps
+
+A very common situation in data science and machine learning is
+
+$$
+L(w)=\phi(Aw+b),
+$$
+
+where
+
+- $w\in\mathbb R^n$ is a parameter vector;
+- $A$ is a matrix;
+- $b$ is a vector;
+- $\phi$ is a scalar loss function.
+
+Let
+
+$$
+u=Aw+b.
+$$
+
+Then the chain rule gives
+
+$$
+\nabla_w L(w)=A^T\nabla_u \phi(u).
+$$
+
+This formula appears constantly in regression, neural networks, inverse problems, and optimization. It says that gradients move backward through a linear map by multiplying by the transpose.
+
+::: {.callout-important title='Forward values, backward gradients'}
+The value moves forward through $u=Aw+b$. The gradient moves backward through $A^T$.
+:::
+
+### Worked example 10.6: Least-squares gradient
+
+Let
+
+$$
+L(w)=\frac12\|Xw-y\|^2,
+$$
+
+where $X$ is a data matrix, $w$ is a parameter vector, and $y$ is an observed response vector. Define
+
+$$
+r=Xw-y.
+$$
+
+Then
+
+$$
+L=\frac12 r^Tr.
+$$
+
+The gradient with respect to $r$ is
+
+$$
+\nabla_r L=r.
+$$
+
+Since $r=Xw-y$, the chain rule gives
+
+$$
+\boxed{\nabla_w L=X^T(Xw-y)}.
+$$
+
+This is one of the most important gradients in applied mathematics, statistics, and machine learning.
+
+```{python}
+#| label: fig-ch10-least-squares-gradient
+#| fig-cap: 'The least-squares gradient points toward increasing loss, while gradient descent moves in the opposite direction.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(10)
+x_data = np.linspace(-2, 2, 35)
+y_data = 1.0 + 1.8*x_data + rng.normal(scale=0.35, size=x_data.shape)
+Xmat = np.column_stack([np.ones_like(x_data), x_data])
+
+def loss(w):
+    r = Xmat @ w - y_data
+    return 0.5*np.dot(r, r)
+
+def grad(w):
+    return Xmat.T @ (Xmat @ w - y_data)
+
+b0 = np.linspace(-1, 3, 140)
+b1 = np.linspace(0, 3.5, 140)
+B0, B1 = np.meshgrid(b0, b1)
+Z = np.zeros_like(B0)
+for i in range(B0.shape[0]):
+    for j in range(B0.shape[1]):
+        Z[i, j] = loss(np.array([B0[i, j], B1[i, j]]))
+
+w0 = np.array([2.4, 0.8])
+g0 = grad(w0)
+g0_scaled = g0 / np.linalg.norm(g0)
+
+fig, ax = plt.subplots(figsize=(7, 5))
+cs = ax.contour(B0, B1, Z, levels=25)
+ax.clabel(cs, inline=True, fontsize=7)
+ax.scatter([w0[0]], [w0[1]], s=60)
+ax.arrow(w0[0], w0[1], 0.35*g0_scaled[0], 0.35*g0_scaled[1], head_width=0.08, length_includes_head=True)
+ax.arrow(w0[0], w0[1], -0.35*g0_scaled[0], -0.35*g0_scaled[1], head_width=0.08, length_includes_head=True, linestyle='--')
+ax.text(w0[0]+0.12, w0[1]+0.22, r'$\nabla L$', fontsize=12)
+ax.text(w0[0]-0.72, w0[1]-0.35, r'$-\nabla L$', fontsize=12)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Least-squares loss and gradient direction')
+ax.grid(True, alpha=0.3)
+plt.show()
+```
+
+## 10.8 Numerical Jacobians by finite differences
+
+In applications, we may have a function implemented as code but not have a closed formula. We can approximate the Jacobian using finite differences.
+
+For $F:\mathbb R^n\to\mathbb R^m$, the $j$th column of the Jacobian can be approximated by
+
+$$
+\frac{F(x+he_j)-F(x-he_j)}{2h},
+$$
+
+where $e_j$ is the $j$th standard basis vector.
+
+```{python}
+import numpy as np
+
+def numerical_jacobian(F, x, h=1e-6):
+    x = np.array(x, dtype=float)
+    Fx = np.array(F(x), dtype=float)
+    m = Fx.size
+    n = x.size
+    J = np.zeros((m, n))
+    for j in range(n):
+        e = np.zeros(n)
+        e[j] = 1.0
+        J[:, j] = (np.array(F(x + h*e)) - np.array(F(x - h*e))) / (2*h)
+    return J
+
+# Example F: R^2 -> R^3
+def F_example(v):
+    x, y = v
+    return np.array([x**2*y, np.exp(x+y), np.sin(x*y)])
+
+x0 = np.array([1.0, 0.0])
+J_num = numerical_jacobian(F_example, x0)
+J_exact = np.array([[0.0, 1.0], [np.e, np.e], [0.0, 1.0]])
+
+print('Numerical Jacobian:')
+print(J_num)
+print('\nExact Jacobian:')
+print(J_exact)
+print('\nMaximum absolute error:', np.max(np.abs(J_num - J_exact)))
+```
+
+Finite differences are useful, but they can be slow or unstable for very large models. Automatic differentiation gives a more efficient and accurate way to compute derivatives of functions defined by code.
+
+## 10.9 Computational graphs
+
+A **computational graph** breaks a complicated function into elementary operations. Each node stores a value. Each edge represents dependence.
+
+Consider
+
+$$
+f(x,y)=(xy+\sin x)^2.
+$$
+
+We can compute it step by step:
+
+$$
+a=xy, \qquad b=\sin x, \qquad c=a+b, \qquad f=c^2.
+$$
+
+The chain rule can be applied locally at every step.
+
+### Worked example 10.7: Forward sensitivity
+
+Let
+
+$$
+f(x,y)=(xy+\sin x)^2.
+$$
+
+Set
+
+$$
+a=xy, \qquad b=\sin x, \qquad c=a+b, \qquad f=c^2.
+$$
+
+Then
+
+$$
+\frac{\partial f}{\partial c}=2c,
+\qquad
+\frac{\partial c}{\partial a}=1,
+\qquad
+\frac{\partial c}{\partial b}=1,
+$$
+
+$$
+\frac{\partial a}{\partial x}=y,
+\qquad
+\frac{\partial a}{\partial y}=x,
+\qquad
+\frac{\partial b}{\partial x}=\cos x.
+$$
+
+Therefore
+
+$$
+\frac{\partial f}{\partial x}
+=2c\left(y+\cos x\right),
+$$
+
+and
+
+$$
+\frac{\partial f}{\partial y}
+=2cx.
+$$
+
+Since $c=xy+\sin x$,
+
+$$
+\nabla f(x,y)=
+\left\langle
+2(xy+\sin x)(y+\cos x),
+2x(xy+\sin x)
+\right\rangle.
+$$
+
+```{python}
+#| label: fig-ch10-computational-graph
+#| fig-cap: 'A computational graph decomposes a function into elementary operations where local derivatives are easy to compute.'
+#| fig-width: 7
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(8, 3.2))
+ax.axis('off')
+
+nodes = {
+    'x': (0.07, 0.72),
+    'y': (0.07, 0.28),
+    'a=xy': (0.32, 0.28),
+    'b=sin(x)': (0.32, 0.72),
+    'c=a+b': (0.58, 0.50),
+    'f=c^2': (0.84, 0.50),
+}
+
+for label, pos in nodes.items():
+    ax.text(pos[0], pos[1], label, ha='center', va='center', fontsize=12,
+            bbox=dict(boxstyle='round,pad=0.35', fc='white', ec='black'))
+
+edges = [
+    ('x', 'a=xy'), ('y', 'a=xy'), ('x', 'b=sin(x)'),
+    ('a=xy', 'c=a+b'), ('b=sin(x)', 'c=a+b'), ('c=a+b', 'f=c^2')
+]
+
+for u, v in edges:
+    ax.annotate('', xy=nodes[v], xytext=nodes[u], arrowprops=dict(arrowstyle='->', lw=1.8))
+
+plt.show()
+```
+
+## 10.10 Reverse-mode automatic differentiation
+
+Automatic differentiation is not symbolic differentiation and not finite differences. It computes exact derivatives of the operations performed by a program, up to floating-point rounding.
+
+There are two main modes:
+
+- **Forward mode** propagates derivatives from inputs to outputs.
+- **Reverse mode** propagates derivatives from output back to inputs.
+
+Reverse mode is especially efficient when there is one scalar output and many inputs, which is exactly the situation for many loss functions:
+
+$$
+L(\theta_1,\dots,\theta_n):\mathbb R^n\to\mathbb R.
+$$
+
+Backpropagation is reverse-mode automatic differentiation applied to neural networks.
+
+### Worked example 10.8: Reverse accumulation
+
+Again let
+
+$$
+f=(xy+\sin x)^2.
+$$
+
+At each node, reverse mode stores an **adjoint**, meaning the derivative of the final output with respect to that node. Start with
+
+$$
+\bar f=\frac{\partial f}{\partial f}=1.
+$$
+
+Since $f=c^2$,
+
+$$
+\bar c = \bar f\frac{\partial f}{\partial c}=2c.
+$$
+
+Since $c=a+b$,
+
+$$
+\bar a=\bar c, \qquad \bar b=\bar c.
+$$
+
+Since $a=xy$ and $b=\sin x$,
+
+$$
+\bar x = \bar a\,y+\bar b\,\cos x,
+\qquad
+\bar y = \bar a\,x.
+$$
+
+This gives the same gradient as before, but the organization is different: compute values forward, then gradients backward.
+
+```{python}
+import numpy as np
+
+def forward_reverse_example(x, y):
+    # Forward pass
+    a = x*y
+    b = np.sin(x)
+    c = a + b
+    f = c**2
+
+    # Reverse pass
+    f_bar = 1.0
+    c_bar = f_bar * 2*c
+    a_bar = c_bar * 1.0
+    b_bar = c_bar * 1.0
+    x_bar = a_bar * y + b_bar * np.cos(x)
+    y_bar = a_bar * x
+    return f, np.array([x_bar, y_bar])
+
+value, gradient = forward_reverse_example(1.2, -0.7)
+print('Function value:', value)
+print('Gradient from reverse accumulation:', gradient)
+```
+
+## 10.11 A tiny neural-network example
+
+Consider a very small model with one input $x$, one weight $w$, one bias $b$, and sigmoid activation
+
+$$
+\hat y = \sigma(wx+b),
+$$
+
+where
+
+$$
+\sigma(u)=\frac{1}{1+e^{-u}}.
+$$
+
+For a target value $y$, use the squared loss
+
+$$
+L(w,b)=\frac12(\hat y-y)^2.
+$$
+
+The computation is
+
+$$
+u=wx+b,
+\qquad
+\hat y=\sigma(u),
+\qquad
+L=\frac12(\hat y-y)^2.
+$$
+
+The chain rule gives
+
+$$
+\frac{\partial L}{\partial w}
+= (\hat y-y)\sigma'(u)x,
+$$
+
+and
+
+$$
+\frac{\partial L}{\partial b}
+= (\hat y-y)\sigma'(u),
+$$
+
+where
+
+$$
+\sigma'(u)=\sigma(u)(1-\sigma(u)).
+$$
+
+This is backpropagation in its smallest possible form.
+
+```{python}
+#| label: fig-ch10-sigmoid-loss
+#| fig-cap: 'A one-neuron model is a composition of an affine map, a nonlinear activation, and a loss function.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def sigmoid(u):
+    return 1/(1 + np.exp(-u))
+
+u = np.linspace(-8, 8, 400)
+yhat = sigmoid(u)
+target = 0.8
+loss_values = 0.5*(yhat - target)**2
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(u, yhat, label=r'$\hat y=\sigma(u)$')
+ax.plot(u, loss_values, label=r'$L=\frac{1}{2}(\hat y-y)^2$, with $y=0.8$')
+ax.set_xlabel(r'$u=wx+b$')
+ax.set_title('Activation and loss as functions of the preactivation')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+```
+
+```{python}
+import numpy as np
+
+def sigmoid(u):
+    return 1/(1 + np.exp(-u))
+
+def one_neuron_loss_and_grad(w, b, x, y):
+    u = w*x + b
+    yhat = sigmoid(u)
+    loss = 0.5*(yhat - y)**2
+    dL_dyhat = yhat - y
+    dyhat_du = yhat*(1-yhat)
+    dL_du = dL_dyhat * dyhat_du
+    dL_dw = dL_du * x
+    dL_db = dL_du
+    return loss, np.array([dL_dw, dL_db])
+
+w, b, x, y = 1.3, -0.4, 2.0, 1.0
+loss_value, grad_value = one_neuron_loss_and_grad(w, b, x, y)
+print('Loss:', loss_value)
+print('Gradient with respect to [w, b]:', grad_value)
+```
+
+## 10.12 Chain rule and coordinate transformations
+
+Coordinate transformations are also compositions. For polar coordinates,
+
+$$
+x=r\cos\theta, \qquad y=r\sin\theta.
+$$
+
+If $z=f(x,y)$, then
+
+$$
+z(r,\theta)=f(r\cos\theta,r\sin\theta).
+$$
+
+The chain rule gives
+
+$$
+\frac{\partial z}{\partial r}
+=f_x\cos\theta+f_y\sin\theta,
+$$
+
+and
+
+$$
+\frac{\partial z}{\partial \theta}
+=f_x(-r\sin\theta)+f_y(r\cos\theta).
+$$
+
+This viewpoint is important later when we study polar, cylindrical, and spherical integrals. The Jacobian matrix of the polar coordinate map
+
+$$
+\Phi(r,\theta)=\begin{bmatrix}r\cos\theta\\ r\sin\theta\end{bmatrix}
+$$
+
+is
+
+$$
+J_\Phi(r,\theta)=
+\begin{bmatrix}
+\cos\theta & -r\sin\theta\\
+\sin\theta & r\cos\theta
+\end{bmatrix}.
+$$
+
+Its determinant is
+
+$$
+\det J_\Phi(r,\theta)=r.
+$$
+
+This determinant explains why the area element becomes
+
+$$
+dA=r\,dr\,d\theta.
+$$
+
+Thus the chain rule for derivatives and the change-of-variables rule for integrals are closely connected.
+
+```{python}
+#| label: fig-ch10-polar-jacobian-grid
+#| fig-cap: 'The polar coordinate map bends a rectangular grid in parameter space into radial and circular coordinate curves.'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6.5, 6.5))
+
+theta_vals = np.linspace(0, 2*np.pi, 300)
+for r in np.linspace(0.5, 3.0, 6):
+    ax.plot(r*np.cos(theta_vals), r*np.sin(theta_vals), linewidth=1)
+
+r_vals = np.linspace(0, 3.0, 200)
+for theta in np.linspace(0, 2*np.pi, 12, endpoint=False):
+    ax.plot(r_vals*np.cos(theta), r_vals*np.sin(theta), linewidth=1)
+
+ax.set_aspect('equal')
+ax.set_xlabel(r'$x$')
+ax.set_ylabel(r'$y$')
+ax.set_title('Image of a polar grid in the xy-plane')
+ax.grid(True, alpha=0.2)
+plt.show()
+```
+
+## 10.13 Implicit differentiation as a chain rule
+
+Suppose $z=z(x,y)$ is defined implicitly by
+
+$$
+F(x,y,z)=0.
+$$
+
+Then $F(x,y,z(x,y))$ is identically zero. Differentiating with respect to $x$ gives
+
+$$
+F_x+F_z\frac{\partial z}{\partial x}=0.
+$$
+
+Therefore, if $F_z\neq 0$,
+
+$$
+\boxed{\frac{\partial z}{\partial x}=-\frac{F_x}{F_z}}.
+$$
+
+Similarly,
+
+$$
+\boxed{\frac{\partial z}{\partial y}=-\frac{F_y}{F_z}}.
+$$
+
+This is the same chain rule idea, but now one variable is hidden inside an equation.
+
+### Worked example 10.9: Implicit partial derivatives
+
+Suppose $z=f(x,y)$ is defined by
+
+$$
+x^3+y^3+z^3+2xyz=3.
+$$
+
+Let
+
+$$
+F(x,y,z)=x^3+y^3+z^3+2xyz-3.
+$$
+
+Then
+
+$$
+F_x=3x^2+2yz,
+\qquad
+F_y=3y^2+2xz,
+\qquad
+F_z=3z^2+2xy.
+$$
+
+Thus
+
+$$
+\frac{\partial z}{\partial x}
+=-\frac{3x^2+2yz}{3z^2+2xy},
+$$
+
+and
+
+$$
+\frac{\partial z}{\partial y}
+=-\frac{3y^2+2xz}{3z^2+2xy}.
+$$
+
+## 10.14 Common mistakes
+
+::: {.callout-warning title='Mistake 1: Forgetting all paths'}
+If $z=f(x,y)$ and both $x$ and $y$ depend on $t$, then $dz/dt$ has two contributions:
+
+$$
+\frac{dz}{dt}=f_xx'(t)+f_yy'(t).
+$$
+
+Do not keep only one path.
+:::
+
+::: {.callout-warning title='Mistake 2: Multiplying Jacobians in the wrong order'}
+For $G\circ F$, the derivative is
+
+$$
+J_{G\circ F}(x)=J_G(F(x))J_F(x),
+$$
+
+not $J_F(x)J_G(F(x))$. Check matrix dimensions.
+:::
+
+::: {.callout-warning title='Mistake 3: Confusing gradient and Jacobian'}
+For a scalar-valued function $f:\mathbb R^n\to\mathbb R$, the Jacobian is a $1\times n$ row vector, while the gradient is usually written as an $n\times 1$ column vector or as a vector in $\mathbb R^n$. The information is the same, but the orientation matters in matrix formulas.
+:::
+
+::: {.callout-warning title='Mistake 4: Treating automatic differentiation as numerical differentiation'}
+Finite differences estimate derivatives by evaluating nearby points. Automatic differentiation applies the chain rule exactly to the operations in a program. These are different methods.
+:::
+
+## 10.15 Summary of core formulas
+
+### Chain rule along a curve
+
+If $z=f(x(t),y(t))$, then
+
+$$
+\frac{dz}{dt}=f_x\frac{dx}{dt}+f_y\frac{dy}{dt}.
+$$
+
+Equivalently,
+
+$$
+\frac{d}{dt}f(r(t))=\nabla f(r(t))\cdot r'(t).
+$$
+
+### Chain rule with two parameters
+
+If $z=f(x(s,t),y(s,t))$, then
+
+$$
+z_s=f_xx_s+f_yy_s,
+\qquad
+z_t=f_xx_t+f_yy_t.
+$$
+
+### Jacobian matrix
+
+For $F:\mathbb R^n\to\mathbb R^m$,
+
+$$
+J_F(x)=\left[\frac{\partial F_i}{\partial x_j}\right].
+$$
+
+### Linear approximation
+
+$$
+F(a+h)\approx F(a)+J_F(a)h.
+$$
+
+### Matrix chain rule
+
+$$
+J_{G\circ F}(x)=J_G(F(x))J_F(x).
+$$
+
+### Gradient through a linear map
+
+If $L(w)=\phi(Aw+b)$, then
+
+$$
+\nabla_w L=A^T\nabla_u\phi(u),
+\qquad u=Aw+b.
+$$
+
+### Implicit differentiation
+
+If $F(x,y,z(x,y))=0$, then
+
+$$
+z_x=-\frac{F_x}{F_z},
+\qquad
+z_y=-\frac{F_y}{F_z}.
+$$
+
+## Practice problems
+
+### Conceptual problems
+
+1. Explain why the chain rule is a rule about composition.
+2. In your own words, explain why the chain rule adds contributions from different paths in a dependency graph.
+3. What is the dimension of the Jacobian matrix for a map $F:\mathbb R^5\to\mathbb R^3$?
+4. Explain the difference between a gradient and a Jacobian.
+5. Why does reverse-mode automatic differentiation work well for scalar loss functions with many parameters?
+6. Explain why $A^T$ appears when backpropagating a gradient through $u=Aw+b$.
+
+### Computational and algebraic problems
+
+7. Let $z=x^2+xy+y^2$, where $x=t^2$ and $y=\sin t$. Find $dz/dt$.
+8. Let $z=e^{xy}$, where $x=s+t$ and $y=s-t$. Find $z_s$ and $z_t$.
+9. Let $F(x,y)=\langle x^2+y,xy,\sin(x+y)\rangle$. Compute $J_F(x,y)$.
+10. Let $F(x,y)=\langle x+y,x-y\rangle$ and $G(u,v)=u^2+v^2$. Compute $J_{G\circ F}$ using matrix multiplication.
+11. Let $F(x,y,z)=x^2+y^2+z^2-1=0$ define $z=z(x,y)$ near a point with $z\neq 0$. Find $z_x$ and $z_y$.
+12. Let $L(w)=\frac12\|Aw-y\|^2$. Derive $\nabla_w L=A^T(Aw-y)$.
+13. For $f(x,y)=(x^2+y)^3$, draw a computational graph and compute $\nabla f$ by the chain rule.
+14. For $\hat y=\sigma(w_1x_1+w_2x_2+b)$ and $L=\frac12(\hat y-y)^2$, compute $\partial L/\partial w_1$, $\partial L/\partial w_2$, and $\partial L/\partial b$.
+15. Use finite differences to approximate the Jacobian of $F(x,y)=\langle e^{xy},x^2-y^2\rangle$ at $(1,2)$.
+
+### Challenge problems
+
+16. Let $F:\mathbb R^2\to\mathbb R^2$ be $F(r,\theta)=\langle r\cos\theta,r\sin\theta\rangle$. Compute $J_F$ and explain geometrically why $|\det J_F|=r$.
+17. Let $F(x)=Ax$ and $G(u)=\frac12\|u-y\|^2$. Use the matrix chain rule to derive the least-squares gradient.
+18. Suppose $H=G\circ F$ where $F:\mathbb R^n\to\mathbb R^m$ and $G:\mathbb R^m\to\mathbb R$. Show that $\nabla H(x)=J_F(x)^T\nabla G(F(x))$ when gradients are written as column vectors.
+19. Write a short paragraph explaining how backpropagation is related to the chain rule.
+20. Consider $f(x,y,z)=\sin(xy)+z^2$ and a curve $r(t)=\langle t,e^t,\cos t\rangle$. Compute $d(f\circ r)/dt$ at $t=0$.
+
+## Python lab and interactive page
+
+- Notebook lab: [Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb](../labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb)
+- Interactive HTML page: [Chapter 10 interactive page](../htmls/chapter-10.html)
+
+## Chapter summary
+
+The chain rule is the calculus of composition. In its simplest form, it differentiates $f(g(t))$. In multivariable calculus, it differentiates functions passing through curves, surfaces, coordinate transformations, and computational graphs. The Jacobian matrix organizes these derivative calculations as linear maps. The matrix chain rule
+
+$$
+J_{G\circ F}(x)=J_G(F(x))J_F(x)
+$$
+
+is the central formula of the chapter.
+
+For modern applied mathematics, statistics, and machine learning, the most important lesson is that derivatives can be propagated through models. Least-squares gradients, logistic-regression gradients, neural-network backpropagation, coordinate transformations, and sensitivity analysis are all expressions of the same idea: compute local derivatives at each step and combine them by the chain rule.

@@ -1,0 +1,143 @@
+# Welcome {.unnumbered}
+
+**Multivariable Calculus in the Age of Data, AI, and Applied Mathematics** is a modern textbook for students who want to use calculus as a language for geometry, computation, statistics, machine learning, and applied mathematical modeling.
+
+The guiding idea is simple:
+
+> Multivariable calculus studies functions with many inputs, and the modern quantitative world is built from functions with many inputs.
+
+A point in $\mathbb R^n$ can represent a location in space, a data record, a parameter vector, a probability model, a neural-network weight vector, or the state of a dynamical system. A derivative becomes a gradient, a Jacobian, or a Hessian. An integral becomes volume, mass, probability, expectation, flux, or accumulated work. Vector calculus becomes the language of flow, conservation, circulation, and change over regions and surfaces.
+
+This book develops the classical core of multivariable calculus while making the computational and data-centered viewpoint explicit from the beginning.
+
+## Who this book is for
+
+This book is designed for students preparing for graduate study or advanced undergraduate work in:
+
+- applied mathematics,
+- statistics,
+- data science,
+- artificial intelligence,
+- machine learning,
+- quantitative modeling,
+- scientific computing,
+- engineering and physical sciences,
+- mathematical foundations of modern computation.
+
+The expected background is single-variable calculus and basic algebra. Linear algebra is introduced and reinforced where needed, especially through vectors, projections, hyperplanes, Jacobians, Hessians, quadratic forms, and optimization.
+
+## What makes the book modern
+
+Classical multivariable calculus is usually organized around geometry, differentiation, integration, and vector fields. Those topics remain the foundation of this book. The modern emphasis is that each idea is also connected to computation and modeling.
+
+For example:
+
+- vectors are used for geometry, data, parameters, velocity, and force;
+- dot products explain angles, projections, similarity, and work;
+- gradients explain direction of fastest increase, optimization, likelihood, and learning;
+- Jacobians explain coordinate changes, sensitivity, and backpropagation;
+- Hessians explain curvature, second-order approximation, and uncertainty;
+- multiple integrals explain volume, probability, expectation, density, and mass;
+- Green's theorem, Stokes' theorem, and the divergence theorem explain circulation, flux, and conservation laws.
+
+The book includes Python examples, numerical experiments, interactive visualizations, and applications to statistics and machine learning throughout.
+
+## How to use this book
+
+A productive workflow is:
+
+1. Read the chapter introduction and learning goals.
+2. Work through the definitions and examples with pencil and paper.
+3. Run the Python code chunks or the companion notebook lab.
+4. Use the interactive HTML page to explore the geometry visually.
+5. Complete the conceptual and computational exercises.
+6. Return to the chapter summary before moving on.
+
+The companion pages are here:
+
+- [Python Labs](python-labs.qmd)
+- [Interactive HTML Pages](interactive-htmls.qmd)
+- [Formula Sheet](appendices/formula-sheet.qmd)
+- [Python Reference](appendices/python-reference.qmd)
+- [References](references.qmd)
+
+A pdf version of the book written in LaTeX (with TikZ) is avilable: - [PDF Book with TikZ](latex/calculus-multivariable-complete-book.pdf)
+
+## Book roadmap
+
+### Part I. Geometry, Vectors, and Spaces
+
+| Chapter | Topic | Main purpose |
+|---:|---|---|
+| 1 | [From Single Variable Calculus to Multivariable Thinking](chapters/chapter-01-from-single-variable-calculus-to-multivariable-thinking.qmd) | Introduce many-input functions and the computational viewpoint. |
+| 2 | [Euclidean Space $\mathbb R^n$](chapters/chapter-02-euclidean-space-rn.qmd) | Build geometry in $\mathbb R^2$, $\mathbb R^3$, and $\mathbb R^n$. |
+| 3 | [Vectors, Norms, Dot Products, and Projections](chapters/chapter-03-vectors-norms-dot-products-and-projections.qmd) | Develop vector arithmetic, length, angle, similarity, projection, and work. |
+| 4 | [Lines, Planes, Hyperplanes, and Parametric Geometry](chapters/chapter-04-lines-planes-hyperplanes-and-parametric-geometry.qmd) | Describe geometric objects using points, direction vectors, and normal vectors. |
+| 5 | [Cross Products, Curves, and Motion in Space](chapters/chapter-05-cross-products-curves-and-motion-in-space.qmd) | Study orientation, area, normal vectors, space curves, velocity, and curvature. |
+
+### Part II. Functions of Several Variables and Differentiation
+
+| Chapter | Topic | Main purpose |
+|---:|---|---|
+| 6 | [Functions of Several Variables](chapters/chapter-06-functions-of-several-variables.qmd) | Study domains, graphs, surfaces, level curves, and high-dimensional functions. |
+| 7 | [Limits and Continuity in Several Variables](chapters/chapter-07-limits-and-continuity-in-several-variables.qmd) | Understand multivariable limits, path tests, continuity, and local behavior. |
+| 8 | [Partial Derivatives and the Gradient](chapters/chapter-08-partial-derivatives-and-the-gradient.qmd) | Develop partial derivatives, gradients, and rates of change in coordinate directions. |
+| 9 | [Linear Approximation, Tangent Planes, and Differentials](chapters/chapter-09-linear-approximation-tangent-planes-and-differentials.qmd) | Use first-order approximation to understand tangent planes and error propagation. |
+| 10 | [Chain Rule, Jacobians, and Automatic Differentiation](chapters/chapter-10-chain-rule-jacobians-and-automatic-differentiation.qmd) | Express multivariable chain rules using Jacobians and computational graphs. |
+| 11 | [Directional Derivatives, Hessians, and Optimization](chapters/chapter-11-directional-derivatives-hessians-and-optimization.qmd) | Connect gradients, Hessians, critical points, and numerical optimization. |
+| 12 | [Constrained Optimization and Lagrange Multipliers](chapters/chapter-12-constrained-optimization-and-lagrange-multipliers.qmd) | Solve optimization problems with constraints and interpret multiplier geometry. |
+
+### Part III. Multiple Integrals, Probability, and Change of Variables
+
+| Chapter | Topic | Main purpose |
+|---:|---|---|
+| 13 | [Double Integrals and Riemann Sums](chapters/chapter-13-double-integrals-and-riemann-sums.qmd) | Define double integrals through accumulation, volume, and numerical approximation. |
+| 14 | [Double Integrals over General Regions](chapters/chapter-14-double-integrals-over-general-regions.qmd) | Integrate over nonrectangular regions and reverse integration order. |
+| 15 | [Polar Coordinates and Change of Variables in the Plane](chapters/chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.qmd) | Use polar coordinates and Jacobians for geometry and density transformations. |
+| 16 | [Triple Integrals and Geometry in $\mathbb R^3$](chapters/chapter-16-triple-integrals-and-geometry-in-r3.qmd) | Compute volume, mass, averages, and probabilities in three dimensions. |
+| 17 | [Cylindrical and Spherical Coordinates](chapters/chapter-17-cylindrical-and-spherical-coordinates.qmd) | Use coordinate systems adapted to symmetry in space. |
+| 18 | [Multivariable Taylor Approximation and Quadratic Forms](chapters/chapter-18-multivariable-taylor-approximation-and-quadratic-forms.qmd) | Study second-order approximation, curvature, Hessians, and quadratic models. |
+
+### Part IV. Vector Calculus, Fields, and Global Theorems
+
+| Chapter | Topic | Main purpose |
+|---:|---|---|
+| 19 | [Vector Fields and Gradient Fields](chapters/chapter-19-vector-fields-and-gradient-fields.qmd) | Introduce fields, flows, conservative fields, potentials, and gradient dynamics. |
+| 20 | [Line Integrals and Work](chapters/chapter-20-line-integrals-and-work.qmd) | Integrate scalar and vector fields along curves. |
+| 21 | [Conservative Fields, Potentials, and Green's Theorem](chapters/chapter-21-conservative-fields-potentials-and-green-s-theorem.qmd) | Connect path independence, circulation, flux, and planar regions. |
+| 22 | [Curl, Divergence, and Surface Integrals](chapters/chapter-22-curl-divergence-and-surface-integrals.qmd) | Study local rotation, local expansion, surface area, orientation, and flux. |
+| 23 | [Stokes' Theorem and the Divergence Theorem](chapters/chapter-23-stokes-theorem-and-the-divergence-theorem.qmd) | Relate boundary integrals, surface integrals, volume integrals, and conservation laws. |
+
+### Part V. Modern Applications for Graduate Preparation
+
+| Chapter | Topic | Main purpose |
+|---:|---|---|
+| 24 | [Multivariable Calculus for Probability and Statistics](chapters/chapter-24-multivariable-calculus-for-probability-and-statistics.qmd) | Apply calculus to joint densities, likelihoods, covariance, and asymptotic approximation. |
+| 25 | [Multivariable Calculus for Data Science and Machine Learning](chapters/chapter-25-multivariable-calculus-for-data-science-and-machine-learning.qmd) | Connect gradients, losses, regularization, logistic regression, and neural networks. |
+| 26 | [Multivariable Calculus for Applied Mathematics](chapters/chapter-26-multivariable-calculus-for-applied-mathematics.qmd) | Connect fields, PDE intuition, diffusion, conservation laws, and variational ideas. |
+| 27 | [Review, Synthesis, and Bridge to Graduate Study](chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.qmd) | Integrate the whole course and prepare for graduate-level mathematics and statistics. |
+
+## Suggested pathways
+
+A full course can move through the chapters in order. For focused study, the following pathways are useful.
+
+**Applied mathematics pathway:** Chapters 1--5, 6--12, 13--18, 19--23, and 26--27.
+
+**Statistics pathway:** Chapters 1--4, 6--12, 13--18, and 24--27.
+
+**Data science and machine learning pathway:** Chapters 1--4, 6--12, 18, 24--25, and 27.
+
+**Vector calculus and physics pathway:** Chapters 1--5, 13--17, and 19--23.
+
+## Learning philosophy
+
+The goal is not only to compute derivatives and integrals. The goal is to see the structure behind the computations:
+
+- local linearity behind derivatives,
+- accumulation behind integrals,
+- geometry behind optimization,
+- curvature behind uncertainty,
+- coordinates behind transformations,
+- fields behind flows and conservation laws.
+
+A student who finishes the book should be ready to enter advanced courses in applied mathematics, probability, statistics, machine learning, optimization, scientific computing, and mathematical modeling with a clear geometric and computational foundation.

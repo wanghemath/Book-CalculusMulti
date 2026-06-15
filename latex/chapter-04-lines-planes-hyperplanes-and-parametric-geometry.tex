@@ -1,0 +1,1286 @@
+% -----------------------------------------------------------------------------
+% Chapter 4 LaTeX version
+% Source QMD: chapter-04-lines-planes-hyperplanes-and-parametric-geometry.qmd
+% This file is self-contained. To use inside a larger book, copy the material
+% after \begin{document}, or move the preamble definitions to the main preamble.
+% -----------------------------------------------------------------------------
+
+\documentclass[11pt,oneside]{book}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,calc,positioning,shadows.blur,decorations.pathreplacing,patterns,backgrounds,fit,angles,quotes,intersections}
+
+% -----------------------------------------------------------------------------
+% Colors and style
+% -----------------------------------------------------------------------------
+\definecolor{chapterblue}{HTML}{1F5AA6}
+\definecolor{chapterteal}{HTML}{168A8F}
+\definecolor{chapterorange}{HTML}{D9822B}
+\definecolor{chaptergreen}{HTML}{2D8A4E}
+\definecolor{chapterpurple}{HTML}{6B4EAA}
+\definecolor{chapterred}{HTML}{B23B3B}
+\definecolor{softblue}{HTML}{EAF3FF}
+\definecolor{softgreen}{HTML}{EAF8EF}
+\definecolor{softorange}{HTML}{FFF4E6}
+\definecolor{softpurple}{HTML}{F3EEFF}
+\definecolor{softred}{HTML}{FFF0F0}
+\definecolor{softgray}{HTML}{F6F7F9}
+\definecolor{darkgray}{HTML}{30343B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=chapterblue,
+  urlcolor=chapterteal,
+  citecolor=chapterpurple
+}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{topsep=0.3em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  axisline/.style={-Latex,thick,darkgray},
+  vector/.style={-Latex,very thick,chapterblue},
+  vectororange/.style={-Latex,very thick,chapterorange},
+  vectorgreen/.style={-Latex,very thick,chaptergreen},
+  vectorpurple/.style={-Latex,very thick,chapterpurple},
+  vectorred/.style={-Latex,very thick,chapterred},
+  smallvector/.style={-Latex,thick,chapterblue},
+  guide/.style={dash pattern=on 3pt off 2pt,gray!70},
+  projection/.style={dash pattern=on 4pt off 2pt,thick,chapterorange},
+  point/.style={circle,fill=chapterorange,draw=white,line width=0.4pt,inner sep=1.8pt},
+  bluepoint/.style={circle,fill=chapterblue,draw=white,line width=0.4pt,inner sep=1.8pt},
+  greenpoint/.style={circle,fill=chaptergreen,draw=white,line width=0.4pt,inner sep=1.8pt},
+  purplepoint/.style={circle,fill=chapterpurple,draw=white,line width=0.4pt,inner sep=1.8pt},
+  redpoint/.style={circle,fill=chapterred,draw=white,line width=0.4pt,inner sep=1.8pt},
+  boxnode/.style={rounded corners=3pt,draw=chapterblue,fill=softblue,thick,align=center,inner sep=6pt},
+  greennode/.style={rounded corners=3pt,draw=chaptergreen,fill=softgreen,thick,align=center,inner sep=6pt},
+  orangenode/.style={rounded corners=3pt,draw=chapterorange,fill=softorange,thick,align=center,inner sep=6pt},
+  purplenode/.style={rounded corners=3pt,draw=chapterpurple,fill=softpurple,thick,align=center,inner sep=6pt},
+  rednode/.style={rounded corners=3pt,draw=chapterred,fill=softred,thick,align=center,inner sep=6pt}
+}
+
+\newtcolorbox{mainideabox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterblue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Main idea},
+  sharp corners=south,
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{definitionbox}[1][] {
+  enhanced, breakable,
+  colback=softpurple,
+  colframe=chapterpurple,
+  fonttitle=\bfseries,
+  title={Definition},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{examplebox}[1][] {
+  enhanced, breakable,
+  colback=softorange,
+  colframe=chapterorange,
+  fonttitle=\bfseries,
+  title={Example},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{notebox}[1][] {
+  enhanced, breakable,
+  colback=softgreen,
+  colframe=chaptergreen,
+  fonttitle=\bfseries,
+  title={Note},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{warningbox}[1][] {
+  enhanced, breakable,
+  colback=softred,
+  colframe=chapterred,
+  fonttitle=\bfseries,
+  title={Common mistake},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{bridgebox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterteal,
+  fonttitle=\bfseries,
+  title={Bridge to applications},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\lstdefinestyle{pythonstyle}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{chapterblue}\bfseries,
+  stringstyle=\color{chaptergreen},
+  commentstyle=\color{gray},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  numbersep=7pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!50},
+  backgroundcolor=\color{softgray}
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\vect}[1]{\left\langle #1\right\rangle}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\spanop}{\operatorname{span}}
+\DeclareMathOperator{\sign}{sign}
+
+\begin{document}
+\setcounter{chapter}{3}
+
+\chapter{Lines, Planes, Hyperplanes, and Parametric Geometry}
+\label{ch:lines-planes-hyperplanes}
+
+\section*{Chapter overview}
+
+In single-variable calculus, the most important local geometric object is the \textbf{tangent line}. In multivariable calculus, the corresponding objects are \textbf{lines}, \textbf{planes}, and more generally \textbf{hyperplanes}. These are not only geometric objects in $\R^2$ and $\R^3$; they are also the basic language of linear models, constraints, optimization, regression, classification, tangent spaces, and numerical algorithms.
+
+A line can describe a path of motion. A plane can describe a constraint surface or a local approximation. A hyperplane can separate two classes of data. A line segment can describe interpolation between data points. A parametric surface can describe a plane patch, a sphere, a cylinder, or the local tangent plane to a curved surface.
+
+\begin{mainideabox}
+A geometric object is usually easier to understand when we describe it using points and vectors. A point tells us \textbf{where} the object is. A vector tells us \textbf{how to move} along it or \textbf{which direction is perpendicular} to it.
+\end{mainideabox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.92]
+  \node[boxnode,minimum width=3.4cm] (point) at (-4,1.7) {Point\\location\\$P$};
+  \node[greennode,minimum width=3.4cm] (dir) at (0,1.7) {Direction vector\\movement\\$v$};
+  \node[orangenode,minimum width=3.4cm] (normal) at (4,1.7) {Normal vector\\perpendicular\\$n$};
+  \node[purplenode,minimum width=3.4cm] (line) at (-2,-0.55) {Line\\$r(t)=P+tv$};
+  \node[purplenode,minimum width=3.4cm] (planepar) at (2,-0.55) {Plane patch\\$r(s,t)=P+su+tv$};
+  \node[rednode,minimum width=4.2cm] (hyper) at (0,-2.8) {Hyperplane or constraint\\$w\cdot x+b=0$};
+  \draw[smallvector] (point) -- (line);
+  \draw[smallvector] (dir) -- (line);
+  \draw[smallvector] (point) -- (planepar);
+  \draw[smallvector] (dir) -- (planepar);
+  \draw[smallvector] (normal) -- (hyper);
+  \draw[smallvector] (point) -- (hyper);
+  \draw[smallvector] (planepar) -- (hyper);
+\end{tikzpicture}
+\caption{Parametric geometry is built from points, direction vectors, and normal vectors.}
+\end{figure}
+
+We will move between three complementary descriptions:
+\begin{enumerate}
+\item \textbf{Parametric form}, useful for tracing an object.
+\item \textbf{Normal form}, useful for testing whether a point lies on an object.
+\item \textbf{Standard scalar form}, useful for algebra and computation.
+\end{enumerate}
+
+\section*{Learning goals}
+
+After studying this chapter, you should be able to:
+\begin{enumerate}
+\item write vector, parametric, and symmetric equations for lines;
+\item parameterize line segments between two points;
+\item write point-normal and scalar equations of planes in $\R^3$;
+\item parameterize planes using two direction vectors;
+\item find intersections among lines and planes;
+\item compute angles and distances involving lines, planes, and hyperplanes;
+\item interpret hyperplanes as linear constraints and decision boundaries;
+\item use computation to visualize lines, planes, hyperplanes, and simple geometric algorithms.
+\end{enumerate}
+
+\section{Why parametric geometry matters}
+
+A line in the plane is often introduced as
+\[
+  y=mx+b.
+\]
+This is useful, but it has two limitations. First, it does not describe vertical lines. Second, it does not generalize naturally to curves, lines in $\R^3$, planes in $\R^3$, or hyperplanes in $\R^n$.
+
+The vector point of view is more general:
+\begin{itemize}
+\item a line is determined by one point and one nonzero direction vector;
+\item a plane is determined by either one point and one normal vector, or one point and two nonparallel direction vectors;
+\item a hyperplane in $\R^n$ is determined by one point and one nonzero normal vector.
+\end{itemize}
+
+This is the same geometry that appears in calculus when we construct tangent lines, tangent planes, and local linear approximations.
+
+\section{Lines in the plane}
+
+\subsection{Slope form}
+
+A nonvertical line in $\R^2$ through $(x_0,y_0)$ with slope $m$ has equation
+\[
+  y-y_0=m(x-x_0).
+\]
+This form is familiar from algebra and single-variable calculus. But it hides the vector structure of the line. The slope $m$ means that a direction vector for the line is
+\[
+  v=\vect{1,m}.
+\]
+Thus the same line can be written as
+\[
+  \vect{x,y}=\vect{x_0,y_0}+t\vect{1,m}.
+\]
+Here $t$ is a parameter. As $t$ changes, the point moves along the line.
+
+\subsection{Vector form}
+
+More generally, if $P=(x_0,y_0)$ is a point and $v=\vect{a,b}$ is a nonzero direction vector, then the line through $P$ parallel to $v$ is
+\[
+  r(t)=r_0+tv,
+\]
+or
+\[
+  \vect{x,y}=\vect{x_0,y_0}+t\vect{a,b}.
+\]
+In coordinates,
+\[
+  x=x_0+at,\qquad y=y_0+bt.
+\]
+The same idea works in $\R^3$ and $\R^n$.
+
+\subsection{Point-normal form in the plane}
+
+A line in $\R^2$ can also be described by a normal vector. If $n=\vect{A,B}$ is perpendicular to a line and $P_0=(x_0,y_0)$ is on the line, then any point $P=(x,y)$ on the line satisfies
+\[
+  n\cdot(P-P_0)=0.
+\]
+Therefore
+\[
+  A(x-x_0)+B(y-y_0)=0.
+\]
+Expanding gives the standard form
+\[
+  Ax+By+C=0.
+\]
+
+\begin{notebox}
+For a line in $\R^2$, a \textbf{direction vector} points along the line, while a \textbf{normal vector} points perpendicular to the line. If $v=\vect{a,b}$ is a direction vector, then $n=\vect{-b,a}$ and $n=\vect{b,-a}$ are normal vectors.
+\end{notebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-3.2,0) -- (5.4,0) node[right] {$x$};
+  \draw[axisline] (0,-3) -- (0,3.2) node[above] {$y$};
+  \draw[very thick,chapterblue,name path=line] (-2.4,-2.6) -- (5.0,2.35) node[above right] {$L$};
+  \coordinate (P) at (1.2,-0.2);
+  \coordinate (DvecAngle) at (3.0,1.0);
+  \coordinate (NvecAngle) at (0,1.6);
+  \node[point,label=below right:$P_0$] at (P) {};
+  \draw[vector] (P) -- ++(1.8,1.2) node[midway,above left] {$v=\vect{a,b}$};
+  \draw[vectororange] (P) -- ++(-1.2,1.8) node[midway,left] {$n=\vect{-b,a}$};
+  \draw[guide] (3.0,1.0) -- (1.8,2.8);
+  \draw pic[draw=chapterorange,thick,angle radius=7mm,"$90^\circ$" {font=\scriptsize,anchor=south west}] {angle = DvecAngle--P--NvecAngle};
+  \node[boxnode,anchor=west] at (-3.0,2.55) {$r(t)=P_0+tv$};
+  \node[orangenode,anchor=west] at (1.35,-2.45) {$n\cdot(P-P_0)=0$};
+\end{tikzpicture}
+\caption{The same line can be described by a point and direction vector or by a point and normal vector.}
+\end{figure}
+
+\begin{examplebox}[title={Example 4.1: Same line, three descriptions}]
+Find vector, parametric, and standard equations for the line through $P=(2,-1)$ with direction vector $v=\vect{3,2}$.
+
+The vector equation is
+\[
+  r(t)=\vect{2,-1}+t\vect{3,2}.
+\]
+The parametric equations are
+\[
+  x=2+3t,\qquad y=-1+2t.
+\]
+A normal vector is $n=\vect{-2,3}$. Therefore
+\[
+  -2(x-2)+3(y+1)=0.
+\]
+Expanding gives
+\[
+  -2x+3y+7=0.
+\]
+\end{examplebox}
+
+\section{Lines in $\R^n$}
+
+The vector equation of a line is dimension independent. In $\R^n$, a line through a point
+\[
+  p=(p_1,p_2,\ldots,p_n)
+\]
+with nonzero direction vector
+\[
+  v=(v_1,v_2,\ldots,v_n)
+\]
+is
+\[
+  r(t)=p+tv,\qquad -\infty<t<\infty.
+\]
+In coordinates,
+\[
+  x_1=p_1+tv_1,\quad x_2=p_2+tv_2,\quad \ldots,\quad x_n=p_n+tv_n.
+\]
+The parameter $t$ is not always time, but it often behaves like time: as $t$ increases, the point moves along the line at constant velocity $v$.
+
+\subsection{Lines in $\R^3$}
+
+If $P=(x_0,y_0,z_0)$ and $v=\vect{a,b,c}$, then
+\[
+  \vect{x,y,z}=\vect{x_0,y_0,z_0}+t\vect{a,b,c}.
+\]
+Equivalently,
+\[
+  x=x_0+at,\qquad y=y_0+bt,\qquad z=z_0+ct.
+\]
+If $a,b,c$ are nonzero, the symmetric form is
+\[
+  \frac{x-x_0}{a}=\frac{y-y_0}{b}=\frac{z-z_0}{c}.
+\]
+If one component of the direction vector is zero, the corresponding coordinate is constant and should not be placed in the denominator.
+
+\begin{examplebox}[title={Example 4.2: A line through two points}]
+Find a vector equation and symmetric equation for the line through
+\[
+  P=(-5,5,4),\qquad Q=(7,-1,2).
+\]
+A direction vector is
+\[
+  v=Q-P=\vect{12,-6,-2}.
+\]
+Thus
+\[
+  r(t)=\vect{-5,5,4}+t\vect{12,-6,-2}.
+\]
+The parametric equations are
+\[
+  x=-5+12t,\qquad y=5-6t,\qquad z=4-2t.
+\]
+The symmetric form is
+\[
+  \frac{x+5}{12}=\frac{y-5}{-6}=\frac{z-4}{-2}.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{66}{118}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.72]
+  \draw[axisline] (-6.5,0,0) -- (8.3,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-2.7,0) -- (0,6.4,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,-0.5) -- (0,0,5.6) node[anchor=south] {$z$};
+  \coordinate (P) at (-5,5,4);
+  \coordinate (Q) at (7,-1,2);
+  \coordinate (A) at (-6.8,5.9,4.3);
+  \coordinate (B) at (8.6,-1.8,1.75);
+  \draw[very thick,chapterblue] (A) -- (B);
+  \node[point,label={above left:$P$}] at (P) {};
+  \node[greenpoint,label={below right:$Q$}] at (Q) {};
+  \draw[vectororange] (P) -- (Q) node[midway,above] {$Q-P$};
+  \foreach \X/\Y/\Z in {-5/5/0,7/-1/0}{\draw[guide] (\X,\Y,0) -- (\X,\Y,\Z);}
+  \draw[guide] (-5,0,0) -- (-5,5,0) -- (0,5,0);
+  \draw[guide] (7,0,0) -- (7,-1,0) -- (0,-1,0);
+\end{tikzpicture}
+\caption{A line in space through two points. The displacement $Q-P$ gives a direction vector.}
+\end{figure}
+
+\section{Line segments and interpolation}
+
+The full line through $P$ and $Q$ extends infinitely in both directions. The \textbf{line segment} from $P$ to $Q$ is obtained by restricting the parameter:
+\[
+  r(t)=P+t(Q-P),\qquad 0\le t\le 1.
+\]
+At $t=0$, we get $P$. At $t=1$, we get $Q$. At $t=1/2$, we get the midpoint.
+
+This formula is one of the most useful formulas in applied mathematics. It describes linear interpolation between two states, two observations, two images, two parameter vectors, or two model weights.
+
+\begin{mainideabox}
+The line segment from $P$ to $Q$ is
+\[
+  r(t)=(1-t)P+tQ,\qquad 0\le t\le 1.
+\]
+This is the same as $P+t(Q-P)$, but the form $(1-t)P+tQ$ makes the interpolation interpretation clear.
+\end{mainideabox}
+
+\begin{examplebox}[title={Example 4.3: Interpolating between two model parameter vectors}]
+Suppose a simple model has parameter vector
+\[
+  w_0=(1,-2,0.5)
+\]
+before training and
+\[
+  w_1=(3,1,-1)
+\]
+after training. The path
+\[
+  w(t)=(1-t)w_0+tw_1,\qquad 0\le t\le 1,
+\]
+linearly interpolates between the two models. This does not mean gradient descent moves along this exact path. It only gives a useful way to compare intermediate parameter vectors.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{68}{112}
+\begin{tikzpicture}[tdplot_main_coords,scale=1.18]
+  \draw[axisline] (-0.2,0,0) -- (3.7,0,0) node[anchor=north east] {$w_1$};
+  \draw[axisline] (0,-2.4,0) -- (0,1.8,0) node[anchor=north west] {$w_2$};
+  \draw[axisline] (0,0,-1.4) -- (0,0,1.3) node[anchor=south] {$w_3$};
+  \coordinate (Wzero) at (1,-2,0.5);
+  \coordinate (Wone) at (3,1,-1);
+  \draw[very thick,chapterblue] (Wzero) -- (Wone);
+  \foreach \t in {0.1,0.2,...,0.9}{
+    \pgfmathsetmacro{\x}{(1-\t)*1+\t*3}
+    \pgfmathsetmacro{\y}{(1-\t)*(-2)+\t*1}
+    \pgfmathsetmacro{\z}{(1-\t)*0.5+\t*(-1)}
+    \node[bluepoint,inner sep=1.25pt] at (\x,\y,\z) {};
+  }
+  \node[point,label={below left:$w_0$}] at (Wzero) {};
+  \node[greenpoint,label={above right:$w_1$}] at (Wone) {};
+  \draw[decorate,decoration={brace,amplitude=5pt},chapterorange,thick] (Wzero) -- (Wone)
+    node[midway,below=6pt,sloped] {$w(t)=(1-t)w_0+tw_1$};
+\end{tikzpicture}
+\caption{Linear interpolation traces the straight segment between two parameter vectors.}
+\end{figure}
+
+\section{Planes in $\R^3$: point-normal form}
+
+A plane in $\R^3$ is determined by a point $P_0=(x_0,y_0,z_0)$ and a nonzero normal vector
+\[
+  n=\vect{a,b,c}.
+\]
+A point $P=(x,y,z)$ lies on the plane exactly when $P-P_0$ is perpendicular to $n$. Therefore
+\[
+  n\cdot(P-P_0)=0.
+\]
+This gives
+\[
+  \vect{a,b,c}\cdot\vect{x-x_0,y-y_0,z-z_0}=0.
+\]
+Equivalently,
+\[
+  a(x-x_0)+b(y-y_0)+c(z-z_0)=0.
+\]
+Expanding gives standard form
+\[
+  ax+by+cz+d=0.
+\]
+
+\begin{notebox}
+In the equation $ax+by+cz+d=0$, the vector $n=\vect{a,b,c}$ is perpendicular to the plane. This is why the coefficients of $x$, $y$, and $z$ are geometrically meaningful.
+\end{notebox}
+
+\begin{examplebox}[title={Example 4.4: Equation of a plane from point and normal vector}]
+Find the equation of the plane through $P_0=(1,2,3)$ with normal vector $n=\vect{4,5,6}$.
+
+Use the point-normal equation:
+\[
+  4(x-1)+5(y-2)+6(z-3)=0.
+\]
+Expanding,
+\[
+  4x+5y+6z-32=0.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{70}{115}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.95]
+  \draw[axisline] (-2.4,0,0) -- (4.2,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-1.6,0) -- (0,4.6,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,5.2) node[anchor=south] {$z$};
+  \coordinate (P) at (1,2,3);
+  \coordinate (A) at (-1.3,0.3,4.35);
+  \coordinate (B) at (3.7,0.3,1.0);
+  \coordinate (C) at (3.0,4.2, -1.65);
+  \coordinate (D) at (-2.0,4.2,1.7);
+  \filldraw[fill=chapterblue!18,draw=chapterblue!70,thick] (A) -- (B) -- (C) -- (D) -- cycle;
+  \node[point,label={above:$P_0$}] at (P) {};
+  \draw[vectororange] (P) -- ++(1.0,1.25,1.5) node[above] {$n=\vect{a,b,c}$};
+  \node[boxnode,anchor=west] at (-2.2,-0.9,4.4) {$n\cdot(P-P_0)=0$};
+  \draw[guide] (P) -- ++(1.0,1.25,0);
+\end{tikzpicture}
+\caption{A plane is the set of points whose displacement from $P_0$ is perpendicular to the normal vector $n$.}
+\end{figure}
+
+\section{Planes from three points}
+
+Three noncollinear points determine a plane. Suppose $P,Q,R$ are three points in $\R^3$. Two direction vectors in the plane are
+\[
+  Q-P,\qquad R-P.
+\]
+If the points are not collinear, then these vectors are not parallel. A normal vector is
+\[
+  n=(Q-P)\times(R-P).
+\]
+Then the plane is
+\[
+  n\cdot(\vect{x,y,z}-P)=0.
+\]
+
+\begin{examplebox}[title={Example 4.5: Plane through three points}]
+Find the plane through
+\[
+  P=(1,2,3),\qquad Q=(2,2,5),\qquad R=(3,4,1).
+\]
+Compute
+\[
+  Q-P=\vect{1,0,2},\qquad R-P=\vect{2,2,-2}.
+\]
+A normal vector is
+\[
+  (Q-P)\times(R-P)=\vect{-4,6,2}.
+\]
+We may divide by $2$ and use $n=\vect{-2,3,1}$. Therefore the plane is
+\[
+  -2(x-1)+3(y-2)+(z-3)=0.
+\]
+Expanding,
+\[
+  -2x+3y+z-7=0.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{66}{120}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.9]
+  \draw[axisline] (-0.2,0,0) -- (4.2,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-0.2,0) -- (0,4.9,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,5.9) node[anchor=south] {$z$};
+  \coordinate (P) at (1,2,3);
+  \coordinate (Q) at (2,2,5);
+  \coordinate (R) at (3,4,1);
+  \coordinate (A) at (0.6,1.0,2.2);
+  \coordinate (B) at (3.8,1.0,5.4);
+  \coordinate (C) at (4.4,4.8,0.2);
+  \coordinate (D) at (1.0,4.8,-0.9);
+  \filldraw[fill=chaptergreen!18,draw=chaptergreen!70,thick] (A) -- (B) -- (C) -- (D) -- cycle;
+  \draw[vector] (P) -- (Q) node[midway,above left] {$Q-P$};
+  \draw[vectorpurple] (P) -- (R) node[midway,below] {$R-P$};
+  \node[point,label={left:$P$}] at (P) {};
+  \node[greenpoint,label={above:$Q$}] at (Q) {};
+  \node[purplepoint,label={right:$R$}] at (R) {};
+  \draw[vectororange] (P) -- ++(-0.9,1.35,0.45) node[above] {$n=(Q-P)\times(R-P)$};
+\end{tikzpicture}
+\caption{Three noncollinear points determine two independent directions and hence a normal vector by the cross product.}
+\end{figure}
+
+\section{Parametric form of a plane}
+
+A plane may also be described by one point and two nonparallel direction vectors. If $P_0$ is a point and $u,v$ are nonparallel vectors, then
+\[
+  r(s,t)=P_0+su+tv
+\]
+is the plane through $P_0$ spanned by $u$ and $v$.
+
+This is the two-parameter analogue of a line:
+\begin{itemize}
+\item a line has one parameter: $r(t)=P_0+tv$;
+\item a plane has two parameters: $r(s,t)=P_0+su+tv$.
+\end{itemize}
+The normal vector to the plane is
+\[
+  n=u\times v.
+\]
+If $u\times v=0$, then $u$ and $v$ are parallel, and the formula does not describe a genuine plane.
+
+\begin{examplebox}[title={Example 4.6: Parametric and scalar plane equations}]
+Let
+\[
+  P_0=(1,0,2),\qquad u=\vect{1,2,0},\qquad v=\vect{0,1,3}.
+\]
+A parametric equation of the plane is
+\[
+  r(s,t)=\vect{1,0,2}+s\vect{1,2,0}+t\vect{0,1,3}.
+\]
+In coordinates,
+\[
+  x=1+s,\qquad y=2s+t,\qquad z=2+3t.
+\]
+A normal vector is
+\[
+  u\times v=\vect{6,-3,1}.
+\]
+Therefore a scalar equation is
+\[
+  6(x-1)-3(y-0)+(z-2)=0,
+\]
+or
+\[
+  6x-3y+z-8=0.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{69}{112}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.95]
+  \draw[axisline] (-1.7,0,0) -- (3.5,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-2.4,0) -- (0,3.8,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,-1.0) -- (0,0,5.6) node[anchor=south] {$z$};
+  \coordinate (P) at (1,0,2);
+  \coordinate (A) at (0,-3,-1);
+  \coordinate (B) at (2,1,-1);
+  \coordinate (C) at (2,3,5);
+  \coordinate (D) at (0,-1,5);
+  \filldraw[fill=chapterpurple!16,draw=chapterpurple!75,thick] (A) -- (B) -- (C) -- (D) -- cycle;
+  \node[point,label={below right:$P_0$}] at (P) {};
+  \draw[vector] (P) -- ++(1,2,0) node[above] {$u$};
+  \draw[vectorgreen] (P) -- ++(0,1,3) node[above] {$v$};
+  \draw[vectororange] (P) -- ++(1.2,-0.6,0.2) node[below] {$u\times v$};
+  \node[boxnode,anchor=west] at (-1.4,-2.2,4.8) {$r(s,t)=P_0+su+tv$};
+\end{tikzpicture}
+\caption{A parametric plane is swept out by moving from $P_0$ in two independent directions.}
+\end{figure}
+
+\section{Intersections}
+
+Intersections are where algebra meets geometry. In calculus and applied mathematics, intersection problems appear when we solve constraints, find feasible sets, or describe where surfaces meet.
+
+\subsection{Line-plane intersection}
+
+Suppose a line is given by
+\[
+  r(t)=P+tv
+\]
+and a plane is given by
+\[
+  n\cdot(x-P_0)=0.
+\]
+Substitute $x=r(t)$ into the plane equation:
+\[
+  n\cdot(P+tv-P_0)=0.
+\]
+This is a linear equation in $t$:
+\[
+  n\cdot(P-P_0)+t(n\cdot v)=0.
+\]
+If $n\cdot v\ne 0$, there is one intersection point:
+\[
+  t=-\frac{n\cdot(P-P_0)}{n\cdot v}.
+\]
+If $n\cdot v=0$, then the line is parallel to the plane. It either never intersects the plane or lies entirely in the plane.
+
+\begin{examplebox}[title={Example 4.7: A line intersects a plane}]
+Find the intersection point of
+\[
+  x=1-2t,\qquad y=3+t,\qquad z=2+4t
+\]
+with the plane
+\[
+  2x-y+z=0.
+\]
+Substitute the line into the plane:
+\[
+  2(1-2t)-(3+t)+(2+4t)=0.
+\]
+Simplifying gives
+\[
+  1-t=0,
+\]
+so $t=1$. Therefore
+\[
+  (x,y,z)=(-1,4,6).
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{68}{120}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.82]
+  \draw[axisline] (-3,0,0) -- (3.3,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,5.5,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,7.2) node[anchor=south] {$z$};
+  \coordinate (A) at (-2.5,1,6);
+  \coordinate (B) at (2.5,1,-4);
+  \coordinate (C) at (2.5,5,0);
+  \coordinate (D) at (-2.5,5,10);
+  \filldraw[fill=chapterblue!16,draw=chapterblue!65,thick] (A)--(B)--(C)--(D)--cycle;
+  \coordinate (L1) at (2,2.5,0);
+  \coordinate (L2) at (-1.8,4.4,7.6);
+  \draw[very thick,chapterorange] (L1)--(L2);
+  \coordinate (I) at (-1,4,6);
+  \node[point,label={right:$(-1,4,6)$}] at (I) {};
+  \draw[guide] (I)--(-1,4,0);
+  \node[boxnode,anchor=west] at (-2.9,0.5,7.1) {$2x-y+z=0$};
+\end{tikzpicture}
+\caption{A line meeting a plane at exactly one point. Algebraically, substitution produces the parameter value.}
+\end{figure}
+
+\subsection{Intersection of two planes}
+
+Two nonparallel planes in $\R^3$ intersect in a line. Suppose
+\[
+  n_1\cdot x=d_1,\qquad n_2\cdot x=d_2.
+\]
+If $n_1$ and $n_2$ are not parallel, then the direction vector of the intersection line is
+\[
+  v=n_1\times n_2.
+\]
+To find a point on the line, solve the two plane equations simultaneously. Since there are two equations in three unknowns, one variable can usually be chosen freely.
+
+\begin{examplebox}[title={Example 4.8: Intersection of two planes}]
+Find a parametric equation for the intersection of
+\[
+  x+y+z=3
+\]
+and
+\[
+  2x+3y+z=8.
+\]
+Subtract the first equation from the second:
+\[
+  x+2y=5.
+\]
+Let $z=t$. Then from the first equation,
+\[
+  x+y=3-t.
+\]
+Solving
+\[
+  x+2y=5,\qquad x+y=3-t
+\]
+gives
+\[
+  y=2+t,\qquad x=1-2t.
+\]
+So the intersection line is
+\[
+  r(t)=\vect{1,2,0}+t\vect{-2,1,1}.
+\]
+The direction vector can also be found from the cross product of normal vectors:
+\[
+  \vect{1,1,1}\times\vect{2,3,1}=\vect{-2,1,1}.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{67}{113}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.86]
+  \draw[axisline] (-2.8,0,0) -- (3.6,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-0.5,0) -- (0,5.2,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,-0.8) -- (0,0,5.3) node[anchor=south] {$z$};
+  % Plane 1 patch x+y+z=3
+  \coordinate (A1) at (-1,0,4);
+  \coordinate (B1) at (3,0,0);
+  \coordinate (C1) at (2,3,-2);
+  \coordinate (D1) at (-2,3,2);
+  \filldraw[fill=chapterblue!15,draw=chapterblue!70,thick] (A1)--(B1)--(C1)--(D1)--cycle;
+  % Plane 2 patch 2x+3y+z=8
+  \coordinate (A2) at (-1,2,4);
+  \coordinate (B2) at (3,0,2);
+  \coordinate (C2) at (2,3,-5);
+  \coordinate (D2) at (-2,4,0);
+  \filldraw[fill=chapterorange!18,draw=chapterorange!75,thick,opacity=0.82] (A2)--(B2)--(C2)--(D2)--cycle;
+  \coordinate (Lstart) at (3,-1,-1);
+  \coordinate (Lend) at (-3,2,2);
+  \draw[very thick,chapterred] (Lstart)--(Lend) node[pos=0.13,above] {intersection line};
+  \node[redpoint,label={above right:$\vect{1,2,0}$}] at (1,2,0) {};
+\end{tikzpicture}
+\caption{Two nonparallel planes intersect in a line whose direction is $n_1\times n_2$.}
+\end{figure}
+
+\section{Angles involving lines and planes}
+
+\subsection{Angle between two lines}
+
+If two lines have direction vectors $u$ and $v$, the angle $\theta$ between the lines satisfies
+\[
+  \cos\theta=\frac{\abs{u\cdot v}}{\norm{u}\norm{v}}.
+\]
+The absolute value gives the acute angle between the lines.
+
+\subsection{Angle between two planes}
+
+If two planes have normal vectors $n_1$ and $n_2$, then the angle between the planes is the acute angle between their normal vectors:
+\[
+  \cos\theta=\frac{\abs{n_1\cdot n_2}}{\norm{n_1}\norm{n_2}}.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.05]
+  \draw[very thick,chapterblue] (-3.2,-1.0) -- (3.2,1.0) node[right] {$L_1$};
+  \draw[very thick,chaptergreen] (-2.4,1.7) -- (2.4,-1.7) node[right] {$L_2$};
+  \coordinate (O) at (0,0);
+  \coordinate (Uang) at (1.65,0.52);
+  \coordinate (Vang) at (1.2,-0.85);
+  \draw[vector] (O) -- (Uang) node[above] {$u$};
+  \draw[vectorgreen] (O) -- (Vang) node[below] {$v$};
+  \draw pic[draw=chapterorange,thick,angle radius=8mm,"$\theta$" {font=\small,anchor=west}] {angle = Uang--O--Vang};
+  \node[boxnode] at (0,-2.35) {$\displaystyle \cos\theta=\frac{\abs{u\cdot v}}{\norm{u}\norm{v}}$};
+\end{tikzpicture}
+\caption{Angles between lines are computed from their direction vectors. Angles between planes are computed from their normal vectors.}
+\end{figure}
+
+\begin{examplebox}[title={Example 4.9: Angle between two planes}]
+Find the angle between
+\[
+  x+2y+z=5
+\]
+and
+\[
+  x+y=8.
+\]
+The normal vectors are
+\[
+  n_1=\vect{1,2,1},\qquad n_2=\vect{1,1,0}.
+\]
+Then
+\[
+  \cos\theta=\frac{\abs{n_1\cdot n_2}}{\norm{n_1}\norm{n_2}}
+  =\frac{3}{\sqrt 6\sqrt 2}
+  =\frac{\sqrt 3}{2}.
+\]
+Therefore
+\[
+  \theta=\frac{\pi}{6}.
+\]
+\end{examplebox}
+
+\section{Distances to lines, planes, and hyperplanes}
+
+Distance formulas are important because they turn geometry into quantitative measurement. In data science, the distance from a data point to a hyperplane is a signed confidence score for a linear classifier. In optimization, it measures violation of a linear constraint.
+
+\subsection{Distance from a point to a plane}
+
+Suppose the plane is
+\[
+  ax+by+cz+d=0.
+\]
+The distance from $P=(x_0,y_0,z_0)$ to the plane is
+\[
+  \dist(P,\Pi)=\frac{\abs{ax_0+by_0+cz_0+d}}{\sqrt{a^2+b^2+c^2}}.
+\]
+The signed distance is
+\[
+  \frac{ax_0+by_0+cz_0+d}{\sqrt{a^2+b^2+c^2}}.
+\]
+
+\subsection{Distance from a point to a line in $\R^3$}
+
+If a line is $r(t)=P_0+tv$ and $P$ is a point, then
+\[
+  \dist(P,L)=\frac{\norm{(P-P_0)\times v}}{\norm{v}}.
+\]
+This formula comes from the area of a parallelogram. The numerator is the area of the parallelogram with sides $P-P_0$ and $v$, and the base length is $\norm{v}$.
+
+\begin{examplebox}[title={Example 4.10: Distance from a point to a plane}]
+Find the distance from $P=(1,2,3)$ to
+\[
+  2x-y+2z-5=0.
+\]
+Use the formula:
+\[
+  \dist(P,\Pi)=\frac{\abs{2(1)-2+2(3)-5}}{\sqrt{2^2+(-1)^2+2^2}}=\frac{1}{3}.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{70}{116}
+\begin{tikzpicture}[tdplot_main_coords,scale=0.95]
+  \draw[axisline] (-2.3,0,0) -- (3.7,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,-1.2,0) -- (0,4.5,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,5.4) node[anchor=south] {$z$};
+  \coordinate (A) at (-1.8,0.2,4.3);
+  \coordinate (B) at (3.4,0.2,1.7);
+  \coordinate (C) at (2.7,4.0,-0.4);
+  \coordinate (D) at (-2.4,4.0,2.2);
+  \filldraw[fill=chaptergreen!16,draw=chaptergreen!70,thick] (A)--(B)--(C)--(D)--cycle;
+  \coordinate (Foot) at (1.4,1.7,1.9);
+  \coordinate (P) at (0.4,2.2,4.8);
+  \node[redpoint,label={above:$P$}] at (P) {};
+  \node[point,label={below:$P_{\Pi}$}] at (Foot) {};
+  \draw[projection] (P)--(Foot) node[midway,right] {distance};
+  \draw[vectororange] (Foot) -- ++(-0.9,0.45,1.7) node[above] {$n$};
+  \node[boxnode,anchor=west] at (-2.2,-0.8,5.0) {$\displaystyle \frac{\abs{ax_0+by_0+cz_0+d}}{\sqrt{a^2+b^2+c^2}}$};
+\end{tikzpicture}
+\caption{The point-to-plane distance is the length of the perpendicular segment.}
+\end{figure}
+
+\section{Hyperplanes in $\R^n$}
+
+A \textbf{hyperplane} in $\R^n$ is the set of points satisfying one linear equation:
+\[
+  w\cdot x+b=0,
+\]
+where $w\ne 0$ is a vector in $\R^n$ and $b$ is a scalar.
+
+The vector $w$ is normal to the hyperplane. The hyperplane has dimension $n-1$. For example:
+\begin{itemize}
+\item in $\R^2$, a hyperplane is a line;
+\item in $\R^3$, a hyperplane is a plane;
+\item in $\R^{100}$, a hyperplane is a $99$-dimensional flat object.
+\end{itemize}
+We usually cannot draw high-dimensional hyperplanes, but the algebra remains the same.
+
+The two sides of the hyperplane are half-spaces:
+\[
+  w\cdot x+b>0,\qquad w\cdot x+b<0.
+\]
+The signed distance from $x$ to the hyperplane is
+\[
+  \frac{w\cdot x+b}{\norm{w}}.
+\]
+
+\subsection{Hyperplanes and linear classifiers}
+
+A linear classifier assigns a label according to the sign of
+\[
+  w\cdot x+b.
+\]
+This is the geometric core of logistic regression, support vector machines, perceptrons, and the final linear layer of many neural networks.
+
+\begin{bridgebox}[title={Hyperplane as a decision boundary}]
+A classifier of the form
+\[
+  \widehat y=\sign(w\cdot x+b)
+\]
+separates feature space into two half-spaces. The boundary between the two predicted classes is the hyperplane $w\cdot x+b=0$.
+\end{bridgebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.93]
+  \draw[axisline] (-4,0) -- (4.2,0) node[right] {$x_1$};
+  \draw[axisline] (0,-3.2) -- (0,3.4) node[above] {$x_2$};
+  \fill[chapterblue!8] (-4,-3.2) -- (-4,2.6) -- (4.2,-2.0) -- (4.2,-3.2) -- cycle;
+  \fill[chapterorange!9] (-4,2.6) -- (-4,3.4) -- (4.2,3.4) -- (4.2,-2.0) -- cycle;
+  \draw[very thick,chapterpurple] (-4,2.6) -- (4.2,-2.0) node[right] {$w\cdot x+b=0$};
+  \draw[vectororange] (0,0.35) -- ++(1.1,1.95) node[above] {$w$};
+  \node[orangenode] at (2.35,2.45) {$w\cdot x+b>0$};
+  \node[boxnode] at (-2.4,-2.35) {$w\cdot x+b<0$};
+  \foreach \x/\y in {-2.8/-1.8,-2.4/-1.1,-1.8/-2.2,-1.2/-1.45,-0.9/-2.4,-3.2/-0.9,-1.7/-0.6}{\node[bluepoint] at (\x,\y) {};}
+  \foreach \x/\y in {1.0/1.1,1.8/1.4,2.5/0.8,2.9/1.9,1.4/2.2,3.2/0.25,0.7/2.65}{\node[point] at (\x,\y) {};}
+  \foreach \x/\y in {-2.4/-1.1,1.8/1.4,3.2/0.25}{
+    \draw[projection] (\x,\y) -- ($ (\x,\y)!0.38!(0,0.35) $);
+  }
+\end{tikzpicture}
+\caption{Signed distances to a line used as a linear decision boundary in two features.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{69}{115}
+\begin{tikzpicture}[tdplot_main_coords,scale=1.05]
+  \draw[axisline] (-2,0,0) -- (2.6,0,0) node[anchor=north east] {$x_1$};
+  \draw[axisline] (0,-2,0) -- (0,2.6,0) node[anchor=north west] {$x_2$};
+  \draw[axisline] (0,0,-1.6) -- (0,0,2.5) node[anchor=south] {$x_3$};
+  % Hyperplane x+y+z=0.2
+  \coordinate (A) at (-1.6,-1.6,3.4);
+  \coordinate (B) at (2.0,-1.6,-0.2);
+  \coordinate (C) at (2.0,2.0,-3.8);
+  \coordinate (D) at (-1.6,2.0,-0.2);
+  \filldraw[fill=chapterpurple!15,draw=chapterpurple!75,thick] (A)--(B)--(C)--(D)--cycle;
+  \draw[vectororange] (0,0,0.2) -- ++(0.75,0.75,0.75) node[above] {$w$};
+  \foreach \x/\y/\z in {-1.4/-1.0/-0.4,-1.1/-0.3/-0.8,-0.7/-1.3/0.1,-1.5/-0.4/0.2,-0.8/-0.8/-0.5}{\node[bluepoint] at (\x,\y,\z) {};}
+  \foreach \x/\y/\z in {1.1/0.9/0.6,1.4/0.3/0.8,0.8/1.3/0.3,1.6/1.2/0.1,0.6/0.6/1.0}{\node[point] at (\x,\y,\z) {};}
+  \node[boxnode,anchor=west] at (-1.85,-1.85,2.1) {$w\cdot x+b=0$};
+\end{tikzpicture}
+\caption{A plane can serve as a linear decision boundary in three-dimensional feature space.}
+\end{figure}
+
+\section{Affine subspaces and constraints}
+
+A line, plane, or hyperplane is an example of an \textbf{affine subspace}. The word affine means that the object may not pass through the origin.
+
+A linear subspace has the form
+\[
+  \spanop\{v_1,\ldots,v_k\}.
+\]
+An affine subspace has the form
+\[
+  p+\spanop\{v_1,\ldots,v_k\}.
+\]
+Examples:
+\begin{itemize}
+\item A line through the origin is a one-dimensional linear subspace.
+\item A line not through the origin is a one-dimensional affine subspace.
+\item A plane through the origin is a two-dimensional linear subspace.
+\item A plane not through the origin is a two-dimensional affine subspace.
+\end{itemize}
+In optimization, linear equality constraints form affine subspaces. For example,
+\[
+  Ax=b
+\]
+describes an affine set when it is consistent. The geometry of constraints is the foundation for Lagrange multipliers, constrained least squares, and convex optimization.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-3.2,0) -- (3.2,0) node[right] {$x_1$};
+  \draw[axisline] (0,-2.4) -- (0,2.8) node[above] {$x_2$};
+  \draw[very thick,chaptergreen] (-2.6,-1.3) -- (2.6,1.3) node[right] {linear subspace};
+  \draw[very thick,chapterblue] (-2.4,0.9) -- (2.8,2.2) node[right] {affine translate};
+  \node[point,label=below right:$0$] at (0,0) {};
+  \draw[vectororange] (0,0) -- (0.6,1.05) node[midway,left] {$p$};
+  \node[boxnode,anchor=west] at (-3.1,-2.0) {$\spanop\{v\}$};
+  \node[orangenode,anchor=west] at (0.6,-2.0) {$p+\spanop\{v\}$};
+\end{tikzpicture}
+\caption{An affine subspace is a translate of a linear subspace.}
+\end{figure}
+
+\section{Computational templates}
+
+The following functions are useful for computational geometry.
+
+\begin{lstlisting}[style=pythonstyle]
+import numpy as np
+
+def line_point(P, v, t):
+    """Return P + t v."""
+    return np.asarray(P, dtype=float) + t * np.asarray(v, dtype=float)
+
+
+def plane_signed_distance(P, normal, d):
+    """Signed distance from P to normal dot x + d = 0."""
+    P = np.asarray(P, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    return (normal @ P + d) / np.linalg.norm(normal)
+
+
+def project_point_to_plane(P, normal, d):
+    """Orthogonal projection of P onto normal dot x + d = 0."""
+    P = np.asarray(P, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    return P - ((normal @ P + d) / (normal @ normal)) * normal
+
+
+def line_plane_intersection(P, v, normal, d):
+    """Intersection of P + t v and normal dot x + d = 0, if unique."""
+    P = np.asarray(P, dtype=float)
+    v = np.asarray(v, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    denom = normal @ v
+    if abs(denom) < 1e-12:
+        return None
+    t = -(normal @ P + d) / denom
+    return P + t * v
+\end{lstlisting}
+
+The same templates appear in many numerical algorithms. Projection onto a hyperplane is used in constrained optimization and feasibility methods. Signed distance to a hyperplane is used in classification. Line-plane intersection is used in graphics, computational geometry, and ray tracing.
+
+\section{Problem-solving strategies}
+
+\subsection*{Strategy 1: Identify the data type}
+
+Ask: are you given points, direction vectors, normal vectors, or equations?
+\begin{itemize}
+\item Two points usually give a direction vector by subtraction.
+\item A plane equation gives a normal vector from its coefficients.
+\item A parametric line gives a direction vector from the coefficients of $t$.
+\item A parametric plane gives two direction vectors from the coefficients of the two parameters.
+\end{itemize}
+
+\subsection*{Strategy 2: Choose the form that matches the task}
+\begin{itemize}
+\item To \textbf{trace} a line or plane, use parametric form.
+\item To \textbf{test membership}, use scalar or normal form.
+\item To \textbf{find intersections}, substitute parametric equations into scalar equations.
+\item To \textbf{compute angles}, use dot products between direction vectors or normal vectors.
+\item To \textbf{compute distances}, use projections and normal vectors.
+\end{itemize}
+
+\subsection*{Strategy 3: Check dimensions}
+
+A common source of mistakes is using a formula in the wrong dimension.
+\begin{itemize}
+\item A line in $\R^2$ can be represented by one scalar equation.
+\item A plane in $\R^3$ can be represented by one scalar equation.
+\item A line in $\R^3$ usually needs either a parametric equation or two scalar equations.
+\item A hyperplane in $\R^n$ is represented by one scalar equation.
+\end{itemize}
+
+\subsection*{Strategy 4: Check degeneracy}
+
+Some formulas require nonzero or nonparallel vectors.
+\begin{itemize}
+\item A direction vector for a line cannot be zero.
+\item Two direction vectors for a plane cannot be parallel.
+\item Three points determine a plane only if they are not collinear.
+\item A symmetric line equation cannot divide by a zero component.
+\end{itemize}
+
+\section{Worked review examples}
+
+\begin{examplebox}[title={Example 4.11: Line perpendicular to a plane}]
+Find the line through $(1,2,3)$ perpendicular to
+\[
+  5x+y-2z=4.
+\]
+A normal vector to the plane is
+\[
+  n=\vect{5,1,-2}.
+\]
+A line perpendicular to the plane has this normal vector as a direction vector. Therefore
+\[
+  r(t)=\vect{1,2,3}+t\vect{5,1,-2}.
+\]
+In coordinates,
+\[
+  x=1+5t,\qquad y=2+t,\qquad z=3-2t.
+\]
+\end{examplebox}
+
+\begin{examplebox}[title={Example 4.12: Is a line parallel to a plane?}]
+Show that the line
+\[
+  r(t)=\vect{1,4,5}+t\vect{1,1,1}
+\]
+is parallel to the plane
+\[
+  4x-9y+5z-8=0.
+\]
+The direction vector of the line is
+\[
+  v=\vect{1,1,1}.
+\]
+The normal vector of the plane is
+\[
+  n=\vect{4,-9,5}.
+\]
+Compute
+\[
+  v\cdot n=4-9+5=0.
+\]
+Thus the line direction is perpendicular to the plane normal, so the line is parallel to the plane. To decide whether the line lies in the plane or is disjoint from it, plug in a point on the line. At $(1,4,5)$,
+\[
+  4(1)-9(4)+5(5)-8=-15\ne 0.
+\]
+So the line is parallel to the plane but does not lie in the plane.
+\end{examplebox}
+
+\begin{examplebox}[title={Example 4.13: A hyperplane in four dimensions}]
+Let
+\[
+  w=\vect{2,-1,3,4},\qquad b=-5.
+\]
+The hyperplane in $\R^4$ is
+\[
+  2x_1-x_2+3x_3+4x_4-5=0.
+\]
+For the point
+\[
+  x=(1,0,2,-1),
+\]
+we get
+\[
+  w\cdot x+b=2(1)-0+3(2)+4(-1)-5=-1.
+\]
+So the point lies on the negative side of the hyperplane. Its signed distance is
+\[
+  \frac{-1}{\sqrt{2^2+(-1)^2+3^2+4^2}}=-\frac{1}{\sqrt{30}}.
+\]
+\end{examplebox}
+
+\section{Python lab preview}
+
+The full lab for this chapter should ask students to:
+\begin{enumerate}
+\item write functions for lines, planes, and hyperplanes;
+\item plot lines and planes in $\R^2$ and $\R^3$;
+\item compute line-plane intersections;
+\item compute distances to hyperplanes;
+\item build a simple linear classifier from a given hyperplane;
+\item visualize how changing $w$ and $b$ changes the decision boundary.
+\end{enumerate}
+The goal is not just to draw pictures. The goal is to make the formulas computationally useful.
+
+\section{Exercises}
+
+\subsection*{Conceptual questions}
+\begin{enumerate}
+\item Explain the difference between a direction vector and a normal vector.
+\item Why does $r(t)=P+tv$ describe a line when $v\ne 0$?
+\item Why does $r(s,t)=P+su+tv$ describe a plane only when $u$ and $v$ are not parallel?
+\item What is the geometric meaning of the coefficients $a,b,c$ in $ax+by+cz+d=0$?
+\item What does the sign of $w\cdot x+b$ tell us about a point relative to a hyperplane?
+\end{enumerate}
+
+\subsection*{Skills practice}
+\begin{enumerate}[resume]
+\item Find vector and parametric equations for the line through $(2,-1,3)$ with direction vector $\vect{4,0,-2}$.
+\item Find the line segment from $P=(1,2,3)$ to $Q=(4,5,7)$.
+\item Find the plane through $(1,2,3)$ with normal vector $\vect{-1,4,2}$.
+\item Find the plane through $(0,1,2)$, $(1,0,3)$, and $(2,1,5)$.
+\item Find the angle between the planes $x-y+z=2$ and $2x+y-z=5$.
+\item Find the intersection of the line $x=1+t$, $y=2-t$, $z=3+2t$ with the plane $x+y+z=10$.
+\item Determine whether the line $r(t)=\vect{1,0,2}+t\vect{2,-1,3}$ is parallel to the plane $2x+y-z=4$.
+\end{enumerate}
+
+\subsection*{Applications and computation}
+\begin{enumerate}[resume]
+\item Write a Python function that returns the signed distance from a point in $\R^n$ to the hyperplane $w\cdot x+b=0$.
+\item Generate random points in $\R^2$ and classify them by the sign of $2x_1-x_2+1$.
+\item For the hyperplane $x_1+x_2+x_3=1$, compute the signed distances of the points $(1,0,0)$, $(1,1,1)$, and $(0,0,0)$.
+\item A linear regression model with two features has prediction $\widehat y=\beta_0+\beta_1x_1+\beta_2x_2$. Explain why the graph of $\widehat y$ as a function of $(x_1,x_2)$ is a plane.
+\item In logistic regression, the decision boundary is $w\cdot x+b=0$. Explain why this boundary is a line in two features and a plane in three features.
+\end{enumerate}
+
+\subsection*{Challenge problems}
+\begin{enumerate}[resume]
+\item Derive the point-to-plane distance formula using projection onto the normal vector.
+\item Let $P,Q,R$ be three points in $\R^3$. Prove that they are collinear if and only if $(Q-P)\times(R-P)=0$.
+\item Let $H=\{x\in\R^n:w\cdot x+b=0\}$. Show that $H$ is a translate of the subspace $\{x\in\R^n:w\cdot x=0\}$ whenever $H$ is nonempty.
+\item Suppose $A$ is a $k\times n$ matrix and $b\in\R^k$. Explain why the solution set of $Ax=b$ is an affine subspace when it is nonempty.
+\item Let $H$ be a hyperplane $w\cdot x+b=0$. Derive the formula for the orthogonal projection of a point $p$ onto $H$.
+\end{enumerate}
+
+\section{Chapter summary}
+
+The central objects of this chapter are the flat geometric objects of multivariable calculus.
+\begin{itemize}
+\item A line is described by $r(t)=P+tv$.
+\item A line segment is described by $r(t)=(1-t)P+tQ$ for $0\le t\le 1$.
+\item A plane in $\R^3$ can be written as $n\cdot(x-P_0)=0$.
+\item A plane can also be parameterized as $r(s,t)=P_0+su+tv$.
+\item A hyperplane in $\R^n$ is described by $w\cdot x+b=0$.
+\item Normal vectors are used for scalar equations, distances, and decision boundaries.
+\item Direction vectors are used for parametric equations and tracing objects.
+\item Intersections are usually found by substitution or by solving linear systems.
+\end{itemize}
+
+These ideas prepare us for cross products, curves, tangent planes, gradients, optimization, constrained problems, and linear models in statistics and machine learning.
+
+\end{document}

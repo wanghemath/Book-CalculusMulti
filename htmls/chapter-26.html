@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 26. Multivariable Calculus for Applied Mathematics</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; line-height: 1.55; max-width: 900px; }
+    h1 { color: #12355b; }
+    .box { border-left: 5px solid #0f766e; background: #eef7f6; padding: 1rem; }
+    code, pre { background: #f6f8fa; padding: 0.2rem 0.35rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 26. Multivariable Calculus for Applied Mathematics</h1>
+  <div class="box">
+    <p>This is a starter standalone interactive page for the chapter. Replace or extend this page with a richer JavaScript, Plotly, GeoGebra, or Desmos activity.</p>
+  </div>
+  <h2>Python idea behind this page</h2>
+  <pre><code>import numpy as np
+
+# 1D discrete Laplacian matrix for heat-flow intuition.
+n = 5
+L = -2*np.eye(n) + np.eye(n, k=1) + np.eye(n, k=-1)
+print(L)</code></pre>
+  <p><a href="index.html">Back to HTML index</a></p>
+</body>
+</html>

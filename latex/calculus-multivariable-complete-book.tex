@@ -1,0 +1,89 @@
+\documentclass[11pt,oneside]{book}
+\usepackage[paper=letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+
+\definecolor{chapterblue}{HTML}{1F5AA6}
+\definecolor{chapterteal}{HTML}{168A8F}
+\definecolor{darkgray}{HTML}{30343B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=chapterblue,
+  urlcolor=chapterteal,
+  citecolor=chapterblue,
+  pdftitle={Multivariable Calculus: Complete Book},
+  pdfauthor={He Wang}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Multivariable Calculus}
+\rhead{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{14pt}
+
+\newcommand{\chapterpdf}[4]{%
+  \cleardoublepage
+  \includepdf[
+    pages=-,
+    pagecommand={},
+    addtotoc={1,chapter,1,{#1},#2}
+  ]{#3}%
+}
+
+\begin{document}
+
+\frontmatter
+\begin{titlepage}
+\centering
+\vspace*{1.1in}
+{\Huge\bfseries Multivariable Calculus\par}
+\vspace{0.25in}
+{\Large A Computational and Visual Introduction\par}
+\vspace{0.75in}
+{\Large Complete Book: Chapters 1--27\par}
+\vfill
+{\large He Wang\par}
+\vspace{0.2in}
+{\large \today\par}
+\end{titlepage}
+
+\tableofcontents
+
+\mainmatter
+\chapterpdf{Chapter 1: From Single-Variable Calculus to Multivariable Thinking}{chap:01}{chapter-01-from-single-variable-calculus-to-multivariable-thinking.pdf}{}
+\chapterpdf{Chapter 2: Euclidean Space Rn}{chap:02}{chapter-02-euclidean-space-rn.pdf}{}
+\chapterpdf{Chapter 3: Vectors, Norms, Dot Products, and Projections}{chap:03}{chapter-03-vectors-norms-dot-products-and-projections.pdf}{}
+\chapterpdf{Chapter 4: Lines, Planes, Hyperplanes, and Parametric Geometry}{chap:04}{chapter-04-lines-planes-hyperplanes-and-parametric-geometry.pdf}{}
+\chapterpdf{Chapter 5: Cross Products, Curves, and Motion in Space}{chap:05}{chapter-05-cross-products-curves-and-motion-in-space.pdf}{}
+\chapterpdf{Chapter 6: Functions of Several Variables}{chap:06}{chapter-06-functions-of-several-variables.pdf}{}
+\chapterpdf{Chapter 7: Limits and Continuity in Several Variables}{chap:07}{chapter-07-limits-and-continuity-in-several-variables.pdf}{}
+\chapterpdf{Chapter 8: Partial Derivatives and the Gradient}{chap:08}{chapter-08-partial-derivatives-and-the-gradient.pdf}{}
+\chapterpdf{Chapter 9: Linear Approximation, Tangent Planes, and Differentials}{chap:09}{chapter-09-linear-approximation-tangent-planes-and-differentials.pdf}{}
+\chapterpdf{Chapter 10: Chain Rule, Jacobians, and Automatic Differentiation}{chap:10}{chapter-10-chain-rule-jacobians-and-automatic-differentiation.pdf}{}
+\chapterpdf{Chapter 11: Directional Derivatives, Hessians, and Optimization}{chap:11}{chapter-11-directional-derivatives-hessians-and-optimization.pdf}{}
+\chapterpdf{Chapter 12: Constrained Optimization and Lagrange Multipliers}{chap:12}{chapter-12-constrained-optimization-and-lagrange-multipliers.pdf}{}
+\chapterpdf{Chapter 13: Double Integrals and Riemann Sums}{chap:13}{chapter-13-double-integrals-and-riemann-sums.pdf}{}
+\chapterpdf{Chapter 14: Double Integrals over General Regions}{chap:14}{chapter-14-double-integrals-over-general-regions.pdf}{}
+\chapterpdf{Chapter 15: Polar Coordinates and Change of Variables in the Plane}{chap:15}{chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.pdf}{}
+\chapterpdf{Chapter 16: Triple Integrals and Geometry in R3}{chap:16}{chapter-16-triple-integrals-and-geometry-in-r3.pdf}{}
+\chapterpdf{Chapter 17: Cylindrical and Spherical Coordinates}{chap:17}{chapter-17-cylindrical-and-spherical-coordinates.pdf}{}
+\chapterpdf{Chapter 18: Multivariable Taylor Approximation and Quadratic Forms}{chap:18}{chapter-18-multivariable-taylor-approximation-and-quadratic-forms.pdf}{}
+\chapterpdf{Chapter 19: Vector Fields and Gradient Fields}{chap:19}{chapter-19-vector-fields-and-gradient-fields.pdf}{}
+\chapterpdf{Chapter 20: Line Integrals and Work}{chap:20}{chapter-20-line-integrals-and-work.pdf}{}
+\chapterpdf{Chapter 21: Conservative Fields, Potentials, and Green's Theorem}{chap:21}{chapter-21-conservative-fields-potentials-and-green-s-theorem.pdf}{}
+\chapterpdf{Chapter 22: Curl, Divergence, and Surface Integrals}{chap:22}{chapter-22-curl-divergence-and-surface-integrals.pdf}{}
+\chapterpdf{Chapter 23: Stokes' Theorem and the Divergence Theorem}{chap:23}{chapter-23-stokes-theorem-and-the-divergence-theorem.pdf}{}
+\chapterpdf{Chapter 24: Multivariable Calculus for Probability and Statistics}{chap:24}{chapter-24-multivariable-calculus-for-probability-and-statistics.pdf}{}
+\chapterpdf{Chapter 25: Multivariable Calculus for Data Science and Machine Learning}{chap:25}{chapter-25-multivariable-calculus-for-data-science-and-machine-learning.pdf}{}
+\chapterpdf{Chapter 26: Multivariable Calculus for Applied Mathematics}{chap:26}{chapter-26-multivariable-calculus-for-applied-mathematics.pdf}{}
+\chapterpdf{Chapter 27: Review, Synthesis, and Bridge to Graduate Study}{chap:27}{chapter-27-review-synthesis-and-bridge-to-graduate-study.pdf}{}
+
+\end{document}

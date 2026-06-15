@@ -1,0 +1,1016 @@
+---
+title: "Chapter 23. Stokes Theorem and the Divergence Theorem" 
+---
+
+## Why this chapter matters
+
+The previous chapters introduced vector fields, line integrals, curl, divergence, surface integrals, and flux.  This chapter puts those ideas together into two of the central global theorems of vector calculus:
+
+$$
+\oint_{\partial S} F\cdot d r
+=
+\iint_S (\nabla\times F)\cdot n\,dS
+$$
+
+and
+
+$$
+\iint_{\partial E} F\cdot n\,dS
+=
+\iiint_E \nabla\cdot F\,dV.
+$$
+
+The first theorem says that **circulation around a boundary** can be measured by **curl through a surface**.  The second says that **outward flux through a closed boundary** can be measured by **divergence inside the solid**.  These are not just calculation tricks.  They are structural principles behind conservation laws, fluid flow, electromagnetism, partial differential equations, finite-volume methods, and geometric approaches to modern computation.
+
+The main theme is this:
+
+> A global measurement on a boundary can often be computed from a local rate inside the region.
+
+This is the same idea that appears in the Fundamental Theorem of Calculus, Green's theorem, Stokes theorem, and the Divergence theorem.  The difference is the dimension and the geometric object being measured.
+
+<div class="bridge-box">
+<strong>Bridge to applied mathematics, statistics, and AI.</strong>  Stokes theorem and the Divergence theorem teach a powerful modeling habit: do not only compute pointwise quantities.  Ask how local behavior accumulates globally.  This perspective reappears in conservation laws, PDEs, diffusion models, probability flux, score-based generative models, graph flows, and numerical methods on grids and meshes.
+</div>
+
+## Learning goals
+
+After reading this chapter, you should be able to:
+
+1. State Stokes theorem and identify the surface, boundary curve, orientation, curl, and circulation.
+2. State the Divergence theorem and identify the solid, closed boundary surface, outward normal, divergence, and flux.
+3. Choose between a direct line integral, a direct surface integral, Stokes theorem, and the Divergence theorem.
+4. Use orientation rules correctly.
+5. Recognize the common structure behind the Fundamental Theorem of Calculus, Green's theorem, Stokes theorem, and the Divergence theorem.
+6. Verify these theorems numerically in simple examples with Python.
+7. Explain how these ideas support conservation laws, flow models, and computational applied mathematics.
+
+## 23.1 The family of fundamental theorems
+
+Before learning the two theorems, it helps to see the pattern.
+
+The one-variable Fundamental Theorem of Calculus says
+
+$$
+\int_a^b f'(x)\,dx = f(b)-f(a).
+$$
+
+The left side accumulates a derivative over an interval.  The right side measures the boundary values at the endpoints.  In words:
+
+$$
+\text{total change inside} = \text{boundary difference}.
+$$
+
+For vector calculus, the same idea becomes richer because intervals are replaced by curves, surfaces, and solids.
+
+| Theorem | Interior quantity | Boundary quantity |
+|---|---:|---:|
+| Fundamental Theorem of Calculus | derivative on an interval | endpoint values |
+| Fundamental Theorem for Line Integrals | gradient along a curve | potential values at endpoints |
+| Green's theorem | curl or divergence over a plane region | circulation or flux around boundary |
+| Stokes theorem | curl through a surface | circulation around boundary curve |
+| Divergence theorem | divergence inside a solid | flux through closed boundary surface |
+
+The two theorems in this chapter are higher-dimensional versions of this principle.
+
+::: {.callout-tip title="One guiding sentence"}
+Stokes theorem converts **boundary circulation** into **surface curl**, while the Divergence theorem converts **closed-surface flux** into **solid divergence**.
+:::
+
+## 23.2 Orientation and boundary direction
+
+Orientation is the most common source of mistakes in this chapter.
+
+For a surface $S$, choosing a unit normal vector $n$ gives an orientation.  If $S$ has a boundary curve $\partial S$, then the orientation of $\partial S$ is determined by the right-hand rule:
+
+- point the thumb of your right hand in the direction of $n$;
+- your curled fingers give the positive direction around $\partial S$.
+
+For a closed surface $\partial E$, such as a sphere or the boundary of a solid box, the standard orientation is **outward**.
+
+```{python}
+#| label: fig-ch23-orientation-circle
+#| fig-cap: 'Boundary orientation for an upward oriented disk'
+#| fig-width: 6.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+theta = np.linspace(0, 2*np.pi, 300)
+x = np.cos(theta)
+y = np.sin(theta)
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.plot(x, y, linewidth=2)
+ax.fill(0.95*x, 0.95*y, alpha=0.12)
+
+# Arrows showing counterclockwise orientation
+for t in [0.2*np.pi, 0.55*np.pi, 0.9*np.pi, 1.25*np.pi]:
+    px, py = np.cos(t), np.sin(t)
+    tx, ty = -np.sin(t), np.cos(t)
+    ax.arrow(px, py, 0.18*tx, 0.18*ty, head_width=0.06, length_includes_head=True)
+
+ax.annotate('normal points upward', xy=(0, 0), xytext=(-0.68, 0.15),
+            arrowprops=dict(arrowstyle='->'))
+ax.text(0, -1.18, 'positive boundary direction is counterclockwise', ha='center')
+ax.set_aspect('equal')
+ax.set_xlim(-1.4, 1.4)
+ax.set_ylim(-1.4, 1.4)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+For the disk in the $xy$-plane with upward normal $n=k$, the positive boundary orientation is counterclockwise when viewed from above.  If the normal is changed to $-k$, the positive boundary orientation becomes clockwise.
+
+## 23.3 Stokes theorem
+
+Let $S$ be an oriented smooth surface with boundary curve $C=\partial S$.  Let $F$ be a vector field with continuous first partial derivatives near $S$.  Stokes theorem says
+
+$$
+\oint_C F\cdot dr
+=
+\iint_S (\nabla\times F)\cdot n\,dS.
+$$
+
+Here:
+
+- $C=\partial S$ is the boundary curve of the surface;
+- $dr$ is the tangent displacement along the curve;
+- $F\cdot dr$ measures circulation along the boundary;
+- $\nabla\times F$ is the curl of the vector field;
+- $(\nabla\times F)\cdot n$ measures the component of curl passing through the surface.
+
+Stokes theorem says that the circulation around the boundary is equal to the total curl through any oriented surface that spans the boundary.
+
+::: {.callout-note title="Surface independence"}
+If two oriented surfaces have the same boundary curve and compatible orientations, then Stokes theorem gives the same circulation integral over both surfaces.  The boundary controls the answer.
+:::
+
+## 23.4 Example: circulation around a circle
+
+Let
+
+$$
+F(x,y,z)=\langle -y,x,0\rangle.
+$$
+
+Let $C$ be the unit circle $x^2+y^2=1$, $z=0$, oriented counterclockwise as viewed from above.  Compute
+
+$$
+\oint_C F\cdot dr.
+$$
+
+### Direct calculation
+
+Parameterize the circle by
+
+$$
+r(t)=\langle \cos t,\sin t,0\rangle,
+\qquad 0\le t\le 2\pi.
+$$
+
+Then
+
+$$
+r'(t)=\langle -\sin t,\cos t,0\rangle
+$$
+
+and
+
+$$
+F(r(t))=\langle -\sin t,\cos t,0\rangle.
+$$
+
+Therefore
+
+$$
+F(r(t))\cdot r'(t)=\sin^2 t+\cos^2 t=1.
+$$
+
+Thus
+
+$$
+\oint_C F\cdot dr
+=\int_0^{2\pi}1\,dt
+=2\pi.
+$$
+
+### Stokes theorem calculation
+
+The curl is
+
+$$
+\nabla\times F
+=
+\left\langle 0,0,\frac{\partial x}{\partial x}-\frac{\partial (-y)}{\partial y}\right\rangle
+=
+\langle 0,0,2\rangle.
+$$
+
+Use the disk $S: x^2+y^2\le 1$, $z=0$, with upward normal $n=k$.  Then
+
+$$
+\iint_S (\nabla\times F)\cdot n\,dS
+=
+\iint_S 2\,dA
+=2\pi.
+$$
+
+The two methods agree.
+
+```{python}
+#| label: fig-ch23-stokes-circle-field
+#| fig-cap: 'Rotational field and circulation around the unit circle'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.4, 1.4, 19)
+y = np.linspace(-1.4, 1.4, 19)
+X, Y = np.meshgrid(x, y)
+U = -Y
+V = X
+speed = np.sqrt(U**2 + V**2)
+U2 = U / (speed + 1e-9)
+V2 = V / (speed + 1e-9)
+
+theta = np.linspace(0, 2*np.pi, 300)
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.quiver(X, Y, U2, V2, angles='xy')
+ax.plot(np.cos(theta), np.sin(theta), linewidth=2)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'$F(x,y)=\langle -y,x\rangle$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 23.5 Stokes theorem as a computational shortcut
+
+Stokes theorem is useful in two opposite directions.
+
+Sometimes the line integral is difficult but the curl integral is simple.  Sometimes the surface integral is difficult but the boundary curve is simple.  The theorem lets us choose the easier calculation.
+
+### Example: replacing a tilted surface by a flat disk
+
+Let
+
+$$
+F(x,y,z)=\langle -y,x,z\rangle.
+$$
+
+Let $S$ be any smooth oriented surface whose boundary is the circle
+
+$$
+C: x^2+y^2=a^2, \qquad z=0,
+$$
+
+with upward-compatible orientation.  The curl is still
+
+$$
+\nabla\times F=\langle 0,0,2\rangle.
+$$
+
+By Stokes theorem, the circulation around $C$ is
+
+$$
+\oint_C F\cdot dr
+=
+\iint_S (\nabla\times F)\cdot n\,dS.
+$$
+
+Instead of integrating over the possibly complicated surface $S$, we may use the flat disk $D$ bounded by $C$:
+
+$$
+\oint_C F\cdot dr
+=
+\iint_D 2\,dA
+=2\pi a^2.
+$$
+
+The value depends on the boundary curve and orientation, not on the particular spanning surface.
+
+```{python}
+#| label: fig-ch23-surface-independence
+#| fig-cap: 'Different spanning surfaces may share the same boundary curve'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.linspace(0, 1, 50)
+theta = np.linspace(0, 2*np.pi, 100)
+R, T = np.meshgrid(r, theta)
+X = R*np.cos(T)
+Y = R*np.sin(T)
+Z = 0.35*(1 - R**2)*np.cos(2*T)
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, np.zeros_like(Z), alpha=0.25, linewidth=0)
+ax.plot_surface(X, Y, Z, alpha=0.55, linewidth=0)
+ax.plot(np.cos(theta), np.sin(theta), 0*theta, linewidth=3)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Two surfaces with one boundary')
+plt.show()
+```
+
+## 23.6 Orientation signs in Stokes theorem
+
+Changing the orientation changes the sign.
+
+If $S$ has normal $n$, then Stokes theorem gives
+
+$$
+\oint_{\partial S}F\cdot dr
+=
+\iint_S (\nabla\times F)\cdot n\,dS.
+$$
+
+If we reverse the normal to $-n$, then the boundary orientation also reverses, and both sides become negative:
+
+$$
+\oint_{-\partial S}F\cdot dr
+=
+\iint_S (\nabla\times F)\cdot (-n)\,dS.
+$$
+
+For the field $F=\langle -y,x,0\rangle$ on the unit circle:
+
+- counterclockwise orientation gives $2\pi$;
+- clockwise orientation gives $-2\pi$.
+
+```{python}
+#| label: fig-ch23-orientation-signs
+#| fig-cap: 'Reversing boundary orientation reverses the sign of circulation'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+theta = np.linspace(0, 2*np.pi, 300)
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.plot(np.cos(theta), np.sin(theta), linewidth=2)
+for direction, yshift, label in [(1, 0.22, 'counterclockwise: positive'), (-1, -0.22, 'clockwise: negative')]:
+    for t in [0.25*np.pi, 0.70*np.pi, 1.15*np.pi, 1.60*np.pi]:
+        px, py = np.cos(t), np.sin(t)
+        tx, ty = direction*(-np.sin(t)), direction*np.cos(t)
+        ax.arrow(px, py, 0.16*tx, 0.16*ty, head_width=0.05, length_includes_head=True)
+    ax.text(0, yshift, label, ha='center', va='center', bbox=dict(alpha=0.15))
+ax.set_aspect('equal')
+ax.set_xlim(-1.35, 1.35)
+ax.set_ylim(-1.35, 1.35)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 23.7 The Divergence theorem
+
+Let $E$ be a solid region in $\mathbb R^3$ with closed boundary surface $\partial E$.  The boundary is oriented outward.  If $F$ is a vector field with continuous first partial derivatives near $E$, then the Divergence theorem says
+
+$$
+\iint_{\partial E} F\cdot n\,dS
+=
+\iiint_E \nabla\cdot F\,dV.
+$$
+
+Here:
+
+- $\partial E$ is the closed boundary surface of the solid;
+- $n$ is the outward unit normal;
+- $F\cdot n$ measures outward flux density;
+- $\nabla\cdot F$ measures local source strength;
+- the triple integral gives total source strength inside the solid.
+
+In words:
+
+$$
+\text{outward flux through boundary}
+=
+\text{total divergence inside}.
+$$
+
+::: {.callout-important title="Closed surface required"}
+The Divergence theorem applies to a closed surface, meaning the full boundary of a solid.  A single disk, a single hemisphere, or the side of a cylinder alone is not closed.  If the surface is not closed, add the missing pieces or use a direct surface integral.
+:::
+
+## 23.8 Example: flux through a sphere
+
+Let
+
+$$
+F(x,y,z)=\langle x,y,z\rangle.
+$$
+
+Let $S$ be the sphere $x^2+y^2+z^2=R^2$, oriented outward.  Compute
+
+$$
+\iint_S F\cdot n\,dS.
+$$
+
+### Direct surface calculation
+
+On the sphere, the outward unit normal is
+
+$$
+n=\frac{1}{R}\langle x,y,z\rangle.
+$$
+
+Thus
+
+$$
+F\cdot n
+=
+\langle x,y,z\rangle\cdot \frac{1}{R}\langle x,y,z\rangle
+=\frac{x^2+y^2+z^2}{R}
+=R.
+$$
+
+Therefore
+
+$$
+\iint_S F\cdot n\,dS
+=
+\iint_S R\,dS
+=R(4\pi R^2)
+=4\pi R^3.
+$$
+
+### Divergence theorem calculation
+
+The divergence is
+
+$$
+\nabla\cdot F
+=
+\frac{\partial x}{\partial x}
++
+\frac{\partial y}{\partial y}
++
+\frac{\partial z}{\partial z}
+=3.
+$$
+
+Hence
+
+$$
+\iint_S F\cdot n\,dS
+=\iiint_E 3\,dV
+=3\cdot \frac{4\pi R^3}{3}
+=4\pi R^3.
+$$
+
+```{python}
+#| label: fig-ch23-outward-field-sphere
+#| fig-cap: 'Outward radial field on a sphere'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+phi = np.linspace(0, np.pi, 40)
+theta = np.linspace(0, 2*np.pi, 80)
+Phi, Theta = np.meshgrid(phi, theta)
+X = np.sin(Phi)*np.cos(Theta)
+Y = np.sin(Phi)*np.sin(Theta)
+Z = np.cos(Phi)
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.28, linewidth=0)
+
+# sample normals
+phi_s = np.linspace(0.35, np.pi-0.35, 5)
+theta_s = np.linspace(0, 2*np.pi, 9)[:-1]
+PS, TS = np.meshgrid(phi_s, theta_s)
+XS = np.sin(PS)*np.cos(TS)
+YS = np.sin(PS)*np.sin(TS)
+ZS = np.cos(PS)
+ax.quiver(XS, YS, ZS, 0.35*XS, 0.35*YS, 0.35*ZS, length=1, normalize=False)
+
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Outward flux for a radial field')
+plt.show()
+```
+
+## 23.9 Example: outward flux through a box
+
+Let
+
+$$
+F(x,y,z)=\langle x^2,y^2,z^2\rangle.
+$$
+
+Let $E=[0,a]\times[0,b]\times[0,c]$.  Compute the outward flux through the boundary surface $\partial E$.
+
+The divergence is
+
+$$
+\nabla\cdot F=2x+2y+2z.
+$$
+
+By the Divergence theorem,
+
+$$
+\iint_{\partial E}F\cdot n\,dS
+=
+\int_0^a\int_0^b\int_0^c (2x+2y+2z)\,dz\,dy\,dx.
+$$
+
+Compute term by term:
+
+$$
+\int_0^a\int_0^b\int_0^c 2x\,dz\,dy\,dx
+=bc\int_0^a 2x\,dx
+=a^2bc,
+$$
+
+$$
+\int_0^a\int_0^b\int_0^c 2y\,dz\,dy\,dx
+=ac\int_0^b 2y\,dy
+=ab^2c,
+$$
+
+and
+
+$$
+\int_0^a\int_0^b\int_0^c 2z\,dz\,dy\,dx
+=ab\int_0^c 2z\,dz
+=abc^2.
+$$
+
+Therefore
+
+$$
+\iint_{\partial E}F\cdot n\,dS
+=a^2bc+ab^2c+abc^2
+=abc(a+b+c).
+$$
+
+For a unit cube, the answer is $3$.
+
+```{python}
+#| label: fig-ch23-divergence-box-sampling
+#| fig-cap: 'Numerical midpoint estimate of total divergence inside a box'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def midpoint_box_divergence(a=1.0, b=1.0, c=1.0, n=8):
+    xs = (np.arange(n) + 0.5)*a/n
+    ys = (np.arange(n) + 0.5)*b/n
+    zs = (np.arange(n) + 0.5)*c/n
+    X, Y, Z = np.meshgrid(xs, ys, zs, indexing='ij')
+    div = 2*X + 2*Y + 2*Z
+    return div.sum()*(a/n)*(b/n)*(c/n)
+
+ns = np.array([2, 4, 8, 16, 32])
+estimates = np.array([midpoint_box_divergence(n=int(n)) for n in ns])
+exact = 3.0
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+ax.plot(ns, estimates, marker='o', label='midpoint estimate')
+ax.axhline(exact, linestyle='--', label='exact flux')
+ax.set_xlabel('subintervals per direction')
+ax.set_ylabel('estimated total divergence')
+ax.set_title('Divergence theorem on the unit cube')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 23.10 Choosing the right theorem
+
+When a problem asks for a line integral, surface integral, circulation, or flux, ask the following questions.
+
+### If the problem involves a line integral
+
+1. Is the vector field conservative?  If yes, use a potential function.
+2. Is the curve closed and a boundary of a surface?  If yes, consider Stokes theorem.
+3. Is the curve in the plane and bounds a planar region?  Green's theorem may be simpler.
+4. If none of these apply, compute the line integral directly.
+
+### If the problem involves a flux integral
+
+1. Is the surface closed?  If yes, consider the Divergence theorem.
+2. Is the surface part of a closed surface?  Add the missing pieces, use the Divergence theorem, then subtract the extra flux.
+3. If the surface is open and has a simple parameterization, compute directly.
+
+### If the problem involves curl through a surface
+
+1. If the boundary curve is simple, use Stokes theorem.
+2. If the surface is simple and the curl is simple, integrate over the surface directly.
+3. Remember that changing orientation changes the sign.
+
+::: {.callout-tip title="Computational strategy"}
+Use the theorem that lowers the dimension or simplifies the geometry.  A line integral may become a surface integral, a surface integral may become a triple integral, and a complicated surface may be replaced by a simpler surface with the same boundary.
+:::
+
+## 23.11 Example: using Stokes theorem on a tilted circle
+
+Let
+
+$$
+F(x,y,z)=\langle y,z,x\rangle.
+$$
+
+Let $C$ be the boundary of the triangle with vertices
+
+$$
+A=(1,0,0),\qquad B=(0,1,0),\qquad C_0=(0,0,1),
+$$
+
+oriented so that the normal direction is compatible with
+
+$$
+n=\frac{1}{\sqrt 3}\langle 1,1,1\rangle.
+$$
+
+Compute $\oint_C F\cdot dr$.
+
+The curl is
+
+$$
+\nabla\times F
+=
+\left\langle
+\frac{\partial x}{\partial y}-\frac{\partial z}{\partial z},
+\frac{\partial y}{\partial z}-\frac{\partial x}{\partial x},
+\frac{\partial z}{\partial x}-\frac{\partial y}{\partial y}
+\right\rangle
+=
+\langle -1,-1,-1\rangle.
+$$
+
+The triangle lies in the plane $x+y+z=1$.  Its vector area is
+
+$$
+\frac12 (B-A)\times(C_0-A).
+$$
+
+Now
+
+$$
+B-A=\langle -1,1,0\rangle,
+\qquad
+C_0-A=\langle -1,0,1\rangle.
+$$
+
+So
+
+$$
+(B-A)\times(C_0-A)=\langle 1,1,1\rangle.
+$$
+
+The oriented vector area is
+
+$$
+\frac12\langle 1,1,1\rangle.
+$$
+
+Therefore
+
+$$
+\oint_C F\cdot dr
+=
+\iint_S (\nabla\times F)\cdot n\,dS
+=\langle -1,-1,-1\rangle\cdot \frac12\langle 1,1,1\rangle
+=-\frac32.
+$$
+
+```{python}
+#| label: fig-ch23-triangle-stokes
+#| fig-cap: 'Oriented triangular surface for a Stokes theorem calculation'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+A = np.array([1.0, 0.0, 0.0])
+B = np.array([0.0, 1.0, 0.0])
+C = np.array([0.0, 0.0, 1.0])
+verts = [[A, B, C]]
+centroid = (A + B + C)/3
+normal = np.array([1.0, 1.0, 1.0]) / np.sqrt(3)
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+poly = Poly3DCollection(verts, alpha=0.35)
+ax.add_collection3d(poly)
+ax.plot([A[0], B[0], C[0], A[0]], [A[1], B[1], C[1], A[1]], [A[2], B[2], C[2], A[2]], linewidth=2)
+ax.quiver(centroid[0], centroid[1], centroid[2], normal[0], normal[1], normal[2], length=0.45)
+for P, lab in [(A, 'A'), (B, 'B'), (C, 'C')]:
+    ax.text(P[0], P[1], P[2], lab)
+ax.set_xlim(0, 1.1)
+ax.set_ylim(0, 1.1)
+ax.set_zlim(0, 1.1)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Triangle in the plane x+y+z=1')
+plt.show()
+```
+
+## 23.12 Example: open surface plus missing cap
+
+Let
+
+$$
+F(x,y,z)=\langle x,y,z\rangle.
+$$
+
+Let $S$ be the upper hemisphere
+
+$$
+x^2+y^2+z^2=R^2,\qquad z\ge 0,
+$$
+
+oriented outward.  Compute the flux through $S$.
+
+The hemisphere is not a closed surface.  Add the disk
+
+$$
+D: x^2+y^2\le R^2,\qquad z=0.
+$$
+
+The closed surface $S\cup D$ bounds the upper half-ball.  By the Divergence theorem,
+
+$$
+\iint_{S\cup D}F\cdot n\,dS
+=
+\iiint_E 3\,dV
+=3\cdot \frac12\cdot \frac{4\pi R^3}{3}
+=2\pi R^3.
+$$
+
+On the disk $D$, the outward normal for the half-ball is $n=-k$.  Since $z=0$ on the disk,
+
+$$
+F\cdot n=\langle x,y,0\rangle\cdot \langle 0,0,-1\rangle=0.
+$$
+
+Thus the flux through the upper hemisphere is
+
+$$
+\iint_S F\cdot n\,dS=2\pi R^3.
+$$
+
+For $R=1$, this is $2\pi$.
+
+```{python}
+#| label: fig-ch23-hemisphere-cap
+#| fig-cap: 'A hemisphere becomes a closed surface after adding its disk cap'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+phi = np.linspace(0, np.pi/2, 40)
+theta = np.linspace(0, 2*np.pi, 80)
+Phi, Theta = np.meshgrid(phi, theta)
+X = np.sin(Phi)*np.cos(Theta)
+Y = np.sin(Phi)*np.sin(Theta)
+Z = np.cos(Phi)
+
+r = np.linspace(0, 1, 40)
+T, R = np.meshgrid(theta, r)
+XD = R*np.cos(T)
+YD = R*np.sin(T)
+ZD = np.zeros_like(XD)
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.35, linewidth=0)
+ax.plot_surface(XD, YD, ZD, alpha=0.18, linewidth=0)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Upper hemisphere plus disk cap')
+plt.show()
+```
+
+## 23.13 Numerical verification of Stokes theorem
+
+Consider again
+
+$$
+F(x,y,z)=\langle -y,x,0\rangle.
+$$
+
+For a circle of radius $R$, Stokes theorem predicts
+
+$$
+\oint_C F\cdot dr=2\pi R^2.
+$$
+
+We approximate the line integral by sampling the curve.
+
+```{python}
+#| label: fig-ch23-numerical-stokes
+#| fig-cap: 'Numerical line-integral approximation agrees with Stokes theorem'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def line_integral_circle(R=1.0, n=200):
+    t = np.linspace(0, 2*np.pi, n+1)
+    x = R*np.cos(t)
+    y = R*np.sin(t)
+    dx = np.diff(x)
+    dy = np.diff(y)
+    xm = 0.5*(x[:-1] + x[1:])
+    ym = 0.5*(y[:-1] + y[1:])
+    P = -ym
+    Q = xm
+    return np.sum(P*dx + Q*dy)
+
+ns = np.array([16, 32, 64, 128, 256, 512])
+est = np.array([line_integral_circle(R=1.3, n=int(n)) for n in ns])
+exact = 2*np.pi*(1.3**2)
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+ax.plot(ns, est, marker='o', label='polygonal line integral')
+ax.axhline(exact, linestyle='--', label='Stokes theorem value')
+ax.set_xlabel('number of curve panels')
+ax.set_ylabel('circulation')
+ax.set_title('Convergence of a circulation approximation')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+The numerical values approach the exact Stokes theorem value as the polygonal approximation of the circle is refined.
+
+## 23.14 Numerical verification of the Divergence theorem
+
+Let
+
+$$
+F(x,y,z)=\langle x,y,z\rangle.
+$$
+
+For the unit ball, the Divergence theorem predicts
+
+$$
+\iint_S F\cdot n\,dS
+=\iiint_E 3\,dV
+=4\pi.
+$$
+
+We can approximate the right side by Monte Carlo sampling inside the cube $[-1,1]^3$ and accepting points inside the unit ball.
+
+```{python}
+#| label: fig-ch23-monte-carlo-divergence
+#| fig-cap: 'Monte Carlo estimate of total divergence inside the unit ball'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(23)
+Ns = np.array([500, 1000, 2500, 5000, 10000, 25000])
+estimates = []
+for N in Ns:
+    pts = rng.uniform(-1, 1, size=(N, 3))
+    inside = np.sum(pts**2, axis=1) <= 1
+    volume_est = 8*np.mean(inside)
+    total_div_est = 3*volume_est
+    estimates.append(total_div_est)
+
+estimates = np.array(estimates)
+exact = 4*np.pi
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+ax.plot(Ns, estimates, marker='o', label='Monte Carlo estimate')
+ax.axhline(exact, linestyle='--', label=r'$4\pi$')
+ax.set_xscale('log')
+ax.set_xlabel('number of random points')
+ax.set_ylabel('estimated flux')
+ax.set_title('Divergence theorem on the unit ball')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+This computational experiment illustrates an important numerical idea: volume integrals and surface fluxes can sometimes be estimated from random samples.
+
+## 23.15 Conservation laws and applied interpretation
+
+The Divergence theorem is the mathematical language of conservation laws.  Suppose $F$ represents a flow field.  Then:
+
+- $F\cdot n$ is the amount of flow crossing a boundary per unit area;
+- $\iint_{\partial E}F\cdot n\,dS$ is the net flow leaving the region;
+- $\nabla\cdot F$ is the local rate of expansion or source strength;
+- $\iiint_E \nabla\cdot F\,dV$ is the total source strength inside.
+
+If $\nabla\cdot F=0$, the field is incompressible or source-free.  Then every closed surface has zero net outward flux:
+
+$$
+\iint_{\partial E}F\cdot n\,dS=0.
+$$
+
+This does not mean the field is zero.  It means whatever flows into a closed region must also flow out.
+
+```{python}
+#| label: fig-ch23-incompressible-field
+#| fig-cap: 'A rotational field can have zero divergence but nonzero circulation'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 21)
+y = np.linspace(-2, 2, 21)
+X, Y = np.meshgrid(x, y)
+U = -Y
+V = X
+M = np.sqrt(U**2 + V**2)
+U = U/(M + 1e-9)
+V = V/(M + 1e-9)
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.quiver(X, Y, U, V)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Divergence-free rotation in the plane')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+The field $F=\langle -y,x\rangle$ is divergence-free in the plane because
+
+$$
+\frac{\partial (-y)}{\partial x}+\frac{\partial x}{\partial y}=0.
+$$
+
+Yet it has positive curl and positive circulation around counterclockwise circles.  Divergence and curl measure different kinds of behavior.
+
+## 23.16 Summary of the four global theorems
+
+The following table is a useful map.
+
+| Theorem | Formula | Meaning |
+|---|---|---|
+| Fundamental Theorem for Line Integrals | $\int_C \nabla f\cdot dr=f(B)-f(A)$ | gradient work depends only on endpoints |
+| Green's theorem | $\oint_C P\,dx+Q\,dy=\iint_R(Q_x-P_y)\,dA$ | plane circulation equals total scalar curl |
+| Stokes theorem | $\oint_{\partial S}F\cdot dr=\iint_S(\nabla\times F)\cdot n\,dS$ | boundary circulation equals total curl through surface |
+| Divergence theorem | $\iint_{\partial E}F\cdot n\,dS=\iiint_E\nabla\cdot F\,dV$ | boundary flux equals total divergence inside |
+
+A good way to remember the pattern is:
+
+$$
+\text{boundary integral} = \text{interior integral of a derivative}.
+$$
+
+## 23.17 Common mistakes
+
+1. **Using the Divergence theorem on an open surface.**  The surface must be closed.  If it is open, add missing pieces or compute directly.
+2. **Forgetting orientation.**  Reversing orientation changes the sign of circulation or flux.
+3. **Mixing up curl and divergence.**  Curl is a vector in three dimensions; divergence is a scalar.
+4. **Using Stokes theorem without a boundary curve.**  A closed surface has no boundary, so Stokes theorem over a closed surface gives zero boundary circulation.
+5. **Forgetting that Stokes theorem allows surface replacement.**  Any convenient surface with the same boundary and compatible orientation may be used.
+6. **Ignoring singularities.**  The vector field must be sufficiently smooth on a region containing the surface or solid.  Fields with singularities require special care.
+
+## 23.18 Exercises
+
+### Conceptual exercises
+
+1. Explain the difference between circulation and flux.
+2. State Stokes theorem in words without using formulas.
+3. State the Divergence theorem in words without using formulas.
+4. Why does reversing the normal vector in Stokes theorem reverse the boundary orientation?
+5. Why does the Divergence theorem require a closed surface?
+6. Give an example of a vector field with zero divergence but nonzero curl.
+7. Give an example of a vector field with nonzero divergence but zero curl.
+8. Explain how Green's theorem is related to Stokes theorem.
+
+### Computational exercises
+
+1. Let $F=\langle -y,x,0\rangle$ and let $C$ be the circle $x^2+y^2=9$, $z=0$, oriented counterclockwise as viewed from above.  Compute $\oint_C F\cdot dr$.
+2. Let $F=\langle y,z,x\rangle$ and let $S$ be the triangle with vertices $(1,0,0)$, $(0,1,0)$, and $(0,0,1)$, oriented by the normal direction $\langle 1,1,1\rangle$.  Use Stokes theorem to compute $\oint_{\partial S}F\cdot dr$.
+3. Let $F=\langle x,y,z\rangle$ and let $S$ be the sphere of radius $2$ centered at the origin.  Compute the outward flux through $S$.
+4. Let $F=\langle x^2,y^2,z^2\rangle$ and let $E=[0,2]\times[0,1]\times[0,3]$.  Use the Divergence theorem to compute the outward flux through $\partial E$.
+5. Let $F=\langle yz,xz,xy\rangle$.  Compute $\nabla\cdot F$.  What does the Divergence theorem say about the outward flux through any closed surface?
+6. Let $F=\langle z,x,y\rangle$.  Compute $\nabla\times F$ and use Stokes theorem over a convenient surface for a given circular boundary.
+7. Compute the outward flux of $F=\langle x,y,z\rangle$ through the upper hemisphere $x^2+y^2+z^2=4$, $z\ge 0$.
+8. Use the Divergence theorem to compute the outward flux of $F=\langle x^3,y^3,z^3\rangle$ through the unit ball.
+
+### Python exercises
+
+1. Modify the numerical Stokes theorem code for a circle of radius $R=2$ and compare with the exact value.
+2. Replace $F=\langle -y,x,0\rangle$ by $F=\langle -2y,3x,0\rangle$ and determine the new circulation around the unit circle.
+3. Use Monte Carlo sampling to estimate the flux of $F=\langle x,y,z\rangle$ through a ball of radius $2$.
+4. Write a function that estimates $\iiint_E \nabla\cdot F\,dV$ over a rectangular box using the midpoint rule.
+5. Visualize a vector field with zero divergence and nonzero curl.
+6. Visualize a vector field with nonzero divergence and zero curl.
+
+## 23.19 Python lab and interactive page
+
+- Notebook lab: [Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb](../labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb)
+- Interactive HTML page: [Chapter 23 interactive page](../htmls/chapter-23.html)
+
+## Chapter summary
+
+Stokes theorem and the Divergence theorem are global versions of differentiation.  Stokes theorem says that circulation around a boundary equals total curl through a spanning surface.  The Divergence theorem says that outward flux through a closed boundary equals total divergence inside the solid.  Both theorems convert difficult boundary measurements into interior integrals, or difficult interior measurements into boundary integrals.  Their common structure is the backbone of vector calculus and prepares students for conservation laws, partial differential equations, computational physics, geometric data analysis, and modern applied mathematics.

@@ -1,0 +1,896 @@
+---
+title: 'Chapter 8. Partial Derivatives and the Gradient'
+subtitle: 'Coordinate rates of change, sensitivity, and local information'
+---
+
+## Chapter overview
+
+A function of one variable has one basic input direction: move left or move right on the number line. A function of several variables has many input directions. The first step is to measure change in the coordinate directions.
+
+For a function $f(x,y)$, the partial derivative $f_x$ measures the instantaneous rate of change when $x$ changes and $y$ is held fixed. The partial derivative $f_y$ measures the instantaneous rate of change when $y$ changes and $x$ is held fixed. These two numbers are not separate facts. Together they form the **gradient vector**
+
+$$
+\nabla f(x,y)=\langle f_x(x,y), f_y(x,y)\rangle.
+$$
+
+The gradient is the local direction-information vector for a scalar field. It tells us how the output changes to first order near a point, how level curves are oriented, and how a loss function changes when model parameters change. This is why gradients appear everywhere in applied mathematics, statistics, machine learning, optimization, physics, imaging, and AI.
+
+::: {.callout-note title='Teaching-material connection'}
+This chapter develops the material on partial derivatives, geometric traces, numerical derivative estimates, second partial derivatives, Clairaut's theorem, and the gradient vector. It also uses the perspective that partial derivatives reduce multivariable differentiation to single-variable differentiation by holding all other variables fixed.
+:::
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. define $f_x(a,b)$ and $f_y(a,b)$ using limits;
+2. interpret partial derivatives as slopes of coordinate traces of a surface;
+3. compute partial derivatives by treating other variables as constants;
+4. estimate partial derivatives from data or finite differences;
+5. compute second partial derivatives and mixed partial derivatives;
+6. use Clairaut's theorem when mixed partial derivatives are continuous;
+7. compute the gradient of functions on $\mathbb R^2$, $\mathbb R^3$, and $\mathbb R^n$;
+8. explain why the gradient is perpendicular to level curves and level surfaces;
+9. connect gradients with sensitivity analysis, image processing, statistics, and machine learning.
+
+Python resources for this chapter:
+
+- [Chapter 8 Python lab](../labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb)
+- [Chapter 8 interactive HTML page](../htmls/chapter-08.html)
+
+## 8.1 From one derivative to many partial derivatives
+
+For a single-variable function $y=f(x)$, the derivative at $x=a$ is
+
+$$
+f'(a)=\lim_{h\to 0}\frac{f(a+h)-f(a)}{h}.
+$$
+
+Geometrically, this is the slope of the tangent line at $x=a$. For a two-variable function $z=f(x,y)$, the graph is a surface. At a point $(a,b,f(a,b))$, there are many possible curves on the surface passing through that point. The easiest curves are the two coordinate traces:
+
+- the trace obtained by fixing $y=b$ and allowing $x$ to vary;
+- the trace obtained by fixing $x=a$ and allowing $y$ to vary.
+
+The slopes of these two traces are the partial derivatives.
+
+::: {.callout-important title='Core idea'}
+A partial derivative is an ordinary derivative applied to a slice of a multivariable function.
+:::
+
+## 8.2 Definitions of $f_x$ and $f_y$
+
+Let $f$ be a function of two variables. The partial derivative of $f$ with respect to $x$ at $(a,b)$ is
+
+$$
+f_x(a,b)=\lim_{h\to 0}\frac{f(a+h,b)-f(a,b)}{h},
+$$
+
+provided the limit exists.
+
+The partial derivative of $f$ with respect to $y$ at $(a,b)$ is
+
+$$
+f_y(a,b)=\lim_{h\to 0}\frac{f(a,b+h)-f(a,b)}{h},
+$$
+
+provided the limit exists.
+
+Equivalently, define
+
+$$
+g(x)=f(x,b).
+$$
+
+Then
+
+$$
+f_x(a,b)=g'(a).
+$$
+
+Similarly, if
+
+$$
+k(y)=f(a,y),
+$$
+
+then
+
+$$
+f_y(a,b)=k'(b).
+$$
+
+The notation is flexible. If $z=f(x,y)$, then
+
+$$
+f_x=\frac{\partial f}{\partial x}=\frac{\partial z}{\partial x}=D_xf,
+\qquad
+f_y=\frac{\partial f}{\partial y}=\frac{\partial z}{\partial y}=D_yf.
+$$
+
+::: {.callout-tip title='How to compute partial derivatives'}
+To compute $f_x$, treat $y$ as a constant and differentiate with respect to $x$. To compute $f_y$, treat $x$ as a constant and differentiate with respect to $y$.
+:::
+
+## 8.3 Geometric interpretation: slopes of traces
+
+Suppose the surface is $z=f(x,y)$ and we focus on the point $(a,b,f(a,b))$.
+
+The trace in the plane $y=b$ is the single-variable curve
+
+$$
+z=f(x,b).
+$$
+
+Its tangent slope at $x=a$ is $f_x(a,b)$. The trace in the plane $x=a$ is
+
+$$
+z=f(a,y),
+$$
+
+and its tangent slope at $y=b$ is $f_y(a,b)$.
+
+### Example 8.1: A surface and its coordinate traces
+
+Let
+
+$$
+f(x,y)=4-\frac{x^2}{4}-y^2.
+$$
+
+This is a downward-opening elliptic paraboloid. At the point $(1,1)$,
+
+$$
+f_x(x,y)=-\frac{x}{2},
+\qquad
+f_y(x,y)=-2y.
+$$
+
+Thus
+
+$$
+f_x(1,1)=-\frac12,
+\qquad
+f_y(1,1)=-2.
+$$
+
+Interpretation:
+
+- if $y=1$ is held fixed and $x$ increases near $x=1$, the height decreases at rate $1/2$;
+- if $x=1$ is held fixed and $y$ increases near $y=1$, the height decreases at rate $2$.
+
+```{python}
+#| label: fig-ch08-surface-traces
+#| fig-cap: 'Coordinate traces of $f(x,y)=4-x^2/4-y^2$ through the point $(1,1)$. The partial derivatives are slopes of these traces.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-4, 4, 120)
+y = np.linspace(-2.2, 2.2, 120)
+X, Y = np.meshgrid(x, y)
+Z = 4 - X**2/4 - Y**2
+
+a, b = 1.0, 1.0
+z0 = 4 - a**2/4 - b**2
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.45, linewidth=0)
+
+x_trace = np.linspace(-4, 4, 200)
+y_trace = np.linspace(-2.2, 2.2, 200)
+ax.plot(x_trace, b*np.ones_like(x_trace), 4 - x_trace**2/4 - b**2, linewidth=3)
+ax.plot(a*np.ones_like(y_trace), y_trace, 4 - a**2/4 - y_trace**2, linewidth=3)
+ax.scatter([a], [b], [z0], s=60)
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Surface with coordinate traces')
+plt.show()
+```
+
+## 8.4 Computing partial derivatives
+
+### Example 8.2: Polynomial, trigonometric, and exponential terms
+
+Let
+
+$$
+f(x,y)=x^3+x^2\sin y-xe^y.
+$$
+
+To compute $f_x$, hold $y$ constant:
+
+$$
+f_x(x,y)=3x^2+2x\sin y-e^y.
+$$
+
+To compute $f_y$, hold $x$ constant:
+
+$$
+f_y(x,y)=x^2\cos y-xe^y.
+$$
+
+At $(1,2)$,
+
+$$
+f_x(1,2)=3+2\sin 2-e^2,
+$$
+
+and
+
+$$
+f_y(1,2)=\cos 2-e^2.
+$$
+
+### Example 8.3: A radial function
+
+Let
+
+$$
+f(x,y)=\sqrt{x^2+y^2}.
+$$
+
+For $(x,y)\ne(0,0)$,
+
+$$
+f_x(x,y)=\frac{x}{\sqrt{x^2+y^2}},
+\qquad
+f_y(x,y)=\frac{y}{\sqrt{x^2+y^2}}.
+$$
+
+At $(1,2)$,
+
+$$
+f_x(1,2)=\frac{1}{\sqrt5},
+\qquad
+f_y(1,2)=\frac{2}{\sqrt5}.
+$$
+
+At the origin, the formula is not valid because the denominator is zero. In fact, $f_x(0,0)$ and $f_y(0,0)$ exist, but the function is not differentiable at the origin. This reminds us that partial derivatives are only coordinate-direction information. They are important, but not always the whole story.
+
+## 8.5 Partial derivatives from data
+
+In applications, we often do not know a formula for $f$. We may only have sampled values. Then partial derivatives are estimated by finite differences.
+
+For example, if we know $f(1,2)$, $f(1.1,2)$, and $f(1,2.15)$, then
+
+$$
+f_x(1,2)\approx \frac{f(1.1,2)-f(1,2)}{0.1},
+$$
+
+and
+
+$$
+f_y(1,2)\approx \frac{f(1,2.15)-f(1,2)}{0.15}.
+$$
+
+This idea is fundamental in numerical differentiation, image processing, computer vision, and machine learning.
+
+### Example 8.4: Finite-difference estimates
+
+Use
+
+$$
+f(x,y)=x^3+x^2\sin y-xe^y
+$$
+
+and estimate $f_x(1,2)$ and $f_y(1,2)$ using forward differences.
+
+```{python}
+#| label: tbl-ch08-finite-difference-estimates
+import numpy as np
+
+
+def f(x, y):
+    return x**3 + x**2*np.sin(y) - x*np.exp(y)
+
+point = (1.0, 2.0)
+hx = 0.1
+hy = 0.15
+
+fx_forward = (f(point[0] + hx, point[1]) - f(*point)) / hx
+fy_forward = (f(point[0], point[1] + hy) - f(*point)) / hy
+
+fx_exact = 3*point[0]**2 + 2*point[0]*np.sin(point[1]) - np.exp(point[1])
+fy_exact = point[0]**2*np.cos(point[1]) - point[0]*np.exp(point[1])
+
+print('Forward estimate for f_x(1,2):', fx_forward)
+print('Exact value of f_x(1,2):       ', fx_exact)
+print('Forward estimate for f_y(1,2):', fy_forward)
+print('Exact value of f_y(1,2):       ', fy_exact)
+```
+
+Forward differences are simple, but they are not always very accurate. A better estimate often uses the centered difference
+
+$$
+f_x(a,b)\approx \frac{f(a+h,b)-f(a-h,b)}{2h}.
+$$
+
+The same idea works for $f_y$.
+
+```{python}
+#| label: fig-ch08-finite-difference-error
+#| fig-cap: 'Centered differences usually converge faster than forward differences for smooth functions.'
+#| fig-width: 7
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def f_num(x, y):
+    return x**3 + x**2*np.sin(y) - x*np.exp(y)
+
+x0, y0 = 1.0, 2.0
+exact = 3*x0**2 + 2*x0*np.sin(y0) - np.exp(y0)
+h_values = 10.0**(-np.arange(1, 9))
+forward_errors = []
+centered_errors = []
+
+for h in h_values:
+    forward = (f_num(x0+h, y0) - f_num(x0, y0)) / h
+    centered = (f_num(x0+h, y0) - f_num(x0-h, y0)) / (2*h)
+    forward_errors.append(abs(forward - exact))
+    centered_errors.append(abs(centered - exact))
+
+fig, ax = plt.subplots()
+ax.loglog(h_values, forward_errors, marker='o', label='forward difference')
+ax.loglog(h_values, centered_errors, marker='o', label='centered difference')
+ax.set_xlabel('step size h')
+ax.set_ylabel('absolute error')
+ax.set_title('Finite-difference error for f_x(1,2)')
+ax.legend()
+ax.grid(True, which='both', alpha=0.3)
+plt.show()
+```
+
+## 8.6 Image processing interpretation
+
+An image can be viewed as a function
+
+$$
+I(x,y)=\text{pixel intensity at location }(x,y).
+$$
+
+Then $I_x$ measures horizontal change and $I_y$ measures vertical change. Large values of $|I_x|$ or $|I_y|$ often indicate edges. This is the same calculus idea, but applied to a matrix of data instead of a symbolic formula.
+
+```{python}
+#| label: fig-ch08-image-gradient
+#| fig-cap: 'Finite differences applied to image-like data. Horizontal and vertical derivatives reveal edges.'
+#| fig-width: 8
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+n = 120
+x = np.linspace(-1, 1, n)
+y = np.linspace(-1, 1, n)
+X, Y = np.meshgrid(x, y)
+image = np.exp(-8*((X+0.35)**2 + (Y-0.1)**2)) + 0.75*np.exp(-18*((X-0.3)**2 + (Y+0.25)**2))
+image += 0.15*(X > 0.1)
+
+dy, dx = np.gradient(image, y, x)
+grad_mag = np.sqrt(dx**2 + dy**2)
+
+fig, axes = plt.subplots(1, 3, figsize=(11, 3.5))
+axes[0].imshow(image, origin='lower', extent=[-1, 1, -1, 1])
+axes[0].set_title('image intensity I')
+axes[1].imshow(dx, origin='lower', extent=[-1, 1, -1, 1])
+axes[1].set_title('horizontal derivative I_x')
+axes[2].imshow(grad_mag, origin='lower', extent=[-1, 1, -1, 1])
+axes[2].set_title('gradient magnitude')
+for ax in axes:
+    ax.set_xticks([])
+    ax.set_yticks([])
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note title='Modern interpretation'}
+In symbolic calculus, $f_x$ and $f_y$ are formulas. In data analysis, they are often approximations computed from samples, grids, or pixels. The concept is the same: measure local change in coordinate directions.
+:::
+
+## 8.7 Second partial derivatives
+
+Partial derivatives can be differentiated again. If $z=f(x,y)$, then the four second partial derivatives are
+
+$$
+f_{xx}=\frac{\partial}{\partial x}\left(\frac{\partial f}{\partial x}\right),
+\qquad
+f_{xy}=\frac{\partial}{\partial y}\left(\frac{\partial f}{\partial x}\right),
+$$
+
+$$
+f_{yx}=\frac{\partial}{\partial x}\left(\frac{\partial f}{\partial y}\right),
+\qquad
+f_{yy}=\frac{\partial}{\partial y}\left(\frac{\partial f}{\partial y}\right).
+$$
+
+The derivatives $f_{xy}$ and $f_{yx}$ are called **mixed partial derivatives**.
+
+### Example 8.5: Second partials and mixed partials
+
+Let
+
+$$
+f(x,y)=x^2+xy^3+\sin(xy).
+$$
+
+First derivatives:
+
+$$
+f_x=2x+y^3+y\cos(xy),
+$$
+
+$$
+f_y=3xy^2+x\cos(xy).
+$$
+
+Second derivatives:
+
+$$
+f_{xx}=2-y^2\sin(xy),
+$$
+
+$$
+f_{xy}=3y^2+\cos(xy)-xy\sin(xy),
+$$
+
+$$
+f_{yx}=3y^2+\cos(xy)-xy\sin(xy),
+$$
+
+$$
+f_{yy}=6xy-x^2\sin(xy).
+$$
+
+Here the mixed partial derivatives are equal.
+
+## 8.8 Clairaut's theorem
+
+The equality $f_{xy}=f_{yx}$ is common, but it is not automatic for every possible function. The standard theorem is the following.
+
+::: {.callout-important title='Clairaut theorem'}
+Suppose $f$ is defined on a disk containing $(a,b)$. If $f_{xy}$ and $f_{yx}$ are both continuous on that disk, then
+
+$$
+f_{xy}(a,b)=f_{yx}(a,b).
+$$
+:::
+
+In most elementary examples involving polynomials, exponentials, logarithms, and trigonometric functions on regions where the formulas are defined, the continuity hypothesis is satisfied. Then the order of mixed partial differentiation can be switched.
+
+## 8.9 The gradient vector
+
+The first partial derivatives form a vector.
+
+For $f(x,y)$,
+
+$$
+\nabla f(x,y)=\langle f_x(x,y), f_y(x,y)\rangle.
+$$
+
+For $f(x,y,z)$,
+
+$$
+\nabla f(x,y,z)=\langle f_x(x,y,z), f_y(x,y,z), f_z(x,y,z)\rangle.
+$$
+
+More generally, for $f(x_1,
+\ldots,x_n)$,
+
+$$
+\nabla f(x_1,\ldots,x_n)
+=
+\left\langle
+\frac{\partial f}{\partial x_1},
+\frac{\partial f}{\partial x_2},
+\ldots,
+\frac{\partial f}{\partial x_n}
+\right\rangle.
+$$
+
+The symbol $\nabla$ is pronounced **del** or **nabla**.
+
+### Example 8.6: Gradient of a two-variable function
+
+Let
+
+$$
+f(x,y)=\sin(xy)+e^y.
+$$
+
+Then
+
+$$
+f_x=y\cos(xy),
+$$
+
+and
+
+$$
+f_y=x\cos(xy)+e^y.
+$$
+
+Therefore
+
+$$
+\nabla f(x,y)=\langle y\cos(xy), x\cos(xy)+e^y\rangle.
+$$
+
+At $(0,1)$,
+
+$$
+\nabla f(0,1)=\langle 1,e\rangle.
+$$
+
+### Example 8.7: Gradient of a three-variable function
+
+Let
+
+$$
+f(x,y,z)=xyz.
+$$
+
+Then
+
+$$
+f_x=yz,
+\qquad
+f_y=xz,
+\qquad
+f_z=xy.
+$$
+
+Thus
+
+$$
+\nabla f(x,y,z)=\langle yz,xz,xy\rangle.
+$$
+
+At $(1,2,3)$,
+
+$$
+\nabla f(1,2,3)=\langle 6,3,2\rangle.
+$$
+
+## 8.10 The gradient and level curves
+
+Level curves have equations
+
+$$
+f(x,y)=c.
+$$
+
+The gradient $\nabla f$ is perpendicular to the level curve at points where $\nabla f\ne 0$.
+
+Why? Suppose $r(t)=\langle x(t),y(t)\rangle$ is a curve that stays on the level curve $f(x,y)=c$. Then
+
+$$
+f(x(t),y(t))=c.
+$$
+
+Differentiating with respect to $t$ gives
+
+$$
+\nabla f(x(t),y(t))\cdot r'(t)=0.
+$$
+
+The vector $r'(t)$ is tangent to the level curve. Therefore the gradient is perpendicular to the tangent direction.
+
+::: {.callout-important title='Geometric meaning of the gradient'}
+The gradient points normal to level curves and level surfaces. It tells us which direction cuts most directly across the contours.
+:::
+
+```{python}
+#| label: fig-ch08-gradient-level-curves
+#| fig-cap: 'Gradient vectors are perpendicular to level curves of $H(x,y)=4-x^2/4-y^2$.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-4, 4, 250)
+y = np.linspace(-2.3, 2.3, 250)
+X, Y = np.meshgrid(x, y)
+H = 4 - X**2/4 - Y**2
+
+fig, ax = plt.subplots()
+cs = ax.contour(X, Y, H, levels=[0, 1, 2, 3, 3.5], linewidths=1.2)
+ax.clabel(cs, inline=True, fontsize=8)
+
+points = np.array([[2, 0], [-2, 0], [0, 1], [0, -1], [1, np.sqrt(3)/2], [-1, -np.sqrt(3)/2]])
+U = -points[:, 0] / 2
+V = -2 * points[:, 1]
+ax.quiver(points[:, 0], points[:, 1], U, V, angles='xy', scale_units='xy', scale=3)
+ax.scatter(points[:, 0], points[:, 1], s=25)
+
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Level curves and gradient vectors')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 8.11 Gradient fields
+
+For each point $(x,y)$, the gradient produces a vector $\nabla f(x,y)$. The collection of these vectors is called a **gradient field**.
+
+Gradient fields are important because they show local directions of increase. In later chapters, we will study vector fields more generally. Gradient fields are a special class of vector fields with strong structure.
+
+```{python}
+#| label: fig-ch08-gradient-field
+#| fig-cap: 'A gradient field for $f(x,y)=\sin(xy)+e^{0.4y}$. The arrows encode local partial derivative information.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2.5, 2.5, 21)
+y = np.linspace(-2.0, 2.0, 21)
+X, Y = np.meshgrid(x, y)
+Z = np.sin(X*Y) + np.exp(0.4*Y)
+Fx = Y*np.cos(X*Y)
+Fy = X*np.cos(X*Y) + 0.4*np.exp(0.4*Y)
+
+fig, ax = plt.subplots()
+ax.contour(X, Y, Z, levels=20, linewidths=0.8)
+ax.quiver(X, Y, Fx, Fy, angles='xy')
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Gradient field over contour map')
+plt.show()
+```
+
+## 8.12 Directional derivatives as a preview
+
+The next major idea is that we can measure rate of change in any unit direction $u$. If
+
+$$
+u=\langle a,b\rangle
+$$
+
+is a unit vector, the directional derivative is
+
+$$
+D_u f(x,y)=\nabla f(x,y)\cdot u.
+$$
+
+This formula says that the gradient contains all first-order directional information. The coordinate partial derivatives are special cases:
+
+$$
+D_{\mathbf i}f=f_x,
+\qquad
+D_{\mathbf j}f=f_y.
+$$
+
+A full geometric treatment of directional derivatives, maximum rate of change, and gradient descent appears later, but the key point begins here: **the gradient is the vector that converts directions into rates of change**.
+
+### Example 8.8: Directional derivative from a gradient
+
+For
+
+$$
+f(x,y)=\sin(xy)+e^y,
+$$
+
+we found
+
+$$
+\nabla f(0,1)=\langle 1,e\rangle.
+$$
+
+Let $v=\langle 2,3\rangle$. The corresponding unit vector is
+
+$$
+u=\frac{v}{\|v\|}=\left\langle\frac{2}{\sqrt{13}},\frac{3}{\sqrt{13}}\right\rangle.
+$$
+
+Therefore
+
+$$
+D_u f(0,1)
+=
+\langle 1,e\rangle\cdot
+\left\langle\frac{2}{\sqrt{13}},\frac{3}{\sqrt{13}}\right\rangle
+=
+\frac{2+3e}{\sqrt{13}}.
+$$
+
+## 8.13 Gradients in statistics and machine learning
+
+In statistics and machine learning, a model often has parameters
+
+$$
+\theta=(\theta_1,\ldots,\theta_n),
+$$
+
+and we minimize a loss function
+
+$$
+L(\theta_1,\ldots,\theta_n).
+$$
+
+The partial derivative
+
+$$
+\frac{\partial L}{\partial \theta_k}
+$$
+
+measures how sensitive the loss is to the parameter $\theta_k$ while the other parameters are held fixed. The gradient
+
+$$
+\nabla L(\theta)
+$$
+
+collects all parameter sensitivities into one vector.
+
+For least-squares linear regression with data $(x_i,y_i)$ and model
+
+$$
+\widehat y_i=\beta_0+\beta_1x_i,
+$$
+
+the loss is
+
+$$
+L(\beta_0,\beta_1)=\sum_{i=1}^m \left(y_i-(\beta_0+\beta_1x_i)\right)^2.
+$$
+
+The partial derivatives are
+
+$$
+\frac{\partial L}{\partial \beta_0}
+= -2\sum_{i=1}^m \left(y_i-(\beta_0+\beta_1x_i)\right),
+$$
+
+and
+
+$$
+\frac{\partial L}{\partial \beta_1}
+= -2\sum_{i=1}^m x_i\left(y_i-(\beta_0+\beta_1x_i)\right).
+$$
+
+These two numbers form the gradient in the parameter plane.
+
+```{python}
+#| label: fig-ch08-least-squares-gradient
+#| fig-cap: 'The gradient of a least-squares loss points toward increasing loss; the negative gradient points downhill.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(8)
+x_data = np.linspace(-2, 2, 35)
+y_data = 1.0 + 1.8*x_data + rng.normal(scale=0.3, size=x_data.shape)
+
+b0 = np.linspace(-1, 3, 130)
+b1 = np.linspace(0, 3.5, 130)
+B0, B1 = np.meshgrid(b0, b1)
+Loss = np.zeros_like(B0)
+G0 = np.zeros_like(B0)
+G1 = np.zeros_like(B1)
+
+for x_i, y_i in zip(x_data, y_data):
+    residual = y_i - (B0 + B1*x_i)
+    Loss += residual**2
+    G0 += -2*residual
+    G1 += -2*x_i*residual
+
+fig, ax = plt.subplots()
+cs = ax.contour(B0, B1, Loss, levels=24)
+ax.clabel(cs, inline=True, fontsize=8)
+step = 16
+ax.quiver(B0[::step, ::step], B1[::step, ::step], G0[::step, ::step], G1[::step, ::step], angles='xy', scale_units='xy', scale=350)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Gradient vectors for a least-squares loss')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 8.14 Common mistakes
+
+::: {.callout-warning title='Mistake 1: Differentiating every variable at once'}
+When computing $f_x$, only $x$ varies. All other variables are constants. For example, if $f(x,y)=x^2y$, then $f_x=2xy$, not $2xy+x^2$.
+:::
+
+::: {.callout-warning title='Mistake 2: Confusing partial derivatives with total change'}
+The partial derivative $f_x(a,b)$ measures change only in the $x$ direction. It does not describe motion along an arbitrary path unless the path moves only in the $x$ direction.
+:::
+
+::: {.callout-warning title='Mistake 3: Forgetting to normalize a direction vector'}
+In the directional derivative formula $D_u f=\nabla f\cdot u$, the vector $u$ must be a unit vector. If a problem gives a nonunit direction vector, divide by its length first.
+:::
+
+::: {.callout-warning title='Mistake 4: Assuming mixed partials are always equal'}
+Mixed partials are equal under hypotheses such as continuity near the point. For standard smooth examples this is usually true, but the theorem has a condition.
+:::
+
+## 8.15 Chapter exercises
+
+### Conceptual questions
+
+1. Explain in words what $f_x(a,b)$ means.
+2. Explain why $f_x(a,b)$ is the slope of a trace of the surface $z=f(x,y)$.
+3. Explain the difference between $f_x(a,b)$ and $f_y(a,b)$.
+4. Why is a partial derivative not the same thing as a directional derivative in every direction?
+5. Explain why $\nabla f$ is perpendicular to a level curve.
+6. In an image, what do large values of $|I_x|$ and $|I_y|$ usually indicate?
+7. In a loss function $L(\theta_1,\theta_2)$, what does $\partial L/\partial \theta_1$ mean?
+8. Explain why the gradient is useful even when the function has many variables.
+
+### Skill problems
+
+9. Find $f_x$ and $f_y$ for $f(x,y)=x^2y+3xy^2-y$.
+10. Find $f_x$ and $f_y$ for $f(x,y)=e^{xy}+\ln(x+y)$ on its domain.
+11. Find $f_x$ and $f_y$ for $f(x,y)=\cos(x^2+y^2)$.
+12. Find $\nabla f(1,2)$ for $f(x,y)=x^3y+y^2$.
+13. Find $\nabla f(0,1)$ for $f(x,y)=\sin(xy)+e^y$.
+14. Find $\nabla f(1,2,3)$ for $f(x,y,z)=x^2y+yz^3$.
+15. Find all four second partial derivatives of $f(x,y)=x^2+xy^3+\sin(xy)$.
+16. Verify Clairaut's theorem for $f(x,y)=e^{xy}+x^2y^3$.
+17. Estimate $f_x(2,1)$ using $f(2,1)=5.0$ and $f(2.1,1)=5.32$.
+18. Estimate $f_y(2,1)$ using $f(2,1)=5.0$ and $f(2,1.2)=4.7$.
+
+### Applied and computational problems
+
+19. Let $H(x,y)=1100-2x^2-y^2$ model the height of a hill in meters. Compute $H_x$ and $H_y$, and interpret them.
+20. For the same hill, compute $\nabla H(10,20)$ and explain what the signs of its components mean.
+21. Let $T(x,y,z)=xe^y+0.5z^2$. Compute $\nabla T(1,0,3)$.
+22. Let $I$ be an image intensity function. Explain how finite differences approximate $I_x$ and $I_y$.
+23. For least-squares regression with two parameters, derive the gradient of
+
+$$
+L(\beta_0,\beta_1)=\sum_{i=1}^m \left(y_i-(\beta_0+\beta_1x_i)\right)^2.
+$$
+
+24. Write Python code to approximate $\nabla f(1,2)$ for $f(x,y)=x^3+x^2\sin y-xe^y$ using centered differences.
+25. Generate a contour plot of $f(x,y)=x^2+4y^2$ and draw gradient vectors at several points.
+26. Use Python to compute numerical gradients on a grid for $f(x,y)=\sin x\cos y$.
+
+### Challenge problems
+
+27. Let $f(x,y)=\sqrt{x^2+y^2}$. Show that $f_x(0,0)$ and $f_y(0,0)$ exist, but explain why this does not mean the surface has a tangent plane at the origin.
+28. Find a function for which $f_x$ and $f_y$ exist at the origin but the function is not continuous at the origin.
+29. Suppose $f(x,y)=g(x^2+y^2)$ for a differentiable single-variable function $g$. Find $\nabla f$.
+30. Suppose $f(x,y)=h(ax+by)$ for a differentiable single-variable function $h$. Find $\nabla f$ and describe the direction of the gradient.
+31. Let $f(x,y,z)=F(x^2+y^2+z^2)$. Find $\nabla f$ and describe its direction geometrically.
+32. In a high-dimensional model, the gradient has one component per parameter. Explain why this makes gradient methods scalable compared with searching every direction separately.
+
+## 8.16 Python lab and interactive page
+
+The Python lab for this chapter focuses on numerical and visual differentiation:
+
+- estimating partial derivatives from function values;
+- comparing forward, backward, and centered differences;
+- plotting coordinate traces of surfaces;
+- visualizing gradients on contour plots;
+- computing image gradients;
+- computing gradients of least-squares losses.
+
+Open the resources here:
+
+- [Chapter 8 Python lab](../labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb)
+- [Chapter 8 interactive HTML page](../htmls/chapter-08.html)
+
+## Chapter summary
+
+Partial derivatives are the coordinate-direction derivatives of a multivariable function. They are ordinary derivatives applied to slices of the function. For $f(x,y)$, the two first partial derivatives are $f_x$ and $f_y$. For a function of $n$ variables, there are $n$ first partial derivatives.
+
+The gradient packages these partial derivatives into a vector:
+
+$$
+\nabla f=\left\langle
+\frac{\partial f}{\partial x_1},
+\ldots,
+\frac{\partial f}{\partial x_n}
+\right\rangle.
+$$
+
+This vector is perpendicular to level sets and contains the first-order sensitivity information of the function. In modern applications, the gradient is the basic object behind numerical differentiation, image processing, optimization, maximum likelihood, backpropagation, and gradient-based learning.

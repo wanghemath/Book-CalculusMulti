@@ -1,0 +1,937 @@
+---
+title: 'Chapter 7. Limits and Continuity in Several Variables'
+subtitle: 'Path dependence, continuity, and local stability'
+---
+
+## Chapter overview
+
+In single-variable calculus, the limit
+
+$$
+\lim_{x\to a} f(x)
+$$
+
+asks what happens as $x$ approaches $a$ from the left and from the right.  In multivariable calculus, the limit
+
+$$
+\lim_{(x,y)\to(a,b)} f(x,y)
+$$
+
+asks what happens as the point $(x,y)$ approaches $(a,b)$ from **every possible direction and along every possible path**.  This is the first major conceptual difference between single-variable and multivariable calculus.
+
+This chapter is about learning how to decide when a multivariable limit exists, when it fails to exist, and why continuity is the local stability condition that makes differentiation and integration behave well.
+
+::: {.callout-note title='Teaching-material connection'}
+This chapter develops the material on limits and continuity of functions of several variables, including the distance-based definition, path tests, examples such as $\frac{x^2-y^2}{x^2+y^2}$ and $\frac{xy^2}{x^2+y^4}$, and continuous examples such as $e^{-xy}\sin(x+y)$ and $\frac{\sin(x^2+y^2)}{x^2+y^2}$.
+:::
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. explain the meaning of $\lim_{(x,y)\to(a,b)} f(x,y)=L$;
+2. use direct substitution when continuity applies;
+3. show that a limit does not exist by finding two paths with different limiting values;
+4. understand why checking only lines is sometimes not enough;
+5. prove simple limits using estimates, polar coordinates, and the squeeze theorem;
+6. define continuity for functions of several variables;
+7. identify common sources of discontinuity;
+8. use numerical and graphical evidence responsibly;
+9. connect continuity to stability in statistics, data science, and machine learning.
+
+Python resources for this chapter:
+
+- [Chapter 7 Python lab](../labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb)
+- [Chapter 7 interactive HTML page](../htmls/chapter-07.html)
+
+## 7.1 Why multivariable limits are different
+
+A single-variable limit has only two basic directions of approach:
+
+$$
+x\to a^- \qquad \text{and} \qquad x\to a^+.
+$$
+
+A two-variable limit has infinitely many possible approaches:
+
+$$
+(x,y)\to(a,b).
+$$
+
+The point $(x,y)$ can approach $(a,b)$ along a horizontal line, a vertical line, a slanted line, a parabola, a spiral, or a more complicated curve.  For the limit to exist, **all paths must lead to the same value**.
+
+::: {.callout-important title='Core idea'}
+To prove a multivariable limit exists, we must control all possible approaches.  To prove a multivariable limit does not exist, it is enough to find two approaches that give different answers.
+:::
+
+A useful analogy is hiking toward the summit of a mountain.  If all trails leading to the summit approach the same height, the height has a well-defined limit.  If different trails approach different heights near the same map location, then the surface does not have a well-defined limiting height there.
+
+## 7.2 The formal definition
+
+Let $f$ be a function of two variables whose domain contains points arbitrarily close to $(a,b)$.  We write
+
+$$
+\lim_{(x,y)\to(a,b)} f(x,y)=L
+$$
+
+if the values $f(x,y)$ become arbitrarily close to $L$ whenever $(x,y)$ is sufficiently close to $(a,b)$, but not equal to $(a,b)$.
+
+Using distance, this means:
+
+$$
+0<\sqrt{(x-a)^2+(y-b)^2}<\delta
+\quad \Longrightarrow \quad
+|f(x,y)-L|<\varepsilon.
+$$
+
+Here $\varepsilon$ measures closeness in output, and $\delta$ measures closeness in input.
+
+::: {.callout-tip title='Practical interpretation'}
+The formal definition says that the output can be forced close to $L$ by taking the input point close enough to $(a,b)$, regardless of the direction of approach.
+:::
+
+The same definition works in $\mathbb R^n$.  If $x=(x_1,\ldots,x_n)$ and $a=(a_1,\ldots,a_n)$, then
+
+$$
+\|x-a\|=\sqrt{(x_1-a_1)^2+\cdots+(x_n-a_n)^2}.
+$$
+
+Then
+
+$$
+\lim_{x\to a} f(x)=L
+$$
+
+means that $f(x)$ is close to $L$ whenever $\|x-a\|$ is small and nonzero.
+
+## 7.3 Easy limits by continuity
+
+Many limits are easy because the function is continuous.  Polynomials, exponential functions, trigonometric functions, and compositions of continuous functions are continuous wherever they are defined.
+
+### Example 7.1: Direct substitution
+
+Evaluate
+
+$$
+\lim_{(x,y)\to(0,0)} e^{-xy}\sin(x+y).
+$$
+
+Both $e^{-xy}$ and $\sin(x+y)$ are continuous, so their product is continuous.  Therefore the limit is obtained by substitution:
+
+$$
+\lim_{(x,y)\to(0,0)} e^{-xy}\sin(x+y)
+= e^0\sin(0)=0.
+$$
+
+### Example 7.2: A rational function at a regular point
+
+Evaluate
+
+$$
+\lim_{(x,y)\to(1,2)} \frac{x+y^2}{x^2-y^2}.
+$$
+
+The denominator at $(1,2)$ is
+
+$$
+1^2-2^2=-3\ne 0.
+$$
+
+So the function is continuous at $(1,2)$, and
+
+$$
+\lim_{(x,y)\to(1,2)} \frac{x+y^2}{x^2-y^2}
+=
+\frac{1+2^2}{1^2-2^2}
+=
+-\frac{5}{3}.
+$$
+
+::: {.callout-note title='When substitution works'}
+If a formula is built from continuous operations and is defined at the target point, substitution is usually the first method to try.
+:::
+
+## 7.4 Path tests for nonexistence
+
+To show a limit does not exist, find two paths approaching the same point that give different limiting values.
+
+### Example 7.3: A classic path-dependent limit
+
+Consider
+
+$$
+f(x,y)=\frac{x^2-y^2}{x^2+y^2}.
+$$
+
+We investigate
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2-y^2}{x^2+y^2}.
+$$
+
+Along the path $y=0$,
+
+$$
+f(x,0)=\frac{x^2}{x^2}=1.
+$$
+
+So
+
+$$
+\lim_{x\to0} f(x,0)=1.
+$$
+
+Along the path $x=0$,
+
+$$
+f(0,y)=\frac{-y^2}{y^2}=-1.
+$$
+
+So
+
+$$
+\lim_{y\to0} f(0,y)=-1.
+$$
+
+The two paths give different values.  Therefore
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2-y^2}{x^2+y^2}
+$$
+
+does not exist.
+
+```{python}
+#| label: fig-ch07-path-slopes
+#| fig-cap: 'Different straight-line paths give different values for $f(x,y)=\frac{x^2-y^2}{x^2+y^2}$.'
+#| fig-width: 7
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+m = np.linspace(-4, 4, 500)
+path_value = (1 - m**2) / (1 + m**2)   # value along y = m x
+
+fig, ax = plt.subplots()
+ax.plot(m, path_value)
+ax.axhline(0, linewidth=1)
+ax.axvline(0, linewidth=1)
+ax.set_xlabel('slope m in the path y = m x')
+ax.set_ylabel('limiting value along the path')
+ax.set_title('Path-dependent limiting values')
+plt.show()
+```
+
+Along a general line $y=mx$ with $x\ne0$,
+
+$$
+f(x,mx)=\frac{x^2-m^2x^2}{x^2+m^2x^2}
+=
+\frac{1-m^2}{1+m^2}.
+$$
+
+The result depends on $m$, the slope of the path.  That is a strong sign that the full two-variable limit does not exist.
+
+```{python}
+#| label: fig-ch07-surface-path-dependent
+#| fig-cap: 'Near the origin, the surface approaches different heights from different directions.'
+#| fig-width: 7
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1, 1, 160)
+y = np.linspace(-1, 1, 160)
+X, Y = np.meshgrid(x, y)
+R2 = X**2 + Y**2
+Z = np.where(R2 > 1e-8, (X**2 - Y**2) / R2, np.nan)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('f(x,y)')
+ax.set_title('A path-dependent surface')
+plt.show()
+```
+
+## 7.5 Checking only lines is not enough
+
+Sometimes every straight-line path gives the same value, but the limit still does not exist.  This is one of the most important warnings in multivariable calculus.
+
+### Example 7.4: Lines are misleading
+
+Consider
+
+$$
+g(x,y)=\frac{xy^2}{x^2+y^4}.
+$$
+
+We investigate
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{xy^2}{x^2+y^4}.
+$$
+
+Along a straight line $y=mx$,
+
+$$
+g(x,mx)=\frac{x(m^2x^2)}{x^2+m^4x^4}
+=
+\frac{m^2x}{1+m^4x^2}.
+$$
+
+As $x\to0$,
+
+$$
+\frac{m^2x}{1+m^4x^2}\to0.
+$$
+
+So every line $y=mx$ gives the limiting value $0$.
+
+But along the curved path $x=y^2$,
+
+$$
+g(y^2,y)=\frac{y^2y^2}{(y^2)^2+y^4}
+=
+\frac{y^4}{2y^4}
+=
+\frac12.
+$$
+
+Therefore the full limit does not exist.
+
+```{python}
+#| label: fig-ch07-lines-not-enough
+#| fig-cap: 'Line paths can all approach zero while a curved path approaches a different value.'
+#| fig-width: 7
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+def g(x, y):
+    return (x * y**2) / (x**2 + y**4)
+
+t = np.linspace(1e-4, 0.5, 500)
+paths = {
+    'y = x': g(t, t),
+    'y = 2x': g(t, 2*t),
+    'y = -x': g(t, -t),
+    'x = y^2': g(t**2, t),
+}
+
+fig, ax = plt.subplots()
+for name, values in paths.items():
+    ax.plot(t, values, label=name)
+ax.axhline(0, linewidth=1)
+ax.axhline(0.5, linewidth=1, linestyle='--')
+ax.set_xlabel('parameter approaching 0')
+ax.set_ylabel('function value')
+ax.set_title('Straight paths versus a curved path')
+ax.legend()
+plt.show()
+```
+
+::: {.callout-warning title='Common mistake'}
+Showing that several paths give the same value does not prove a limit exists.  It only provides evidence.  To prove existence, we need an argument that controls all paths.
+:::
+
+## 7.6 Proving limits with estimates
+
+To prove that a limit exists, we often use inequalities.  The idea is to bound the complicated expression by something simpler that goes to zero.
+
+A common strategy near $(0,0)$ is to use
+
+$$
+r=\sqrt{x^2+y^2}.
+$$
+
+Then
+
+$$
+|x|\le r, \qquad |y|\le r.
+$$
+
+If we can show
+
+$$
+|f(x,y)-L|\le C r^p
+$$
+
+for some constants $C>0$ and $p>0$, then
+
+$$
+f(x,y)\to L
+$$
+
+as $(x,y)\to(0,0)$.
+
+### Example 7.5: A squeeze theorem proof
+
+Show that
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2y}{x^2+y^2}=0.
+$$
+
+For $(x,y)\ne(0,0)$,
+
+$$
+\left|\frac{x^2y}{x^2+y^2}\right|
+=
+\frac{|x|^2|y|}{x^2+y^2}.
+$$
+
+Since
+
+$$
+x^2\le x^2+y^2,
+$$
+
+we have
+
+$$
+\frac{|x|^2}{x^2+y^2}\le 1.
+$$
+
+Therefore
+
+$$
+\left|\frac{x^2y}{x^2+y^2}\right|
+\le |y|.
+$$
+
+As $(x,y)\to(0,0)$, we have $|y|\to0$.  By the squeeze theorem,
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2y}{x^2+y^2}=0.
+$$
+
+```{python}
+#| label: fig-ch07-squeeze-circles
+#| fig-cap: 'The maximum absolute value on circles of radius r decreases toward zero.'
+#| fig-width: 7
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+def h(x, y):
+    return (x**2 * y) / (x**2 + y**2)
+
+theta = np.linspace(0, 2*np.pi, 2000)
+radii = np.geomspace(1, 1e-3, 80)
+max_values = []
+for r in radii:
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    max_values.append(np.max(np.abs(h(x, y))))
+
+fig, ax = plt.subplots()
+ax.loglog(radii, max_values, marker='o', markersize=3, linewidth=1)
+ax.set_xlabel('radius r')
+ax.set_ylabel('maximum of |h| on circle of radius r')
+ax.set_title('A numerical squeeze test')
+ax.invert_xaxis()
+plt.show()
+```
+
+## 7.7 Polar coordinates as a limit tool
+
+For limits at the origin in the plane, polar coordinates are often useful:
+
+$$
+x=r\cos\theta, \qquad y=r\sin\theta.
+$$
+
+Then
+
+$$
+(x,y)\to(0,0)
+$$
+
+means
+
+$$
+r\to0.
+$$
+
+The angle $\theta$ may change in any way.  If the expression becomes something that goes to $L$ independently of $\theta$, then the limit is $L$.
+
+### Example 7.6: A polar-coordinate proof
+
+Show that
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{xy}{\sqrt{x^2+y^2}}=0.
+$$
+
+Using $x=r\cos\theta$ and $y=r\sin\theta$,
+
+$$
+\frac{xy}{\sqrt{x^2+y^2}}
+=
+\frac{r^2\cos\theta\sin\theta}{r}
+=
+r\cos\theta\sin\theta.
+$$
+
+Since
+
+$$
+|\cos\theta\sin\theta|\le1,
+$$
+
+we have
+
+$$
+|r\cos\theta\sin\theta|\le r.
+$$
+
+As $r\to0$, this tends to $0$.  Therefore
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{xy}{\sqrt{x^2+y^2}}=0.
+$$
+
+```{python}
+#| label: fig-ch07-polar-limit
+#| fig-cap: 'The polar form $r\cos\theta\sin\theta$ is controlled by the radius r.'
+#| fig-width: 7
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.linspace(0, 1, 100)
+theta = np.linspace(0, 2*np.pi, 160)
+R, TH = np.meshgrid(r, theta)
+Z = R * np.cos(TH) * np.sin(TH)
+X = R * np.cos(TH)
+Y = R * np.sin(TH)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('value')
+ax.set_title('A limit controlled by distance to the origin')
+plt.show()
+```
+
+## 7.8 A removable discontinuity
+
+Consider
+
+$$
+q(x,y)=\frac{\sin(x^2+y^2)}{x^2+y^2}.
+$$
+
+The expression is undefined at $(0,0)$, but the limit exists.  Let
+
+$$
+u=x^2+y^2.
+$$
+
+As $(x,y)\to(0,0)$, we have $u\to0^+$.  Therefore
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{\sin(x^2+y^2)}{x^2+y^2}
+=
+\lim_{u\to0^+} \frac{\sin u}{u}=1.
+$$
+
+The function is not continuous at the origin because it is not defined there.  But we can make it continuous by defining
+
+$$
+q(0,0)=1.
+$$
+
+This is called a **removable discontinuity**.
+
+```{python}
+#| label: fig-ch07-removable-discontinuity
+#| fig-cap: 'The function $\frac{\sin(x^2+y^2)}{x^2+y^2}$ has limiting value 1 at the origin.'
+#| fig-width: 7
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 180)
+y = np.linspace(-3, 3, 180)
+X, Y = np.meshgrid(x, y)
+U = X**2 + Y**2
+Z = np.where(U > 1e-10, np.sin(U) / U, 1.0)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('q(x,y)')
+ax.set_title('A removable discontinuity filled in continuously')
+plt.show()
+```
+
+## 7.9 Continuity in several variables
+
+A function $f(x,y)$ is **continuous at** $(a,b)$ if
+
+$$
+\lim_{(x,y)\to(a,b)} f(x,y)=f(a,b).
+$$
+
+This requires three things:
+
+1. $f(a,b)$ is defined;
+2. $\lim_{(x,y)\to(a,b)} f(x,y)$ exists;
+3. the limit equals the function value.
+
+A function is continuous on a region $D$ if it is continuous at every point of $D$.
+
+### Common sources of discontinuity
+
+| Source | Example | What can go wrong? |
+|---|---|---|
+| Denominator zero | $\frac{1}{x^2+y^2}$ | infinite blow-up near the origin |
+| Path dependence | $\frac{x^2-y^2}{x^2+y^2}$ | different paths give different values |
+| Removable hole | $\frac{\sin(x^2+y^2)}{x^2+y^2}$ | formula undefined at one point, but limit exists |
+| Domain boundary | $\sqrt{1-x^2-y^2}$ | function exists only on a disk |
+| Piecewise rule | threshold or classifier | jump discontinuity across a boundary |
+
+::: {.callout-tip title='Continuity and modeling'}
+A continuous model changes outputs gradually when inputs are changed slightly.  This is essential for numerical stability, optimization, interpolation, and sensitivity analysis.
+:::
+
+## 7.10 Continuity on domains and boundaries
+
+Some functions are continuous on their natural domains even though the domain has a boundary.  For example,
+
+$$
+f(x,y)=\sqrt{1-x^2-y^2}
+$$
+
+is defined on the disk
+
+$$
+D=\{(x,y):x^2+y^2\le1\}.
+$$
+
+It is continuous at every point of this disk relative to its domain.  Near boundary points, we only approach through points in the domain.
+
+```{python}
+#| label: fig-ch07-hemisphere-continuity
+#| fig-cap: 'The upper hemisphere is continuous on the closed disk $x^2+y^2\le 1$.'
+#| fig-width: 7
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1, 1, 160)
+y = np.linspace(-1, 1, 160)
+X, Y = np.meshgrid(x, y)
+R2 = X**2 + Y**2
+Z = np.where(R2 <= 1, np.sqrt(np.maximum(0, 1 - R2)), np.nan)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, linewidth=0, antialiased=True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Continuity on a natural domain')
+plt.show()
+```
+
+This distinction matters in applications.  A probability density may be defined only on a simplex, a loss function may be meaningful only on feasible parameters, and a physical model may be valid only inside a spatial region.
+
+## 7.11 Numerical experiments with limits
+
+Numerical exploration can suggest whether a limit exists, but it cannot by itself prove a limit.  A computer can sample many paths, but it cannot sample all paths.
+
+The following function evaluates a formula along several paths approaching the origin.
+
+```{python}
+#| label: fig-ch07-path-sampler
+#| fig-cap: 'Numerical path sampling is useful evidence but not a proof.'
+#| fig-width: 7
+#| fig-height: 4.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+def sample_function(x, y):
+    return (x * y**2) / (x**2 + y**4)
+
+t = np.geomspace(1, 1e-4, 400)
+path_data = {
+    'y = 0': sample_function(t, 0*t),
+    'x = 0': sample_function(0*t, t),
+    'y = x': sample_function(t, t),
+    'x = y^2': sample_function(t**2, t),
+    'x = 2 y^2': sample_function(2*t**2, t),
+}
+
+fig, ax = plt.subplots()
+for name, values in path_data.items():
+    ax.semilogx(t, values, label=name)
+ax.invert_xaxis()
+ax.set_xlabel('parameter approaching 0')
+ax.set_ylabel('function value')
+ax.set_title('Sampling several paths toward the origin')
+ax.legend()
+plt.show()
+```
+
+::: {.callout-warning title='Computational caution'}
+A graph can miss a narrow ridge, a sharp spike, or a curved path where behavior changes.  Use computation to develop intuition, then use algebra to justify the conclusion.
+:::
+
+## 7.12 Higher-dimensional continuity
+
+For a function
+
+$$
+f:\mathbb R^n\to\mathbb R,
+$$
+
+continuity at $a\in\mathbb R^n$ means
+
+$$
+\lim_{x\to a} f(x)=f(a).
+$$
+
+The same distance idea applies:
+
+$$
+\|x-a\|<\delta
+\quad \Longrightarrow \quad
+|f(x)-f(a)|<\varepsilon.
+$$
+
+For example, the squared norm function
+
+$$
+f(x)=\|x\|^2=x_1^2+\cdots+x_n^2
+$$
+
+is continuous on $\mathbb R^n$.  The logistic regression loss, least-squares loss, and many smooth neural-network losses are also continuous functions of their parameters.
+
+### Example 7.7: Least-squares loss is continuous
+
+Let $A$ be a fixed data matrix and $b$ a fixed response vector.  Define
+
+$$
+L(w)=\|Aw-b\|^2.
+$$
+
+This is a polynomial function of the components of $w$, so it is continuous.  Small changes in $w$ cause small changes in $L(w)$.  This is one reason gradient-based methods can be used to minimize least-squares loss.
+
+```{python}
+#| label: fig-ch07-loss-contours
+#| fig-cap: 'A least-squares loss surface is continuous and has smooth level curves.'
+#| fig-width: 7
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.0], [1.0, 3.0]])
+b = np.array([1.0, 2.0, 2.2, 3.5])
+
+w0 = np.linspace(-1, 3, 180)
+w1 = np.linspace(-1, 2, 180)
+W0, W1 = np.meshgrid(w0, w1)
+Z = np.empty_like(W0)
+for i in range(W0.shape[0]):
+    for j in range(W0.shape[1]):
+        w = np.array([W0[i, j], W1[i, j]])
+        residual = A @ w - b
+        Z[i, j] = residual @ residual
+
+fig, ax = plt.subplots()
+cs = ax.contour(W0, W1, Z, levels=20)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.set_xlabel('w0')
+ax.set_ylabel('w1')
+ax.set_title('Level curves of a continuous least-squares loss')
+plt.show()
+```
+
+## 7.13 Modern applications
+
+### Statistics
+
+In statistics, likelihood and loss functions are often functions of parameters.  Continuity allows us to use local approximations, optimization methods, and asymptotic arguments.  For example, if a likelihood changes continuously with parameters, then nearby parameter values produce nearby likelihood values.
+
+### Data science
+
+A data record may be a vector
+
+$$
+x=(x_1,\ldots,x_n).
+$$
+
+A prediction model may be a function
+
+$$
+f(x_1,\ldots,x_n).
+$$
+
+Continuity means that small changes in the input features produce small changes in the prediction.  This is desirable for many regression models.
+
+### Machine learning and AI
+
+Training a model usually means minimizing a loss function
+
+$$
+L(\theta).
+$$
+
+Continuity of $L$ is the first requirement for meaningful optimization.  Differentiability, which comes next, is stronger.  A function can be continuous without being differentiable, but it cannot be differentiable without being continuous.
+
+::: {.callout-important title='Bridge to gradients'}
+The next chapters build on continuity.  Partial derivatives, tangent planes, gradients, and optimization all require careful local behavior near a point.
+:::
+
+## 7.14 Worked examples summary
+
+### Example A: Limit exists by continuity
+
+$$
+\lim_{(x,y)\to(1,2)} \frac{x+y^2}{x^2-y^2}
+=-\frac53.
+$$
+
+Reason: the denominator is nonzero at $(1,2)$.
+
+### Example B: Limit does not exist by two paths
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2-y^2}{x^2+y^2}
+$$
+
+does not exist because $y=0$ gives $1$, while $x=0$ gives $-1$.
+
+### Example C: Lines are not enough
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{xy^2}{x^2+y^4}
+$$
+
+does not exist because every line gives $0$, but the path $x=y^2$ gives $1/2$.
+
+### Example D: Limit exists by squeezing
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2y}{x^2+y^2}=0.
+$$
+
+Reason: the absolute value is bounded above by $|y|$, which tends to $0$.
+
+## 7.15 Practice problems
+
+### Concept checks
+
+1. Explain why multivariable limits are harder than single-variable limits.
+2. What does it mean for a function $f(x,y)$ to be continuous at $(a,b)$?
+3. Why can two different path limits prove that a limit does not exist?
+4. Why does checking only horizontal and vertical paths usually not prove that a limit exists?
+5. Explain the difference between a removable discontinuity and a path-dependent discontinuity.
+
+### Computational skill problems
+
+6. Evaluate the limit by substitution, if possible:
+
+$$
+\lim_{(x,y)\to(2,-1)} (x^2y+e^{xy}).
+$$
+
+7. Evaluate the limit by substitution, if possible:
+
+$$
+\lim_{(x,y)\to(1,1)} \frac{x^2+y^2}{x+y}.
+$$
+
+8. Determine whether the limit exists:
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2}{x^2+y^2}.
+$$
+
+9. Determine whether the limit exists:
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{xy}{x^2+y^2}.
+$$
+
+10. Determine whether the limit exists:
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2y^2}{x^2+y^2}.
+$$
+
+11. Use polar coordinates to evaluate:
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2+y^2}{\sqrt{x^2+y^2+1}+1}.
+$$
+
+12. Show that
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^3+y^3}{x^2+y^2}=0.
+$$
+
+13. Show that
+
+$$
+\lim_{(x,y)\to(0,0)} \frac{x^2y}{\sqrt{x^2+y^2}}=0.
+$$
+
+14. Determine where the function is continuous:
+
+$$
+f(x,y)=\frac{x+y}{x^2+y^2-1}.
+$$
+
+15. Determine where the function is continuous:
+
+$$
+g(x,y)=\sqrt{4-x^2-y^2}.
+$$
+
+### Modeling and interpretation problems
+
+16. A temperature function $T(x,y)$ is continuous on a city map.  Explain what continuity means physically.
+17. A classifier is defined by $C(x,y)=1$ if $x+y\ge0$ and $C(x,y)=0$ if $x+y<0$.  Where is this function discontinuous?
+18. Let $L(w)=\|Aw-b\|^2$.  Explain why $L$ is continuous as a function of the parameter vector $w$.
+19. Give an example of a model where discontinuity is expected or useful.
+20. Give an example of a model where continuity is important for stability.
+
+### Python practice
+
+21. Modify the code for Example 7.3 to test the paths $y=2x$, $y=-2x$, and $y=3x$.
+22. Modify the path sampler to test a new function of your choice.
+23. Use a grid to visualize the function $f(x,y)=\frac{xy}{x^2+y^2}$ near the origin.
+24. Numerically estimate the maximum of $\left|\frac{x^2y}{x^2+y^2}\right|$ on circles of radius $r$ for several values of $r$.
+25. Create a contour plot of a continuous loss function and explain why the level curves are useful.
+
+## 7.16 Python lab preview
+
+The Python lab for this chapter focuses on three skills:
+
+1. visualizing surfaces near singular points;
+2. sampling limits along many paths;
+3. distinguishing numerical evidence from mathematical proof.
+
+A useful workflow is:
+
+1. plot the surface or contour map;
+2. test simple paths such as $y=0$, $x=0$, and $y=mx$;
+3. test curved paths if needed;
+4. use algebra to prove the final result.
+
+## Chapter summary
+
+A multivariable limit requires agreement along all possible paths.  Direct substitution works when a function is continuous at the point.  To show that a limit does not exist, it is enough to find two paths with different limiting values.  To show that a limit exists, we need a path-independent argument, often using estimates, polar coordinates, or the squeeze theorem.
+
+Continuity means that the value of a function agrees with its local limiting behavior.  This idea is central not only to calculus, but also to numerical modeling, optimization, statistics, data science, and machine learning.

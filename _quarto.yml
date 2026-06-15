@@ -1,0 +1,125 @@
+project:
+  type: book
+  output-dir: docs
+  resources:
+    - labs/*.ipynb
+    - htmls/*.html
+    - data/*
+    - figures/*
+
+book:
+  title: "Multivariable Calculus in the Age of AI"
+  subtitle: "A Modern Bridge to MS Applied Mathematics, MS Statistics, Data Science, AI, and Machine Learning"
+  author: "[He Wang](https://wanghemath.github.io)"
+  date: today
+  site-url: "https://wanghemath.github.io/Book-CalculusMulti/"
+  repo-url: "https://github.com/wanghemath/Book-CalculusMulti"
+  repo-actions: [edit, issue]
+  page-navigation: true
+  search: true
+  reader-mode: true
+  downloads: [pdf]
+  sharing: [twitter, linkedin]
+  
+  navbar:
+    background: primary
+    left:
+      - text: "Book"
+        href: index.qmd
+      - text: "Python Labs"
+        href: python-labs.qmd
+      - text: "Interactive HTMLs"
+        href: interactive-htmls.qmd
+      - text: "References"
+        href: references.qmd
+      - text: "GitHub"
+        href: "https://github.com/wanghemath/Book-CalculusMulti"
+
+  sidebar:
+    style: docked
+    search: true
+    collapse-level: 1
+    border: true
+    pinned: true
+
+  page-footer:
+    left: "Multivariable Calculus in the Age of AI"
+    right:
+      - text: "GitHub"
+        href: "https://github.com/wanghemath/Book-CalculusMulti"
+      - text: "Python Labs"
+        href: python-labs.qmd
+      - text: "Interactive HTMLs"
+        href: interactive-htmls.qmd
+        
+  chapters:
+    - index.qmd
+    - introduction.qmd
+    - part: "Part I. Geometry, Vectors, and Spaces"
+      chapters:
+        - chapters/chapter-01-from-single-variable-calculus-to-multivariable-thinking.qmd
+        - chapters/chapter-02-euclidean-space-rn.qmd
+        - chapters/chapter-03-vectors-norms-dot-products-and-projections.qmd
+        - chapters/chapter-04-lines-planes-hyperplanes-and-parametric-geometry.qmd
+        - chapters/chapter-05-cross-products-curves-and-motion-in-space.qmd
+    - part: "Part II. Functions of Several Variables and Differentiation"
+      chapters:
+        - chapters/chapter-06-functions-of-several-variables.qmd
+        - chapters/chapter-07-limits-and-continuity-in-several-variables.qmd
+        - chapters/chapter-08-partial-derivatives-and-the-gradient.qmd
+        - chapters/chapter-09-linear-approximation-tangent-planes-and-differentials.qmd
+        - chapters/chapter-10-chain-rule-jacobians-and-automatic-differentiation.qmd
+        - chapters/chapter-11-directional-derivatives-hessians-and-optimization.qmd
+        - chapters/chapter-12-constrained-optimization-and-lagrange-multipliers.qmd
+    - part: "Part III. Multiple Integrals, Probability, and Change of Variables"
+      chapters:
+        - chapters/chapter-13-double-integrals-and-riemann-sums.qmd
+        - chapters/chapter-14-double-integrals-over-general-regions.qmd
+        - chapters/chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.qmd
+        - chapters/chapter-16-triple-integrals-and-geometry-in-r3.qmd
+        - chapters/chapter-17-cylindrical-and-spherical-coordinates.qmd
+        - chapters/chapter-18-multivariable-taylor-approximation-and-quadratic-forms.qmd
+    - part: "Part IV. Vector Calculus, Fields, and Global Theorems"
+      chapters:
+        - chapters/chapter-19-vector-fields-and-gradient-fields.qmd
+        - chapters/chapter-20-line-integrals-and-work.qmd
+        - chapters/chapter-21-conservative-fields-potentials-and-green-s-theorem.qmd
+        - chapters/chapter-22-curl-divergence-and-surface-integrals.qmd
+        - chapters/chapter-23-stokes-theorem-and-the-divergence-theorem.qmd
+    - part: "Part V. Modern Applications for MS Preparation"
+      chapters:
+        - chapters/chapter-24-multivariable-calculus-for-probability-and-statistics.qmd
+        - chapters/chapter-25-multivariable-calculus-for-data-science-and-machine-learning.qmd
+        - chapters/chapter-26-multivariable-calculus-for-applied-mathematics.qmd
+        - chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.qmd
+    - part: "Resources and Appendices"
+      chapters:
+        - python-labs.qmd
+        - interactive-htmls.qmd
+        - appendices/formula-sheet.qmd
+        - appendices/python-reference.qmd
+        - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: false
+    code-tools: true
+    fig-align: center
+    anchor-sections: true
+
+execute:
+  freeze: auto
+  warning: false
+  message: false
+  echo: true
+
+jupyter: python3

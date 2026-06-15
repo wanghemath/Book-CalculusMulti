@@ -1,0 +1,107 @@
+{
+  "index.qmd": {
+    "index.html": "69d6eac6"
+  },
+  "introduction.qmd": {
+    "introduction.html": "ce2c590e"
+  },
+  "chapters/chapter-01-from-single-variable-calculus-to-multivariable-thinking.qmd": {
+    "chapter-01-from-single-variable-calculus-to-multivariable-thinking.html": "d782cc19"
+  },
+  "chapters/chapter-02-euclidean-space-rn.qmd": {
+    "chapter-02-euclidean-space-rn.html": "7bf5db45"
+  },
+  "chapters/chapter-03-vectors-norms-dot-products-and-projections.qmd": {
+    "chapter-03-vectors-norms-dot-products-and-projections.html": "48bbf555"
+  },
+  "chapters/chapter-04-lines-planes-hyperplanes-and-parametric-geometry.qmd": {
+    "chapter-04-lines-planes-hyperplanes-and-parametric-geometry.html": "78b23c9b"
+  },
+  "chapters/chapter-05-cross-products-curves-and-motion-in-space.qmd": {
+    "chapter-05-cross-products-curves-and-motion-in-space.html": "89e669ab"
+  },
+  "chapters/chapter-06-functions-of-several-variables.qmd": {
+    "chapter-06-functions-of-several-variables.html": "b7959fb6"
+  },
+  "chapters/chapter-07-limits-and-continuity-in-several-variables.qmd": {
+    "chapter-07-limits-and-continuity-in-several-variables.html": "f33486b5"
+  },
+  "chapters/chapter-08-partial-derivatives-and-the-gradient.qmd": {
+    "chapter-08-partial-derivatives-and-the-gradient.html": "2ac7d8ee"
+  },
+  "chapters/chapter-09-linear-approximation-tangent-planes-and-differentials.qmd": {
+    "chapter-09-linear-approximation-tangent-planes-and-differentials.html": "e5304f29"
+  },
+  "chapters/chapter-10-chain-rule-jacobians-and-automatic-differentiation.qmd": {
+    "chapter-10-chain-rule-jacobians-and-automatic-differentiation.html": "b220a4ca"
+  },
+  "chapters/chapter-11-directional-derivatives-hessians-and-optimization.qmd": {
+    "chapter-11-directional-derivatives-hessians-and-optimization.html": "484509f3"
+  },
+  "chapters/chapter-12-constrained-optimization-and-lagrange-multipliers.qmd": {
+    "chapter-12-constrained-optimization-and-lagrange-multipliers.html": "ee7b54a9"
+  },
+  "chapters/chapter-13-double-integrals-and-riemann-sums.qmd": {
+    "chapter-13-double-integrals-and-riemann-sums.html": "3a089b20"
+  },
+  "chapters/chapter-14-double-integrals-over-general-regions.qmd": {
+    "chapter-14-double-integrals-over-general-regions.html": "5e99378d"
+  },
+  "chapters/chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.qmd": {
+    "chapter-15-polar-coordinates-and-change-of-variables-in-the-plane.html": "adfe8cd8"
+  },
+  "chapters/chapter-16-triple-integrals-and-geometry-in-r3.qmd": {
+    "chapter-16-triple-integrals-and-geometry-in-r3.html": "7384d8b8"
+  },
+  "chapters/chapter-17-cylindrical-and-spherical-coordinates.qmd": {
+    "chapter-17-cylindrical-and-spherical-coordinates.html": "496764e2"
+  },
+  "chapters/chapter-18-multivariable-taylor-approximation-and-quadratic-forms.qmd": {
+    "chapter-18-multivariable-taylor-approximation-and-quadratic-forms.html": "82b22704"
+  },
+  "chapters/chapter-19-vector-fields-and-gradient-fields.qmd": {
+    "chapter-19-vector-fields-and-gradient-fields.html": "698e0c93"
+  },
+  "chapters/chapter-20-line-integrals-and-work.qmd": {
+    "chapter-20-line-integrals-and-work.html": "72fd8c5b"
+  },
+  "chapters/chapter-21-conservative-fields-potentials-and-green-s-theorem.qmd": {
+    "chapter-21-conservative-fields-potentials-and-green-s-theorem.html": "52dbec12"
+  },
+  "chapters/chapter-22-curl-divergence-and-surface-integrals.qmd": {
+    "chapter-22-curl-divergence-and-surface-integrals.html": "7408a884"
+  },
+  "chapters/chapter-23-stokes-theorem-and-the-divergence-theorem.qmd": {
+    "chapter-23-stokes-theorem-and-the-divergence-theorem.html": "f54614f2"
+  },
+  "chapters/chapter-24-multivariable-calculus-for-probability-and-statistics.qmd": {
+    "chapter-24-multivariable-calculus-for-probability-and-statistics.html": "fe0c8c0b"
+  },
+  "chapters/chapter-25-multivariable-calculus-for-data-science-and-machine-learning.qmd": {
+    "chapter-25-multivariable-calculus-for-data-science-and-machine-learning.html": "4874b904"
+  },
+  "chapters/chapter-26-multivariable-calculus-for-applied-mathematics.qmd": {
+    "chapter-26-multivariable-calculus-for-applied-mathematics.html": "4c2923f7"
+  },
+  "chapters/chapter-27-review-synthesis-and-bridge-to-graduate-study.qmd": {
+    "chapter-27-review-synthesis-and-bridge-to-graduate-study.html": "70e22298"
+  },
+  "python-labs.qmd": {
+    "python-labs.html": "7f729c8d"
+  },
+  "interactive-htmls.qmd": {
+    "interactive-htmls.html": "5c3e598f"
+  },
+  "appendices/formula-sheet.qmd": {
+    "formula-sheet.html": "49f42e3b"
+  },
+  "appendices/python-reference.qmd": {
+    "python-reference.html": "f7c2d94a"
+  },
+  "appendices/source-material-map.qmd": {
+    "source-material-map.html": "76ddbced"
+  },
+  "references.qmd": {
+    "references.html": "97801eda"
+  }
+}

@@ -1,0 +1,986 @@
+---
+title: 'Chapter 2. Euclidean Space $\mathbb R^n$'
+subtitle: 'Coordinates, distance, projections, balls, spheres, and data geometry'
+---
+
+## Chapter overview
+
+Multivariable calculus begins by changing what an input is.  In single-variable calculus, an input is one number $x$.  In multivariable calculus, an input may be a point $(x,y)$ in the plane, a point $(x,y,z)$ in space, or a long vector
+
+$$
+(x_1,x_2,\ldots,x_n)
+$$
+
+whose components store measurements, features, parameters, or decisions.  The common home for all of these objects is **Euclidean space**.
+
+This chapter builds the geometric language used throughout the book.  We will study points, coordinates, distance, projections, spheres, balls, and equations that describe regions in two, three, and higher dimensions.  The same ideas will later support tangent planes, gradients, multiple integrals, optimization, probability densities, and machine-learning loss functions.
+
+::: {.callout-note title='Teaching-material connection'}
+This chapter is based on the Euclidean-space and vector-geometry themes in the MATH 2321 and MATH 5002 teaching materials: $\mathbb R^2$, $\mathbb R^3$, coordinate planes, projections, distance, spheres, regions defined by inequalities, and the interpretation of $\mathbb R^n$ as both geometric space and data space.
+:::
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. describe $\mathbb R^2$, $\mathbb R^3$, and $\mathbb R^n$ as spaces of ordered tuples;
+2. distinguish between coordinates, points, vectors, and displacement;
+3. compute distances in $\mathbb R^n$;
+4. project points in $\mathbb R^3$ onto coordinate planes;
+5. recognize how the same equation may describe different objects in different ambient spaces;
+6. write equations of spheres, balls, and common regions;
+7. explain why high-dimensional Euclidean geometry is essential for statistics, data science, AI, and applied mathematics.
+
+Python resources for this chapter:
+
+- [Chapter 2 Python lab](../labs/MATH2321_Chapter02_Euclidean_Space_mathbb_R_n.ipynb)
+- [Chapter 2 interactive HTML page](../htmls/chapter-02.html)
+
+## 2.1 From the real line to $\mathbb R^n$
+
+The real line $\mathbb R$ consists of real numbers.  A point on the line is described by one coordinate:
+
+$$
+x\in\mathbb R.
+$$
+
+The plane $\mathbb R^2$ consists of ordered pairs:
+
+$$
+(x,y)\in\mathbb R^2.
+$$
+
+Three-dimensional space $\mathbb R^3$ consists of ordered triples:
+
+$$
+(x,y,z)\in\mathbb R^3.
+$$
+
+More generally, $n$-dimensional Euclidean space is the set
+
+$$
+\mathbb R^n=\{(x_1,x_2,\ldots,x_n):x_i\in\mathbb R\text{ for }i=1,\ldots,n\}.
+$$
+
+Each number $x_i$ is called a **coordinate** or **component**.
+
+::: {.callout-tip title='A useful mental model'}
+Think of $\mathbb R^n$ as a universal coordinate system.  In geometry, a point in $\mathbb R^3$ may be a location in space.  In statistics, a point in $\mathbb R^n$ may be one observation with $n$ measured features.  In machine learning, a point in $\mathbb R^n$ may be a vector of model weights.
+:::
+
+### Examples
+
+- $(3,-2)$ is a point in $\mathbb R^2$.
+- $(1,0,-4)$ is a point in $\mathbb R^3$.
+- $(2,-1,0,5)$ is a point in $\mathbb R^4$.
+- $(x_1,x_2,\ldots,x_{100})$ can represent a data record with 100 numerical features.
+- $(w_0,w_1,\ldots,w_p)$ can represent the parameters of a linear regression model.
+
+We can draw $\mathbb R^2$ and $\mathbb R^3$, but we usually cannot directly draw $\mathbb R^n$ for large $n$.  The power of Euclidean geometry is that the formulas still work.
+
+## 2.2 Points, vectors, and displacement
+
+A point records position.  A vector records displacement, direction, or magnitude.  The same ordered tuple may be used for either purpose, depending on context.
+
+If
+
+$$
+A=(a_1,a_2,\ldots,a_n),\qquad B=(b_1,b_2,\ldots,b_n),
+$$
+
+then the displacement from $A$ to $B$ is
+
+$$
+\overrightarrow{AB}=B-A=(b_1-a_1,b_2-a_2,\ldots,b_n-a_n).
+$$
+
+For example, if $A=(1,-2,3)$ and $B=(2,1,5)$, then
+
+$$
+\overrightarrow{AB}=(2-1,1-(-2),5-3)=(1,3,2).
+$$
+
+::: {.callout-important title='Point versus vector'}
+The notation $(1,3,2)$ can mean either a point or a vector.  As a point, it is a location.  As a vector, it is a displacement.  The algebra is the same, but the interpretation is different.
+:::
+
+```{python}
+#| label: fig-ch02-displacement
+#| fig-cap: 'A displacement vector from A to B in the plane.'
+#| fig-width: 6
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([1, 1])
+B = np.array([4, 3])
+v = B - A
+
+fig, ax = plt.subplots()
+ax.scatter([A[0], B[0]], [A[1], B[1]])
+ax.text(A[0] - 0.15, A[1] - 0.25, 'A')
+ax.text(B[0] + 0.10, B[1] + 0.05, 'B')
+ax.arrow(A[0], A[1], v[0], v[1], head_width=0.12, length_includes_head=True)
+ax.set_xlim(0, 5)
+ax.set_ylim(0, 4)
+ax.set_aspect('equal', adjustable='box')
+ax.grid(True)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+plt.show()
+```
+
+## 2.3 Coordinates, axes, planes, and octants
+
+In $\mathbb R^2$, the coordinate axes are the $x$-axis and the $y$-axis.  The two axes divide the plane into four quadrants.
+
+In $\mathbb R^3$, the coordinate axes are the $x$-, $y$-, and $z$-axes.  We use a right-handed coordinate system.  The three coordinate planes are
+
+$$
+\begin{aligned}
+xy\text{-plane}:&\quad z=0,\\
+yz\text{-plane}:&\quad x=0,\\
+xz\text{-plane}:&\quad y=0.
+\end{aligned}
+$$
+
+The coordinate planes divide $\mathbb R^3$ into eight octants.  The first octant is
+
+$$
+x\ge 0,\qquad y\ge 0,\qquad z\ge 0.
+$$
+
+### Projection onto coordinate planes
+
+For a point $P=(a,b,c)$ in $\mathbb R^3$:
+
+$$
+\begin{aligned}
+\text{projection onto the }xy\text{-plane}&=(a,b,0),\\
+\text{projection onto the }yz\text{-plane}&=(0,b,c),\\
+\text{projection onto the }xz\text{-plane}&=(a,0,c).
+\end{aligned}
+$$
+
+The idea is simple: to project onto a coordinate plane, set the missing coordinate equal to zero.
+
+```{python}
+#| label: fig-ch02-projections
+#| fig-cap: 'A point in $\mathbb R^3$ and its projections onto the coordinate planes.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+P = np.array([2, 3, 4])
+P_xy = np.array([2, 3, 0])
+P_yz = np.array([0, 3, 4])
+P_xz = np.array([2, 0, 4])
+points = [P, P_xy, P_yz, P_xz]
+labels = ['P', 'xy projection', 'yz projection', 'xz projection']
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+for Q, label in zip(points, labels):
+    ax.scatter(Q[0], Q[1], Q[2])
+    ax.text(Q[0], Q[1], Q[2], '  ' + label)
+
+for Q in [P_xy, P_yz, P_xz]:
+    ax.plot([P[0], Q[0]], [P[1], Q[1]], [P[2], Q[2]], linestyle='--')
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_xlim(0, 4)
+ax.set_ylim(0, 4)
+ax.set_zlim(0, 5)
+plt.show()
+```
+
+### Worked example 2.1
+
+Let $P=(5,-2,7)$.  Find its projections onto the coordinate planes.
+
+**Solution.**
+
+$$
+\begin{aligned}
+P_{xy}&=(5,-2,0),\\
+P_{yz}&=(0,-2,7),\\
+P_{xz}&=(5,0,7).
+\end{aligned}
+$$
+
+The $xy$-projection removes height.  The $yz$-projection removes the $x$-coordinate.  The $xz$-projection removes the $y$-coordinate.
+
+## 2.4 Distance in Euclidean space
+
+Distance is the most important measurement in Euclidean geometry.  It is also fundamental in statistics and machine learning, where distance measures similarity, error, residual size, and model change.
+
+For points
+
+$$
+A=(a_1,a_2,\ldots,a_n),\qquad B=(b_1,b_2,\ldots,b_n)
+$$
+
+in $\mathbb R^n$, the Euclidean distance between $A$ and $B$ is
+
+$$
+d(A,B)=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2+\cdots+(a_n-b_n)^2}.
+$$
+
+Equivalently,
+
+$$
+d(A,B)=\sqrt{\sum_{i=1}^n(a_i-b_i)^2}.
+$$
+
+In $\mathbb R^3$, this becomes
+
+$$
+d(A,B)=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2+(a_3-b_3)^2}.
+$$
+
+### Worked example 2.2
+
+Find the distance from $P=(1,2,3)$ to $Q=(3,4,2)$.
+
+**Solution.**
+
+$$
+\begin{aligned}
+d(P,Q)
+&=\sqrt{(1-3)^2+(2-4)^2+(3-2)^2}\\
+&=\sqrt{4+4+1}\\
+&=3.
+\end{aligned}
+$$
+
+### Worked example 2.3
+
+Find the distance between
+
+$$
+a=(2,-1,0,4),\qquad b=(-1,3,5,2)
+$$
+
+in $\mathbb R^4$.
+
+**Solution.**
+
+$$
+\begin{aligned}
+d(a,b)
+&=\sqrt{(2-(-1))^2+(-1-3)^2+(0-5)^2+(4-2)^2}\\
+&=\sqrt{3^2+(-4)^2+(-5)^2+2^2}\\
+&=\sqrt{9+16+25+4}\\
+&=\sqrt{54}=3\sqrt 6.
+\end{aligned}
+$$
+
+### Python check
+
+```{python}
+#| label: ch02-distance-python
+import numpy as np
+
+P = np.array([1, 2, 3])
+Q = np.array([3, 4, 2])
+distance = np.linalg.norm(P - Q)
+distance
+```
+
+## 2.5 Spheres and balls
+
+A **sphere** is the set of points at a fixed distance from a center.  A **ball** is the set of points within a fixed distance from a center.
+
+In $\mathbb R^3$, the sphere with center $C=(h,k,\ell)$ and radius $r$ has equation
+
+$$
+(x-h)^2+(y-k)^2+(z-\ell)^2=r^2.
+$$
+
+If the center is the origin, this becomes
+
+$$
+x^2+y^2+z^2=r^2.
+$$
+
+In $\mathbb R^n$, the sphere with center $c=(c_1,\ldots,c_n)$ and radius $r$ is
+
+$$
+\sum_{i=1}^n(x_i-c_i)^2=r^2.
+$$
+
+The corresponding closed ball is
+
+$$
+\sum_{i=1}^n(x_i-c_i)^2\le r^2,
+$$
+
+and the corresponding open ball is
+
+$$
+\sum_{i=1}^n(x_i-c_i)^2<r^2.
+$$
+
+::: {.callout-tip title='Boundary versus region'}
+The equation $x^2+y^2+z^2=9$ describes only the boundary sphere of radius $3$.  The inequality $x^2+y^2+z^2\le 9$ describes the solid ball inside and including the boundary.
+:::
+
+```{python}
+#| label: fig-ch02-sphere
+#| fig-cap: 'A sphere centered at the origin in $\mathbb R^3$.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = 2
+u = np.linspace(0, 2*np.pi, 80)
+v = np.linspace(0, np.pi, 40)
+x = r * np.outer(np.cos(u), np.sin(v))
+y = r * np.outer(np.sin(u), np.sin(v))
+z = r * np.outer(np.ones_like(u), np.cos(v))
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x, y, z, alpha=0.6, linewidth=0)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_box_aspect([1, 1, 1])
+plt.show()
+```
+
+### Worked example 2.4
+
+Find the equation of the sphere with center $(2,-5,1)$ and radius $2$.
+
+**Solution.**
+
+Using $(x-h)^2+(y-k)^2+(z-\ell)^2=r^2$, we get
+
+$$
+(x-2)^2+(y+5)^2+(z-1)^2=4.
+$$
+
+### Worked example 2.5
+
+Find the equation of the sphere for which one diameter has endpoints
+
+$$
+A=(2,-1,1),\qquad B=(-2,-3,2).
+$$
+
+**Solution.**
+
+The center is the midpoint of the diameter:
+
+$$
+C=\frac{A+B}{2}=\left(0,-2,\frac32\right).
+$$
+
+The diameter length is
+
+$$
+|AB|=\sqrt{(2-(-2))^2+(-1-(-3))^2+(1-2)^2}
+=\sqrt{16+4+1}=\sqrt{21}.
+$$
+
+Therefore the radius is $r=\sqrt{21}/2$, and the equation is
+
+$$
+x^2+(y+2)^2+\left(z-\frac32\right)^2=\frac{21}{4}.
+$$
+
+## 2.6 Equations depend on the ambient space
+
+An equation does not describe an object until we know the space in which it lives.
+
+For example:
+
+- In $\mathbb R^2$, the equation $y=2$ is a line.
+- In $\mathbb R^3$, the equation $y=2$ is a plane parallel to the $xz$-plane.
+- In $\mathbb R^3$, the equation $z=2$ is a plane parallel to the $xy$-plane.
+
+Similarly, the equation
+
+$$
+x^2+y^2=4
+$$
+
+has different meanings in different spaces.
+
+In $\mathbb R^2$, it is a circle of radius $2$ centered at the origin.  In $\mathbb R^3$, it is a cylinder of radius $2$ around the $z$-axis, because $z$ is free.
+
+If we add the equation $z=3$, then
+
+$$
+x^2+y^2=4,\qquad z=3
+$$
+
+describes a circle of radius $2$ lying in the horizontal plane $z=3$.
+
+```{python}
+#| label: fig-ch02-cylinder-slice
+#| fig-cap: 'The surface $x^2+y^2=4$ is a cylinder in $\mathbb R^3$; intersecting it with $z=3$ gives a circle.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+theta = np.linspace(0, 2*np.pi, 80)
+z_vals = np.linspace(0, 4, 40)
+Theta, Z = np.meshgrid(theta, z_vals)
+X = 2*np.cos(Theta)
+Y = 2*np.sin(Theta)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.35, linewidth=0)
+ax.plot(2*np.cos(theta), 2*np.sin(theta), 3*np.ones_like(theta), linewidth=3)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_box_aspect([1, 1, 1])
+plt.show()
+```
+
+### Worked example 2.6
+
+Describe the surface $x=y$ in $\mathbb R^3$.
+
+**Solution.**
+
+The equation $x=y$ places one restriction on three variables.  The variable $z$ is free.  Therefore the surface is a plane through the $z$-axis.  Points on the plane have the form
+
+$$
+(x,y,z)=(t,t,s),
+$$
+
+where $s$ and $t$ are real numbers.
+
+```{python}
+#| label: fig-ch02-plane-x-equals-y
+#| fig-cap: 'The equation $x=y$ describes a plane in $\mathbb R^3$.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.linspace(-2, 2, 30)
+s = np.linspace(-2, 2, 30)
+T, S = np.meshgrid(t, s)
+X = T
+Y = T
+Z = S
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.55, linewidth=0)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_box_aspect([1, 1, 1])
+plt.show()
+```
+
+## 2.7 Regions described by inequalities
+
+Equations describe boundaries.  Inequalities describe regions.
+
+The inequality
+
+$$
+x^2+y^2+z^2\le 9
+$$
+
+describes the solid ball of radius $3$ centered at the origin.
+
+The inequality
+
+$$
+x^2+y^2+z^2>9
+$$
+
+describes all points outside that ball.
+
+### Worked example 2.7
+
+Describe the region
+
+$$
+x^2+y^2+z^2>2z.
+$$
+
+**Solution.**
+
+Move all terms to one side and complete the square in $z$:
+
+$$
+\begin{aligned}
+x^2+y^2+z^2&>2z,\\
+x^2+y^2+z^2-2z&>0,\\
+x^2+y^2+(z-1)^2-1&>0,\\
+x^2+y^2+(z-1)^2&>1.
+\end{aligned}
+$$
+
+This is the set of all points whose distance from $(0,0,1)$ is greater than $1$.  Thus the region is the outside of the sphere of radius $1$ centered at $(0,0,1)$.  The boundary sphere itself is not included because the inequality is strict.
+
+::: {.callout-warning title='Common mistake'}
+The inequality $x^2+y^2+(z-1)^2>1$ is not the sphere.  It is the outside region.  The sphere is the boundary where equality holds.
+:::
+
+```{python}
+#| label: fig-ch02-region-outside-sphere
+#| fig-cap: 'Boundary sphere for the region $x^2+y^2+z^2>2z$.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = 1
+center = np.array([0, 0, 1])
+u = np.linspace(0, 2*np.pi, 80)
+v = np.linspace(0, np.pi, 40)
+x = center[0] + r * np.outer(np.cos(u), np.sin(v))
+y = center[1] + r * np.outer(np.sin(u), np.sin(v))
+z = center[2] + r * np.outer(np.ones_like(u), np.cos(v))
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x, y, z, alpha=0.6, linewidth=0)
+ax.scatter([0], [0], [1])
+ax.text(0, 0, 1, '  center')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_box_aspect([1, 1, 1])
+plt.show()
+```
+
+## 2.8 Open balls, closed balls, and neighborhoods
+
+In one-variable calculus, limits are described using intervals around a point.  In multivariable calculus, the natural replacement is a ball.
+
+For $a\in\mathbb R^n$ and $r>0$, the **open ball** centered at $a$ with radius $r$ is
+
+$$
+B_r(a)=\{x\in\mathbb R^n:d(x,a)<r\}.
+$$
+
+The **closed ball** centered at $a$ with radius $r$ is
+
+$$
+\overline B_r(a)=\{x\in\mathbb R^n:d(x,a)\le r\}.
+$$
+
+The boundary is the sphere
+
+$$
+S_r(a)=\{x\in\mathbb R^n:d(x,a)=r\}.
+$$
+
+These objects are essential for defining limits, continuity, open sets, and local behavior.
+
+::: {.callout-note title='Preview of limits'}
+When we say $(x,y)$ approaches $(a,b)$, we mean the distance $\sqrt{(x-a)^2+(y-b)^2}$ approaches $0$.  This is why Euclidean distance appears immediately in the definition of a multivariable limit.
+:::
+
+## 2.9 High-dimensional Euclidean space and data geometry
+
+A data set with $m$ observations and $n$ features can be represented as a matrix
+
+$$
+X=\begin{bmatrix}
+- & x_1^T & -\\
+- & x_2^T & -\\
+& \vdots & \\
+- & x_m^T & -
+\end{bmatrix},
+$$
+
+where each row $x_i\in\mathbb R^n$ is a data vector.
+
+Euclidean distance is often used to measure similarity:
+
+$$
+d(x_i,x_j)=\sqrt{\sum_{k=1}^n(x_{ik}-x_{jk})^2}.
+$$
+
+This idea appears in:
+
+- nearest-neighbor classification;
+- clustering;
+- anomaly detection;
+- least-squares regression;
+- gradient-based optimization;
+- measuring error between predicted and observed vectors.
+
+However, high-dimensional geometry can behave differently from low-dimensional geometry.
+
+### Experiment: distances in high dimension
+
+The following experiment samples random points from the unit cube $[0,1]^n$ and compares pairwise distances.
+
+```{python}
+#| label: fig-ch02-high-dimensional-distances
+#| fig-cap: 'Typical distances between random points increase and concentrate as dimension grows.'
+#| fig-width: 7
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(2321)
+dimensions = [2, 5, 10, 25, 50, 100]
+means = []
+stds = []
+
+for n in dimensions:
+    A = rng.random((1000, n))
+    B = rng.random((1000, n))
+    distances = np.linalg.norm(A - B, axis=1)
+    means.append(distances.mean())
+    stds.append(distances.std())
+
+fig, ax = plt.subplots()
+ax.errorbar(dimensions, means, yerr=stds, marker='o', capsize=4)
+ax.set_xlabel('dimension n')
+ax.set_ylabel('distance between random points')
+ax.set_title('Distances in $[0,1]^n$')
+ax.grid(True)
+plt.show()
+```
+
+The mean distance tends to grow as dimension increases.  More importantly, relative distances can become less informative when many points are far apart in similar ways.  This is one reason high-dimensional data analysis often needs normalization, projection, dimension reduction, and carefully chosen metrics.
+
+::: {.callout-tip title='Connection to AI'}
+Modern AI systems represent images, text, users, and documents as high-dimensional vectors.  Euclidean geometry gives the first language for comparing such objects, but high-dimensional geometry also warns us that intuition from the plane may be misleading.
+:::
+
+## 2.10 Standard geometric objects in $\mathbb R^n$
+
+The following objects appear repeatedly in multivariable calculus and applied mathematics.
+
+| Object | Description | Typical equation or inequality |
+|---|---|---|
+| Line in $\mathbb R^2$ | one-dimensional straight set | $ax+by=c$ |
+| Plane in $\mathbb R^3$ | two-dimensional flat surface | $ax+by+cz=d$ |
+| Hyperplane in $\mathbb R^n$ | codimension-one flat set | $a_1x_1+\cdots+a_nx_n=b$ |
+| Sphere | fixed distance from a center | $\sum_i(x_i-c_i)^2=r^2$ |
+| Ball | distance at most $r$ from a center | $\sum_i(x_i-c_i)^2\le r^2$ |
+| Cylinder in $\mathbb R^3$ | one variable free | $x^2+y^2=r^2$ |
+| First octant | nonnegative coordinates in $\mathbb R^3$ | $x\ge0$, $y\ge0$, $z\ge0$ |
+
+### Hyperplanes and machine learning
+
+A hyperplane in $\mathbb R^n$ has equation
+
+$$
+w_1x_1+w_2x_2+\cdots+w_nx_n=b.
+$$
+
+In machine learning, this is the basic form of a linear decision boundary.  For example, a classifier may assign one label when
+
+$$
+w\cdot x-b>0
+$$
+
+and another label when
+
+$$
+w\cdot x-b<0.
+$$
+
+This is one reason multivariable calculus and linear algebra are both central to data science.
+
+## 2.11 Worked examples
+
+### Example 2.8: detecting collinearity using distances
+
+Determine whether the points
+
+$$
+A=(2,4,2),\qquad B=(3,7,-2),\qquad C=(1,3,3)
+$$
+
+lie on a straight line.
+
+**Solution.**
+
+Compute the three distances:
+
+$$
+\begin{aligned}
+|AB|&=\sqrt{(3-2)^2+(7-4)^2+(-2-2)^2}=\sqrt{26},\\
+|AC|&=\sqrt{(1-2)^2+(3-4)^2+(3-2)^2}=\sqrt{3},\\
+|BC|&=\sqrt{(1-3)^2+(3-7)^2+(3-(-2))^2}=\sqrt{45}.
+\end{aligned}
+$$
+
+For three points to lie on a line, one of the three distances must equal the sum of the other two.  Here this does not happen.  Therefore the points do not lie on a straight line.
+
+A more algebraic method is to compare displacement vectors:
+
+$$
+\overrightarrow{AB}=(1,3,-4),\qquad \overrightarrow{AC}=(-1,-1,1).
+$$
+
+These are not scalar multiples of each other, so the three points are not collinear.
+
+### Example 2.9: intersections with coordinate planes
+
+Consider the sphere
+
+$$
+(x-2)^2+(y+5)^2+(z-1)^2=4.
+$$
+
+Describe its intersection with the coordinate planes.
+
+**Solution.**
+
+For the $xy$-plane, set $z=0$:
+
+$$
+(x-2)^2+(y+5)^2+1=4.
+$$
+
+Thus
+
+$$
+(x-2)^2+(y+5)^2=3,
+$$
+
+which is a circle in the plane $z=0$.
+
+For the $xz$-plane, set $y=0$:
+
+$$
+(x-2)^2+25+(z-1)^2=4.
+$$
+
+This has no solution, so the sphere does not intersect the $xz$-plane.
+
+For the $yz$-plane, set $x=0$:
+
+$$
+4+(y+5)^2+(z-1)^2=4.
+$$
+
+Thus
+
+$$
+(y+5)^2+(z-1)^2=0,
+$$
+
+so the intersection is the single point $(0,-5,1)$.
+
+::: {.callout-important title='Check the signs'}
+The center of $(x-2)^2+(y+5)^2+(z-1)^2=4$ is $(2,-5,1)$, not $(2,5,1)$.  The sign inside the square is opposite the coordinate of the center.
+:::
+
+## 2.12 Computational practice: nearest points
+
+The next small computation shows how distance is used in data analysis.  Given a query point and several data points, the nearest neighbor is the point with smallest Euclidean distance.
+
+```{python}
+#| label: fig-ch02-nearest-neighbor
+#| fig-cap: 'Nearest-neighbor search uses Euclidean distance to compare data points.'
+#| fig-width: 6
+#| fig-height: 5
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(7)
+X = rng.normal(size=(20, 2))
+query = np.array([0.75, 0.25])
+dists = np.linalg.norm(X - query, axis=1)
+idx = np.argmin(dists)
+nearest = X[idx]
+
+fig, ax = plt.subplots()
+ax.scatter(X[:, 0], X[:, 1], label='data points')
+ax.scatter([query[0]], [query[1]], marker='x', s=120, label='query point')
+ax.scatter([nearest[0]], [nearest[1]], s=120, label='nearest point')
+ax.plot([query[0], nearest[0]], [query[1], nearest[1]], linestyle='--')
+ax.set_aspect('equal', adjustable='box')
+ax.grid(True)
+ax.legend()
+plt.show()
+
+idx, dists[idx]
+```
+
+The same idea extends to high-dimensional vectors.  For example, two images may be compared by first converting them to vectors and then measuring the distance between those vectors.
+
+## 2.13 Common mistakes and how to avoid them
+
+### Mistake 1: confusing a circle and a sphere
+
+The equation
+
+$$
+x^2+y^2=4
+$$
+
+is a circle in $\mathbb R^2$ but a cylinder in $\mathbb R^3$.  Always identify the ambient space.
+
+### Mistake 2: forgetting free variables
+
+The equation $z=2$ in $\mathbb R^3$ does not describe one point.  The variables $x$ and $y$ are free, so it describes a plane.
+
+### Mistake 3: using equality when the problem asks for a region
+
+The equation
+
+$$
+x^2+y^2+z^2=1
+$$
+
+describes a sphere.  The inequality
+
+$$
+x^2+y^2+z^2\le 1
+$$
+
+describes a solid ball.
+
+### Mistake 4: sign errors in sphere centers
+
+The sphere
+
+$$
+(x-h)^2+(y-k)^2+(z-\ell)^2=r^2
+$$
+
+has center $(h,k,\ell)$.  Thus $(y+5)^2$ corresponds to $k=-5$.
+
+## 2.14 Summary
+
+The main objects of this chapter are summarized below.
+
+### Euclidean space
+
+$$
+\mathbb R^n=\{(x_1,x_2,\ldots,x_n):x_i\in\mathbb R\}.
+$$
+
+### Displacement
+
+$$
+\overrightarrow{AB}=B-A.
+$$
+
+### Distance
+
+$$
+d(A,B)=\sqrt{\sum_{i=1}^n(a_i-b_i)^2}.
+$$
+
+### Coordinate-plane projections in $\mathbb R^3$
+
+For $P=(a,b,c)$,
+
+$$
+P_{xy}=(a,b,0),\qquad P_{yz}=(0,b,c),\qquad P_{xz}=(a,0,c).
+$$
+
+### Sphere in $\mathbb R^3$
+
+$$
+(x-h)^2+(y-k)^2+(z-\ell)^2=r^2.
+$$
+
+### Ball in $\mathbb R^n$
+
+$$
+\sum_{i=1}^n(x_i-c_i)^2\le r^2.
+$$
+
+## 2.15 Exercises
+
+### Conceptual questions
+
+1. Explain the difference between a point and a vector.
+2. Why does the equation $y=2$ describe different objects in $\mathbb R^2$ and $\mathbb R^3$?
+3. What is the difference between a sphere and a ball?
+4. In $\mathbb R^3$, why does $x^2+y^2=4$ describe a cylinder?
+5. Give an example of a real data point that could naturally be modeled as a point in $\mathbb R^5$.
+
+### Computation and geometry
+
+6. Find the distance between $A=(2,-1,4)$ and $B=(-3,2,1)$.
+7. Find the displacement vector from $A=(-1,5,2)$ to $B=(4,0,-3)$.
+8. Find the projections of $P=(4,-2,6)$ onto the three coordinate planes.
+9. Write the equation of the sphere with center $(1,-3,2)$ and radius $5$.
+10. Find the center and radius of
+
+$$
+(x+2)^2+(y-4)^2+(z+1)^2=16.
+$$
+
+11. Describe the region
+
+$$
+x^2+y^2+z^2\le 4.
+$$
+
+12. Describe the region
+
+$$
+x^2+y^2+(z+2)^2>9.
+$$
+
+13. Describe the surface $x=3$ in $\mathbb R^3$.
+14. Describe the surface $x^2+z^2=1$ in $\mathbb R^3$.
+15. Determine whether the points $(0,0,0)$, $(1,2,3)$, and $(2,4,6)$ lie on a line.
+
+### Applications and data geometry
+
+16. A data set records height, weight, age, systolic blood pressure, and cholesterol for each patient.  What is the natural Euclidean space for one patient record?
+17. Two feature vectors are
+
+$$
+x=(1,2,0,3),\qquad y=(2,1,-1,5).
+$$
+
+Compute their Euclidean distance.
+
+18. In a nearest-neighbor classifier, why might it be important to standardize features before computing Euclidean distances?
+19. Suppose model parameters change from $w=(1,0,-2)$ to $w'=(0.5,0.2,-1.4)$.  Compute the size of the parameter update.
+20. Explain why high-dimensional data geometry can be different from the geometry of the plane.
+
+### Challenge problems
+
+21. Find all points on the $z$-axis that are distance $5$ from the point $(3,4,0)$.
+22. Find the intersection of the sphere
+
+$$
+x^2+y^2+z^2=25
+$$
+
+with the plane $z=4$.
+
+23. Complete the square and describe the region
+
+$$
+x^2+y^2+z^2-4x+6y-2z\le 10.
+$$
+
+24. Show that the set of points equidistant from $A=(1,0,0)$ and $B=(-1,0,0)$ is a plane.  What is its equation?
+25. Let $a,b\in\mathbb R^n$.  Show that $d(a,b)=d(b,a)$.
+
+## 2.16 Python lab preview
+
+The Python lab for this chapter asks you to:
+
+1. write functions for Euclidean distance in $\mathbb R^n$;
+2. plot points, displacement vectors, projections, spheres, and cylinders;
+3. visualize regions defined by inequalities;
+4. run a nearest-neighbor experiment;
+5. explore how distances behave in high-dimensional cubes.
+
+These activities prepare for later labs on gradients, tangent planes, double integrals, and optimization.

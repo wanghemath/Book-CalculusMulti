@@ -1,0 +1,12 @@
+name: calculusmulti
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib
+  - sympy
+  - scipy
+  - pandas
+  - plotly
+  - jupyter

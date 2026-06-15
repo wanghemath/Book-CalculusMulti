@@ -1,0 +1,1074 @@
+% -----------------------------------------------------------------------------
+% Chapter 2 LaTeX version
+% Source QMD: chapter-02-euclidean-space-rn.qmd
+% This file is self-contained. To use inside a larger book, copy the material
+% after \begin{document}, or move the preamble definitions to the main preamble.
+% -----------------------------------------------------------------------------
+
+\documentclass[11pt,oneside]{book}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,calc,positioning,shadows.blur,decorations.pathreplacing,patterns,backgrounds,fit,intersections,3d}
+
+% -----------------------------------------------------------------------------
+% Colors and style
+% -----------------------------------------------------------------------------
+\definecolor{chapterblue}{HTML}{1F5AA6}
+\definecolor{chapterteal}{HTML}{168A8F}
+\definecolor{chapterorange}{HTML}{D9822B}
+\definecolor{chaptergreen}{HTML}{2D8A4E}
+\definecolor{chapterpurple}{HTML}{6B4EAA}
+\definecolor{chapterred}{HTML}{B23B3B}
+\definecolor{softblue}{HTML}{EAF3FF}
+\definecolor{softgreen}{HTML}{EAF8EF}
+\definecolor{softorange}{HTML}{FFF4E6}
+\definecolor{softpurple}{HTML}{F3EEFF}
+\definecolor{softred}{HTML}{FFF0F0}
+\definecolor{softgray}{HTML}{F6F7F9}
+\definecolor{darkgray}{HTML}{30343B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=chapterblue,
+  urlcolor=chapterteal,
+  citecolor=chapterpurple
+}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{topsep=0.3em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  axisline/.style={-Latex,thick,darkgray},
+  vector/.style={-Latex,very thick,chapterblue},
+  smallvector/.style={-Latex,thick,chapterblue},
+  projection/.style={dash pattern=on 4pt off 2pt,thick,chapterorange},
+  guide/.style={dash pattern=on 3pt off 2pt,gray!70},
+  point/.style={circle,fill=chapterorange,draw=white,line width=0.4pt,inner sep=1.8pt},
+  bluepoint/.style={circle,fill=chapterblue,draw=white,line width=0.4pt,inner sep=1.8pt},
+  greenpoint/.style={circle,fill=chaptergreen,draw=white,line width=0.4pt,inner sep=1.8pt},
+  boxnode/.style={rounded corners=3pt,draw=chapterblue,fill=softblue,thick,align=center,inner sep=6pt},
+  greennode/.style={rounded corners=3pt,draw=chaptergreen,fill=softgreen,thick,align=center,inner sep=6pt},
+  orangenode/.style={rounded corners=3pt,draw=chapterorange,fill=softorange,thick,align=center,inner sep=6pt},
+  purplenode/.style={rounded corners=3pt,draw=chapterpurple,fill=softpurple,thick,align=center,inner sep=6pt},
+  rednode/.style={rounded corners=3pt,draw=chapterred,fill=softred,thick,align=center,inner sep=6pt}
+}
+
+\newtcolorbox{mainideabox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterblue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Main idea},
+  sharp corners=south,
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{definitionbox}[1][] {
+  enhanced, breakable,
+  colback=softpurple,
+  colframe=chapterpurple,
+  fonttitle=\bfseries,
+  title={Definition},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{examplebox}[1][] {
+  enhanced, breakable,
+  colback=softorange,
+  colframe=chapterorange,
+  fonttitle=\bfseries,
+  title={Example},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{warningbox}[1][] {
+  enhanced, breakable,
+  colback=softred,
+  colframe=chapterred,
+  fonttitle=\bfseries,
+  title={Common mistake},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{notebox}[1][] {
+  enhanced, breakable,
+  colback=softgreen,
+  colframe=chaptergreen,
+  fonttitle=\bfseries,
+  title={Note},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\lstdefinestyle{pythonstyle}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{chapterblue}\bfseries,
+  stringstyle=\color{chaptergreen},
+  commentstyle=\color{gray},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  numbersep=7pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!50},
+  backgroundcolor=\color{softgray}
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\dd}{\,d}
+\newcommand{\vect}[1]{\left\langle #1\right\rangle}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\proj}{\operatorname{proj}}
+
+\begin{document}
+\setcounter{chapter}{1}
+
+\chapter{Euclidean Space $\R^n$}
+\label{ch:euclidean-space-rn}
+
+\section*{Chapter overview}
+
+Multivariable calculus begins by changing what an input is. In single-variable calculus, an input is one number $x$. In multivariable calculus, an input may be a point $(x,y)$ in the plane, a point $(x,y,z)$ in space, or a long vector
+\[
+  (x_1,x_2,\ldots,x_n)
+\]
+whose components store measurements, features, parameters, or decisions. The common home for all of these objects is \textbf{Euclidean space}.
+
+This chapter builds the geometric language used throughout the book. We will study points, coordinates, distance, projections, spheres, balls, and equations that describe regions in two, three, and higher dimensions. The same ideas will later support tangent planes, gradients, multiple integrals, optimization, probability densities, and loss functions.
+
+\begin{mainideabox}
+Euclidean space $\R^n$ is the setting in which numbers become geometry. A point can be a location, a vector can be a displacement, a distance can measure similarity, and an equation or inequality can describe a geometric object or a data region.
+\end{mainideabox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  % R^1
+  \begin{scope}[shift={(0,0)}]
+    \node[boxnode,minimum width=2.4cm] at (0,1.5) {$\R$};
+    \draw[axisline] (-1.8,0) -- (1.8,0) node[right] {$x$};
+    \foreach \x in {-1,0,1}{\draw (\x,0.07)--(\x,-0.07);}
+    \node[point,label=above:{$x$}] at (0.7,0) {};
+    \node[darkgray] at (0,-0.65) {one coordinate};
+  \end{scope}
+  % R^2
+  \begin{scope}[shift={(4.0,0)}]
+    \node[greennode,minimum width=2.4cm] at (0,1.5) {$\R^2$};
+    \draw[axisline] (-1.4,0) -- (1.6,0) node[right] {$x$};
+    \draw[axisline] (0,-1.1) -- (0,1.25) node[above] {$y$};
+    \draw[guide] (0.8,0) -- (0.8,0.75) -- (0,0.75);
+    \node[point,label=above right:{$(x,y)$}] at (0.8,0.75) {};
+    \node[darkgray] at (0,-1.55) {ordered pair};
+  \end{scope}
+  % R^3
+  \begin{scope}[shift={(8.1,-0.2)}]
+    \node[orangenode,minimum width=2.4cm] at (0,1.7) {$\R^3$};
+    \draw[axisline] (0,0) -- (1.45,-0.45) node[right] {$x$};
+    \draw[axisline] (0,0) -- (1.15,0.65) node[right] {$y$};
+    \draw[axisline] (0,0) -- (0,1.35) node[above] {$z$};
+    \coordinate (P) at (0.85,0.75);
+    \draw[guide] (0.85,0.75) -- (0.85,0.15) -- (1.23,-0.03);
+    \node[point,label=right:{$(x,y,z)$}] at (0.85,0.75) {};
+    \node[darkgray] at (0,-1.35) {ordered triple};
+  \end{scope}
+  % R^n data vector
+  \begin{scope}[shift={(12.2,0)}]
+    \node[purplenode,minimum width=2.4cm] at (0,1.5) {$\R^n$};
+    \foreach \i/\lab in {0/$x_1$,1/$x_2$,2/$\cdots$,3/$x_n$}{
+      \draw[fill=softpurple,draw=chapterpurple,thick] (-1.5+0.75*\i,-0.35) rectangle (-0.85+0.75*\i,0.35);
+      \node at (-1.175+0.75*\i,0) {\lab};
+    }
+    \node[darkgray] at (0,-0.85) {$n$ coordinates};
+  \end{scope}
+\end{tikzpicture}
+\caption{The same coordinate idea extends from the real line to the plane, space, and high-dimensional feature vectors.}
+\label{fig:coordinate-spaces}
+\end{figure}
+
+\section*{Learning goals}
+
+After studying this chapter, you should be able to:
+\begin{enumerate}
+  \item describe $\R^2$, $\R^3$, and $\R^n$ as spaces of ordered tuples;
+  \item distinguish between coordinates, points, vectors, and displacement;
+  \item compute distances in $\R^n$;
+  \item project points in $\R^3$ onto coordinate planes;
+  \item recognize how the same equation may describe different objects in different ambient spaces;
+  \item write equations of spheres, balls, and common regions;
+  \item explain why high-dimensional Euclidean geometry is essential for statistics, data science, artificial intelligence, and applied mathematics.
+\end{enumerate}
+
+\section{From the real line to $\R^n$}
+
+The real line $\R$ consists of real numbers. A point on the line is described by one coordinate:
+\[
+  x\in\R.
+\]
+The plane $\R^2$ consists of ordered pairs:
+\[
+  (x,y)\in\R^2.
+\]
+Three-dimensional space $\R^3$ consists of ordered triples:
+\[
+  (x,y,z)\in\R^3.
+\]
+More generally, $n$-dimensional Euclidean space is the set
+\[
+  \R^n=\{(x_1,x_2,\ldots,x_n):x_i\in\R\text{ for }i=1,\ldots,n\}.
+\]
+Each number $x_i$ is called a \textbf{coordinate} or \textbf{component}.
+
+\begin{definitionbox}[title={Euclidean space}]
+For a positive integer $n$, Euclidean $n$-space is the set of ordered $n$-tuples of real numbers:
+\[
+  \R^n=\{(x_1,x_2,\ldots,x_n):x_i\in\R\}.
+\]
+The origin is
+\[
+  0=(0,0,\ldots,0).
+\]
+\end{definitionbox}
+
+\begin{notebox}[title={A useful mental model}]
+Think of $\R^n$ as a universal coordinate system. In geometry, a point in $\R^3$ may be a location in space. In statistics, a point in $\R^n$ may be one observation with $n$ measured features. In machine learning, a point in $\R^n$ may be a vector of model weights.
+\end{notebox}
+
+\subsection*{Examples}
+
+\begin{itemize}
+  \item $(3,-2)$ is a point in $\R^2$.
+  \item $(1,0,-4)$ is a point in $\R^3$.
+  \item $(2,-1,0,5)$ is a point in $\R^4$.
+  \item $(x_1,x_2,\ldots,x_{100})$ can represent a data record with 100 numerical features.
+  \item $(w_0,w_1,\ldots,w_p)$ can represent the parameters of a linear regression model.
+\end{itemize}
+
+We can draw $\R^2$ and $\R^3$, but we usually cannot directly draw $\R^n$ for large $n$. The power of Euclidean geometry is that the formulas still work.
+
+\section{Points, vectors, and displacement}
+
+A point records position. A vector records displacement, direction, or magnitude. The same ordered tuple may be used for either purpose, depending on context.
+
+If
+\[
+  A=(a_1,a_2,\ldots,a_n),\qquad B=(b_1,b_2,\ldots,b_n),
+\]
+then the displacement from $A$ to $B$ is
+\[
+  \overrightarrow{AB}=B-A=(b_1-a_1,b_2-a_2,\ldots,b_n-a_n).
+\]
+
+\begin{definitionbox}[title={Displacement vector}]
+The displacement vector from $A$ to $B$ is the vector that moves the initial point $A$ to the terminal point $B$:
+\[
+  \overrightarrow{AB}=B-A.
+\]
+\end{definitionbox}
+
+For example, if $A=(1,-2,3)$ and $B=(2,1,5)$, then
+\[
+  \overrightarrow{AB}=(2-1,1-(-2),5-3)=(1,3,2).
+\]
+
+\begin{notebox}[title={Point versus vector}]
+The notation $(1,3,2)$ can mean either a point or a vector. As a point, it is a location. As a vector, it is a displacement. The algebra is the same, but the interpretation is different.
+\end{notebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-0.3,0) -- (5.1,0) node[right] {$x$};
+  \draw[axisline] (0,-0.3) -- (0,4.1) node[above] {$y$};
+  \draw[step=1,gray!25,very thin] (0,0) grid (5,4);
+  \coordinate (A) at (1,1);
+  \coordinate (B) at (4,3);
+  \draw[vector] (A) -- node[above left,sloped] {$\overrightarrow{AB}=B-A$} (B);
+  \node[point,label=below left:{$A=(1,1)$}] at (A) {};
+  \node[point,label=above right:{$B=(4,3)$}] at (B) {};
+  \draw[guide] (A) -- (4,1) -- (B);
+  \draw[decorate,decoration={brace,mirror,raise=4pt},chaptergreen,thick] (1,1) -- (4,1) node[midway,below=7pt] {$\Delta x=3$};
+  \draw[decorate,decoration={brace,raise=4pt},chapterorange,thick] (4,1) -- (4,3) node[midway,right=7pt] {$\Delta y=2$};
+\end{tikzpicture}
+\caption{A displacement vector from $A$ to $B$ in the plane.}
+\label{fig:displacement-vector}
+\end{figure}
+
+\section{Coordinates, axes, planes, and octants}
+
+In $\R^2$, the coordinate axes are the $x$-axis and the $y$-axis. The two axes divide the plane into four quadrants.
+
+In $\R^3$, the coordinate axes are the $x$-, $y$-, and $z$-axes. We use a right-handed coordinate system. The three coordinate planes are
+\[
+\begin{aligned}
+xy\text{-plane}:&\quad z=0,\\
+yz\text{-plane}:&\quad x=0,\\
+xz\text{-plane}:&\quad y=0.
+\end{aligned}
+\]
+The coordinate planes divide $\R^3$ into eight octants. The first octant is
+\[
+  x\ge 0,\qquad y\ge 0,\qquad z\ge 0.
+\]
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{68}{112}
+\begin{tikzpicture}[tdplot_main_coords,scale=2.2]
+  % Coordinate planes in first octant
+  \fill[chapterblue!12,opacity=0.65] (0,0,0) -- (1.6,0,0) -- (1.6,1.3,0) -- (0,1.3,0) -- cycle;
+  \fill[chaptergreen!12,opacity=0.55] (0,0,0) -- (0,1.3,0) -- (0,1.3,1.2) -- (0,0,1.2) -- cycle;
+  \fill[chapterorange!14,opacity=0.55] (0,0,0) -- (1.6,0,0) -- (1.6,0,1.2) -- (0,0,1.2) -- cycle;
+  \draw[axisline] (0,0,0) -- (1.9,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,1.65,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,1.55) node[anchor=south] {$z$};
+  \node[chapterblue] at (1.2,0.8,0) {$z=0$};
+  \node[chaptergreen] at (0,0.95,0.85) {$x=0$};
+  \node[chapterorange] at (1.2,0,0.85) {$y=0$};
+  \node[darkgray] at (0.85,0.65,0.55) {first octant};
+\end{tikzpicture}
+\caption{The coordinate planes in $\R^3$ and the first octant.}
+\label{fig:coordinate-planes-first-octant}
+\end{figure}
+
+\subsection*{Projection onto coordinate planes}
+
+For a point $P=(a,b,c)$ in $\R^3$:
+\[
+\begin{aligned}
+\text{projection onto the }xy\text{-plane}&=(a,b,0),\\
+\text{projection onto the }yz\text{-plane}&=(0,b,c),\\
+\text{projection onto the }xz\text{-plane}&=(a,0,c).
+\end{aligned}
+\]
+The idea is simple: to project onto a coordinate plane, set the missing coordinate equal to zero.
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{68}{112}
+\begin{tikzpicture}[tdplot_main_coords,scale=2.05]
+  \coordinate (O) at (0,0,0);
+  \coordinate (P) at (1.15,1.05,1.35);
+  \coordinate (Pxy) at (1.15,1.05,0);
+  \coordinate (Pyz) at (0,1.05,1.35);
+  \coordinate (Pxz) at (1.15,0,1.35);
+  % translucent planes
+  \fill[chapterblue!10,opacity=0.6] (0,0,0) -- (1.6,0,0) -- (1.6,1.35,0) -- (0,1.35,0) -- cycle;
+  \fill[chaptergreen!9,opacity=0.45] (0,0,0) -- (0,1.35,0) -- (0,1.35,1.55) -- (0,0,1.55) -- cycle;
+  \fill[chapterorange!12,opacity=0.45] (0,0,0) -- (1.6,0,0) -- (1.6,0,1.55) -- (0,0,1.55) -- cycle;
+  \draw[axisline] (0,0,0) -- (1.85,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,1.6,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,1.8) node[anchor=south] {$z$};
+  \draw[projection] (P) -- (Pxy);
+  \draw[projection] (P) -- (Pyz);
+  \draw[projection] (P) -- (Pxz);
+  \draw[guide] (Pxy) -- (1.15,0,0) -- (Pxz);
+  \draw[guide] (Pxy) -- (0,1.05,0) -- (Pyz);
+  \node[point,label=above:{$P=(a,b,c)$}] at (P) {};
+  \node[bluepoint,label=below:{$(a,b,0)$}] at (Pxy) {};
+  \node[greenpoint,label=left:{$(0,b,c)$}] at (Pyz) {};
+  \node[point,label=right:{$(a,0,c)$}] at (Pxz) {};
+\end{tikzpicture}
+\caption{A point in $\R^3$ and its projections onto the coordinate planes.}
+\label{fig:coordinate-projections}
+\end{figure}
+
+\begin{examplebox}[title={Worked example: projections}]
+Let $P=(5,-2,7)$. Then
+\[
+\begin{aligned}
+P_{xy}&=(5,-2,0),\\
+P_{yz}&=(0,-2,7),\\
+P_{xz}&=(5,0,7).
+\end{aligned}
+\]
+The $xy$-projection removes height. The $yz$-projection removes the $x$-coordinate. The $xz$-projection removes the $y$-coordinate.
+\end{examplebox}
+
+\section{Distance in Euclidean space}
+
+Distance is the most important measurement in Euclidean geometry. It is also fundamental in statistics and machine learning, where distance measures similarity, error, residual size, and model change.
+
+For points
+\[
+  A=(a_1,a_2,\ldots,a_n),\qquad B=(b_1,b_2,\ldots,b_n)
+\]
+in $\R^n$, the Euclidean distance between $A$ and $B$ is
+\[
+  d(A,B)=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2+\cdots+(a_n-b_n)^2}.
+\]
+Equivalently,
+\[
+  d(A,B)=\sqrt{\sum_{i=1}^n(a_i-b_i)^2}.
+\]
+In $\R^3$, this becomes
+\[
+  d(A,B)=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2+(a_3-b_3)^2}.
+\]
+
+\begin{definitionbox}[title={Euclidean distance}]
+For $A=(a_1,\ldots,a_n)$ and $B=(b_1,\ldots,b_n)$ in $\R^n$,
+\[
+  d(A,B)=\|A-B\|=\sqrt{\sum_{i=1}^{n}(a_i-b_i)^2}.
+\]
+\end{definitionbox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  % 2D distance
+  \begin{scope}[shift={(0,0)}]
+    \draw[axisline] (-0.3,0) -- (4.5,0) node[right] {$x$};
+    \draw[axisline] (0,-0.3) -- (0,3.5) node[above] {$y$};
+    \draw[step=1,gray!20,very thin] (0,0) grid (4.2,3.2);
+    \coordinate (A) at (0.8,0.7);
+    \coordinate (B) at (3.6,2.6);
+    \coordinate (C) at (3.6,0.7);
+    \draw[chaptergreen,very thick] (A) -- (C) node[midway,below] {$|\Delta x|$};
+    \draw[chapterorange,very thick] (C) -- (B) node[midway,right] {$|\Delta y|$};
+    \draw[chapterblue,very thick] (A) -- (B) node[midway,above,sloped] {$d(A,B)$};
+    \node[point,label=below left:{$A$}] at (A) {};
+    \node[point,label=above right:{$B$}] at (B) {};
+    \draw (3.35,0.7) -- (3.35,0.95) -- (3.6,0.95);
+    \node[darkgray] at (2,-0.9) {$d^2=(\Delta x)^2+(\Delta y)^2$};
+  \end{scope}
+  % 3D distance box
+  \begin{scope}[shift={(7.0,0.1)},x={(0.95cm,-0.22cm)},y={(0.85cm,0.28cm)},z={(0cm,0.85cm)}]
+    \coordinate (A3) at (0,0,0);
+    \coordinate (B3) at (2.0,1.35,1.25);
+    \coordinate (X) at (2.0,0,0);
+    \coordinate (XY) at (2.0,1.35,0);
+    \draw[axisline] (0,0,0) -- (2.55,0,0) node[below] {$x$};
+    \draw[axisline] (0,0,0) -- (0,1.8,0) node[right] {$y$};
+    \draw[axisline] (0,0,0) -- (0,0,1.65) node[left] {$z$};
+    \draw[chaptergreen,very thick] (A3) -- (X) node[midway,below] {$|\Delta x|$};
+    \draw[chapterorange,very thick] (X) -- (XY) node[midway,below right] {$|\Delta y|$};
+    \draw[chapterpurple,very thick] (XY) -- (B3) node[midway,right] {$|\Delta z|$};
+    \draw[chapterblue,very thick] (A3) -- (B3) node[midway,above left] {$d(A,B)$};
+    \draw[guide] (A3) -- (0,1.35,0) -- (XY);
+    \draw[guide] (B3) -- (0,1.35,1.25) -- (0,0,1.25) -- (2.0,0,1.25) -- (B3);
+    \node[point,label=left:{$A$}] at (A3) {};
+    \node[point,label=right:{$B$}] at (B3) {};
+  \end{scope}
+\end{tikzpicture}
+\caption{Distance in $\R^2$ and $\R^3$ comes from the Pythagorean theorem.}
+\label{fig:distance-pythagorean}
+\end{figure}
+
+\begin{examplebox}[title={Worked example: distance in $\R^3$}]
+Find the distance from $P=(1,2,3)$ to $Q=(3,4,2)$.
+\[
+\begin{aligned}
+d(P,Q)
+&=\sqrt{(1-3)^2+(2-4)^2+(3-2)^2}\\
+&=\sqrt{4+4+1}\\
+&=3.
+\end{aligned}
+\]
+\end{examplebox}
+
+\begin{examplebox}[title={Worked example: distance in $\R^4$}]
+Find the distance between
+\[
+  a=(2,-1,0,4),\qquad b=(-1,3,5,2).
+\]
+Then
+\[
+\begin{aligned}
+d(a,b)
+&=\sqrt{(2-(-1))^2+(-1-3)^2+(0-5)^2+(4-2)^2}\\
+&=\sqrt{3^2+(-4)^2+(-5)^2+2^2}\\
+&=\sqrt{54}=3\sqrt 6.
+\end{aligned}
+\]
+\end{examplebox}
+
+\section{Spheres and balls}
+
+A \textbf{sphere} is the set of points at a fixed distance from a center. A \textbf{ball} is the set of points within a fixed distance from a center.
+
+In $\R^3$, the sphere with center $C=(h,k,\ell)$ and radius $r$ has equation
+\[
+  (x-h)^2+(y-k)^2+(z-\ell)^2=r^2.
+\]
+If the center is the origin, this becomes
+\[
+  x^2+y^2+z^2=r^2.
+\]
+In $\R^n$, the sphere with center $c=(c_1,\ldots,c_n)$ and radius $r$ is
+\[
+  \sum_{i=1}^n(x_i-c_i)^2=r^2.
+\]
+The corresponding closed ball is
+\[
+  \sum_{i=1}^n(x_i-c_i)^2\le r^2,
+\]
+and the corresponding open ball is
+\[
+  \sum_{i=1}^n(x_i-c_i)^2<r^2.
+\]
+
+\begin{definitionbox}[title={Sphere and ball}]
+Let $c\in\R^n$ and $r>0$.
+\[
+\begin{aligned}
+S_r(c)&=\{x\in\R^n:d(x,c)=r\},\\
+B_r(c)&=\{x\in\R^n:d(x,c)<r\},\\
+\overline B_r(c)&=\{x\in\R^n:d(x,c)\le r\}.
+\end{aligned}
+\]
+The set $S_r(c)$ is the boundary sphere, $B_r(c)$ is the open ball, and $\overline B_r(c)$ is the closed ball.
+\end{definitionbox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.92]
+  % circle boundary
+  \begin{scope}[shift={(0,0)}]
+    \node[boxnode] at (0,2.35) {Sphere in $\R^2$\\boundary only};
+    \draw[axisline] (-2,0) -- (2,0) node[right] {$x$};
+    \draw[axisline] (0,-1.7) -- (0,1.9) node[above] {$y$};
+    \draw[chapterblue,very thick] (0,0) circle (1.25);
+    \node[point,label=below right:{$c$}] at (0,0) {};
+    \draw[smallvector] (0,0) -- (0.88,0.88) node[midway,above left] {$r$};
+    \node[darkgray] at (0,-2.0) {$d(x,c)=r$};
+  \end{scope}
+  % open ball
+  \begin{scope}[shift={(4.5,0)}]
+    \node[greennode] at (0,2.35) {Open ball\\inside, not boundary};
+    \draw[axisline] (-2,0) -- (2,0) node[right] {$x$};
+    \draw[axisline] (0,-1.7) -- (0,1.9) node[above] {$y$};
+    \fill[chaptergreen!22] (0,0) circle (1.25);
+    \draw[chaptergreen,very thick,dashed] (0,0) circle (1.25);
+    \node[point,label=below right:{$c$}] at (0,0) {};
+    \node[darkgray] at (0,-2.0) {$d(x,c)<r$};
+  \end{scope}
+  % closed ball
+  \begin{scope}[shift={(9.0,0)}]
+    \node[orangenode] at (0,2.35) {Closed ball\\inside and boundary};
+    \draw[axisline] (-2,0) -- (2,0) node[right] {$x$};
+    \draw[axisline] (0,-1.7) -- (0,1.9) node[above] {$y$};
+    \fill[chapterorange!22] (0,0) circle (1.25);
+    \draw[chapterorange,very thick] (0,0) circle (1.25);
+    \node[point,label=below right:{$c$}] at (0,0) {};
+    \node[darkgray] at (0,-2.0) {$d(x,c)\le r$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The difference between a sphere, an open ball, and a closed ball. In $\R^2$, the sphere is a circle.}
+\label{fig:sphere-open-closed-ball}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \shade[ball color=chapterblue!45,opacity=0.8] (0,0) circle (1.55);
+  \draw[chapterblue!70!black,thick] (0,0) circle (1.55);
+  \draw[chapterblue!70!black,thick,dashed] (-1.55,0) arc (180:360:1.55 and 0.38);
+  \draw[chapterblue!70!black,thick] (1.55,0) arc (0:180:1.55 and 0.38);
+  \node[point,label=below right:{$(0,0,0)$}] at (0,0) {};
+  \draw[smallvector] (0,0) -- (1.1,0.95) node[midway,above left] {$r$};
+  \node[boxnode,align=left] at (5.0,0.75) {Sphere centered at origin:\\[2pt]
+  $x^2+y^2+z^2=r^2$};
+  \node[greennode,align=left] at (5.0,-1.0) {Solid ball:\\[2pt]
+  $x^2+y^2+z^2\le r^2$};
+\end{tikzpicture}
+\caption{A sphere centered at the origin in $\R^3$ and the corresponding solid ball.}
+\label{fig:sphere-origin-r3}
+\end{figure}
+
+\begin{notebox}[title={Boundary versus region}]
+The equation $x^2+y^2+z^2=9$ describes only the boundary sphere of radius $3$. The inequality $x^2+y^2+z^2\le 9$ describes the solid ball inside and including the boundary.
+\end{notebox}
+
+\begin{examplebox}[title={Worked example: equation of a sphere}]
+Find the equation of the sphere with center $(2,-5,1)$ and radius $2$.
+
+Using $(x-h)^2+(y-k)^2+(z-\ell)^2=r^2$, we get
+\[
+  (x-2)^2+(y+5)^2+(z-1)^2=4.
+\]
+\end{examplebox}
+
+\begin{examplebox}[title={Worked example: diameter endpoints}]
+Find the equation of the sphere for which one diameter has endpoints
+\[
+  A=(2,-1,1),\qquad B=(-2,-3,2).
+\]
+The center is the midpoint of the diameter:
+\[
+  C=\frac{A+B}{2}=\left(0,-2,\frac32\right).
+\]
+The diameter length is
+\[
+  |AB|=\sqrt{(2-(-2))^2+(-1-(-3))^2+(1-2)^2}=\sqrt{21}.
+\]
+Therefore $r=\sqrt{21}/2$, and the equation is
+\[
+  x^2+(y+2)^2+\left(z-\frac32\right)^2=\frac{21}{4}.
+\]
+\end{examplebox}
+
+\section{Equations depend on the ambient space}
+
+An equation does not describe an object until we know the space in which it lives. For example:
+\begin{itemize}
+  \item In $\R^2$, the equation $y=2$ is a line.
+  \item In $\R^3$, the equation $y=2$ is a plane parallel to the $xz$-plane.
+  \item In $\R^3$, the equation $z=2$ is a plane parallel to the $xy$-plane.
+\end{itemize}
+
+Similarly, the equation
+\[
+  x^2+y^2=4
+\]
+has different meanings in different spaces. In $\R^2$, it is a circle of radius $2$ centered at the origin. In $\R^3$, it is a cylinder of radius $2$ around the $z$-axis, because $z$ is free. If we add $z=3$, then
+\[
+  x^2+y^2=4,\qquad z=3
+\]
+describes a circle of radius $2$ lying in the horizontal plane $z=3$.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  % circle in R2
+  \begin{scope}[shift={(0,0)}]
+    \node[boxnode] at (0,2.55) {$x^2+y^2=4$ in $\R^2$};
+    \draw[axisline] (-2.5,0) -- (2.5,0) node[right] {$x$};
+    \draw[axisline] (0,-2.3) -- (0,2.35) node[above] {$y$};
+    \draw[chapterblue,very thick] (0,0) circle (1.55);
+    \node[darkgray] at (0,-2.85) {circle};
+  \end{scope}
+  % cylinder in R3
+  \begin{scope}[shift={(6.2,-0.1)},x={(0.65cm,-0.20cm)},y={(0.85cm,0.18cm)},z={(0cm,0.75cm)}]
+    \node[greennode] at (0,0,3.5) {$x^2+y^2=4$ in $\R^3$};
+    \draw[axisline] (0,0,0) -- (2.6,0,0) node[below] {$x$};
+    \draw[axisline] (0,0,0) -- (0,2.4,0) node[right] {$y$};
+    \draw[axisline] (0,0,0) -- (0,0,3.0) node[left] {$z$};
+    \foreach \z in {0,0.6,1.2,1.8,2.4}{
+      \draw[chaptergreen!70] plot[domain=0:360,samples=80] ({1.15*cos(\x)},{1.15*sin(\x)},\z);
+    }
+    \foreach \ang in {30,120,210,300}{
+      \draw[chaptergreen!70] ({1.15*cos(\ang)},{1.15*sin(\ang)},0) -- ({1.15*cos(\ang)},{1.15*sin(\ang)},2.4);
+    }
+    \draw[chapterorange,very thick] plot[domain=0:360,samples=100] ({1.15*cos(\x)},{1.15*sin(\x)},1.8);
+    \node[chapterorange] at (1.5,0.9,1.8) {$z=3$ slice};
+    \node[darkgray] at (0.3,0.3,-0.6) {cylinder};
+  \end{scope}
+\end{tikzpicture}
+\caption{The same equation can describe different objects in different ambient spaces.}
+\label{fig:ambient-space-circle-cylinder}
+\end{figure}
+
+\begin{examplebox}[title={Worked example: the surface $x=y$}]
+Describe the surface $x=y$ in $\R^3$.
+
+The equation $x=y$ places one restriction on three variables. The variable $z$ is free. Therefore the surface is a plane through the $z$-axis. Points on the plane have the form
+\[
+  (x,y,z)=(t,t,s),
+\]
+where $s$ and $t$ are real numbers.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{68}{112}
+\begin{tikzpicture}[tdplot_main_coords,scale=2.0]
+  \draw[axisline] (0,0,0) -- (1.7,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,1.7,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,1.7) node[anchor=south] {$z$};
+  \filldraw[fill=chapterpurple!18,draw=chapterpurple,very thick,opacity=0.78]
+    (-0.65,-0.65,-0.9) -- (1.15,1.15,-0.9) -- (1.15,1.15,1.25) -- (-0.65,-0.65,1.25) -- cycle;
+  \draw[chapterred,very thick] (0,0,-0.9) -- (0,0,1.35) node[above] {$z$-axis};
+  \node[chapterpurple] at (0.85,0.85,0.55) {$x=y$};
+  \node[darkgray] at (1.0,0.35,-0.7) {free $z$};
+\end{tikzpicture}
+\caption{The equation $x=y$ describes a plane in $\R^3$.}
+\label{fig:plane-x-equals-y}
+\end{figure}
+
+\section{Regions described by inequalities}
+
+Equations describe boundaries. Inequalities describe regions.
+
+The inequality
+\[
+  x^2+y^2+z^2\le 9
+\]
+describes the solid ball of radius $3$ centered at the origin. The inequality
+\[
+  x^2+y^2+z^2>9
+\]
+describes all points outside that ball.
+
+\begin{examplebox}[title={Worked example: completing the square}]
+Describe the region
+\[
+  x^2+y^2+z^2>2z.
+\]
+Move all terms to one side and complete the square in $z$:
+\[
+\begin{aligned}
+x^2+y^2+z^2&>2z,\\
+x^2+y^2+z^2-2z&>0,\\
+x^2+y^2+(z-1)^2-1&>0,\\
+x^2+y^2+(z-1)^2&>1.
+\end{aligned}
+\]
+This is the set of all points whose distance from $(0,0,1)$ is greater than $1$. Thus the region is the outside of the sphere of radius $1$ centered at $(0,0,1)$. The boundary sphere itself is not included because the inequality is strict.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\tdplotsetmaincoords{66}{115}
+\begin{tikzpicture}[tdplot_main_coords,scale=2.1]
+  \draw[axisline] (0,0,0) -- (1.6,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,1.6,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,2.4) node[anchor=south] {$z$};
+  \coordinate (C) at (0,0,1);
+  \shade[ball color=chapterorange!35,opacity=0.55] (0,0,1) circle (0.62);
+  \draw[chapterorange!70!black,very thick] (0,0,1) circle (0.62);
+  \draw[chapterorange!70!black,thick,dashed] (-0.62,0,1) arc (180:360:0.62 and 0.16);
+  \draw[chapterorange!70!black,thick] (0.62,0,1) arc (0:180:0.62 and 0.16);
+  \node[point,label=right:{$(0,0,1)$}] at (C) {};
+  \foreach \ang in {35,75,115,155,215,255,295,335}{
+    \draw[-Latex,chapterred,thick] ({0.75*cos(\ang)},{0.75*sin(\ang)},1) -- ({1.25*cos(\ang)},{1.25*sin(\ang)},1);
+  }
+  \node[rednode,align=center] at (1.6,0.8,1.65) {region is outside\\$x^2+y^2+(z-1)^2>1$};
+\end{tikzpicture}
+\caption{Boundary sphere for the region $x^2+y^2+z^2>2z$. The arrows indicate the outside region.}
+\label{fig:outside-sphere-region}
+\end{figure}
+
+\begin{warningbox}
+The inequality $x^2+y^2+(z-1)^2>1$ is not the sphere. It is the outside region. The sphere is the boundary where equality holds.
+\end{warningbox}
+
+\section{Open balls, closed balls, and neighborhoods}
+
+In one-variable calculus, limits are described using intervals around a point. In multivariable calculus, the natural replacement is a ball.
+
+For $a\in\R^n$ and $r>0$, the \textbf{open ball} centered at $a$ with radius $r$ is
+\[
+  B_r(a)=\{x\in\R^n:d(x,a)<r\}.
+\]
+The \textbf{closed ball} centered at $a$ with radius $r$ is
+\[
+  \overline B_r(a)=\{x\in\R^n:d(x,a)\le r\}.
+\]
+The boundary is the sphere
+\[
+  S_r(a)=\{x\in\R^n:d(x,a)=r\}.
+\]
+These objects are essential for defining limits, continuity, open sets, and local behavior.
+
+\begin{notebox}[title={Preview of limits}]
+When we say $(x,y)$ approaches $(a,b)$, we mean the distance $\sqrt{(x-a)^2+(y-b)^2}$ approaches $0$. This is why Euclidean distance appears immediately in the definition of a multivariable limit.
+\end{notebox}
+
+\section{High-dimensional Euclidean space and data geometry}
+
+A data set with $m$ observations and $n$ features can be represented as a matrix
+\[
+X=\begin{bmatrix}
+- & x_1^T & -\\
+- & x_2^T & -\\
+& \vdots & \\
+- & x_m^T & -
+\end{bmatrix},
+\]
+where each row $x_i\in\R^n$ is a data vector.
+
+Euclidean distance is often used to measure similarity:
+\[
+  d(x_i,x_j)=\sqrt{\sum_{k=1}^n(x_{ik}-x_{jk})^2}.
+\]
+This idea appears in nearest-neighbor classification, clustering, anomaly detection, least-squares regression, gradient-based optimization, and measuring error between predicted and observed vectors.
+
+However, high-dimensional geometry can behave differently from low-dimensional geometry. Random points in $[0,1]^n$ tend to become farther apart on average as $n$ increases, and distances can also concentrate.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.82\textwidth,
+  height=0.42\textwidth,
+  xlabel={dimension $n$},
+  ylabel={typical distance},
+  xmin=0,xmax=105,
+  ymin=0,ymax=4.3,
+  grid=both,
+  grid style={gray!20},
+  tick label style={font=\small},
+  label style={font=\small},
+  legend style={draw=none,fill=none,at={(0.03,0.97)},anchor=north west}
+]
+\addplot+[chapterblue,mark=*,very thick,error bars/.cd,y dir=both,y explicit]
+coordinates {
+  (2,0.52) +- (0,0.25)
+  (5,0.88) +- (0,0.25)
+  (10,1.27) +- (0,0.24)
+  (25,2.04) +- (0,0.24)
+  (50,2.88) +- (0,0.24)
+  (100,4.08) +- (0,0.24)
+};
+\addlegendentry{mean distance with variability}
+\end{axis}
+\end{tikzpicture}
+\caption{Typical distances between random points increase and become more concentrated as dimension grows.}
+\label{fig:high-dimensional-distances}
+\end{figure}
+
+\begin{notebox}[title={Connection to artificial intelligence}]
+Modern systems represent images, text, users, and documents as high-dimensional vectors. Euclidean geometry gives the first language for comparing such objects, but high-dimensional geometry also warns us that intuition from the plane may be misleading.
+\end{notebox}
+
+\section{Standard geometric objects in $\R^n$}
+
+The following objects appear repeatedly in multivariable calculus and applied mathematics.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.22\textwidth}X p{0.32\textwidth}}
+\toprule
+Object & Description & Typical equation or inequality \\
+\midrule
+Line in $\R^2$ & one-dimensional straight set & $ax+by=c$ \\
+Plane in $\R^3$ & two-dimensional flat surface & $ax+by+cz=d$ \\
+Hyperplane in $\R^n$ & codimension-one flat set & $a_1x_1+\cdots+a_nx_n=b$ \\
+Sphere & fixed distance from a center & $\sum_i(x_i-c_i)^2=r^2$ \\
+Ball & distance at most $r$ from a center & $\sum_i(x_i-c_i)^2\le r^2$ \\
+Cylinder in $\R^3$ & one variable free & $x^2+y^2=r^2$ \\
+First octant & nonnegative coordinates in $\R^3$ & $x\ge0$, $y\ge0$, $z\ge0$ \\
+\bottomrule
+\end{tabularx}
+\caption{Common geometric objects and their algebraic descriptions.}
+\label{tab:standard-geometric-objects}
+\end{table}
+
+\subsection*{Hyperplanes and machine learning}
+
+A hyperplane in $\R^n$ has equation
+\[
+  w_1x_1+w_2x_2+\cdots+w_nx_n=b.
+\]
+In machine learning, this is the basic form of a linear decision boundary. For example, a classifier may assign one label when
+\[
+  w\cdot x-b>0
+\]
+and another label when
+\[
+  w\cdot x-b<0.
+\]
+This is one reason multivariable calculus and linear algebra are both central to data science.
+
+\section{Worked examples}
+
+\subsection*{Example: detecting collinearity using distances}
+
+Determine whether the points
+\[
+  A=(2,4,2),\qquad B=(3,7,-2),\qquad C=(1,3,3)
+\]
+lie on a straight line.
+
+Compute the three distances:
+\[
+\begin{aligned}
+|AB|&=\sqrt{(3-2)^2+(7-4)^2+(-2-2)^2}=\sqrt{26},\\
+|AC|&=\sqrt{(1-2)^2+(3-4)^2+(3-2)^2}=\sqrt{3},\\
+|BC|&=\sqrt{(1-3)^2+(3-7)^2+(3-(-2))^2}=\sqrt{45}.
+\end{aligned}
+\]
+For three points to lie on a line, one of the three distances must equal the sum of the other two. Here this does not happen. Therefore the points do not lie on a straight line.
+
+A more algebraic method is to compare displacement vectors:
+\[
+  \overrightarrow{AB}=(1,3,-4),\qquad \overrightarrow{AC}=(-1,-1,1).
+\]
+These are not scalar multiples of each other, so the three points are not collinear.
+
+\subsection*{Example: intersections with coordinate planes}
+
+Consider the sphere
+\[
+  (x-2)^2+(y+5)^2+(z-1)^2=4.
+\]
+Describe its intersection with the coordinate planes.
+
+For the $xy$-plane, set $z=0$:
+\[
+  (x-2)^2+(y+5)^2+1=4.
+\]
+Thus
+\[
+  (x-2)^2+(y+5)^2=3,
+\]
+which is a circle in the plane $z=0$.
+
+For the $xz$-plane, set $y=0$:
+\[
+  (x-2)^2+25+(z-1)^2=4.
+\]
+This has no solution, so the sphere does not intersect the $xz$-plane.
+
+For the $yz$-plane, set $x=0$:
+\[
+  4+(y+5)^2+(z-1)^2=4.
+\]
+Thus
+\[
+  (y+5)^2+(z-1)^2=0,
+\]
+so the intersection is the single point $(0,-5,1)$.
+
+\begin{warningbox}[title={Check the signs}]
+The center of $(x-2)^2+(y+5)^2+(z-1)^2=4$ is $(2,-5,1)$, not $(2,5,1)$. The sign inside the square is opposite the coordinate of the center.
+\end{warningbox}
+
+\section{Computational practice: nearest points}
+
+Distance is the basic ingredient in nearest-neighbor search. Given a query point and several data points, the nearest neighbor is the point with smallest Euclidean distance.
+
+\begin{lstlisting}[style=pythonstyle,caption={Nearest-neighbor search using Euclidean distance.}]
+import numpy as np
+
+rng = np.random.default_rng(7)
+X = rng.normal(size=(20, 2))
+query = np.array([0.75, 0.25])
+
+distances = np.linalg.norm(X - query, axis=1)
+nearest_index = np.argmin(distances)
+nearest_point = X[nearest_index]
+
+nearest_index, nearest_point, distances[nearest_index]
+\end{lstlisting}
+
+The same idea extends to high-dimensional vectors. For example, two images may be compared by first converting them to vectors and then measuring the distance between those vectors.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[axisline] (-3.1,0) -- (3.4,0) node[right] {$x_1$};
+  \draw[axisline] (0,-2.2) -- (0,2.7) node[above] {$x_2$};
+  \draw[step=1,gray!15,very thin] (-3,-2) grid (3,2.5);
+  \foreach \x/\y in {-2.2/1.1,-1.5/-0.7,-0.9/1.8,-0.2/-1.2,0.4/1.6,1.0/-0.9,1.9/0.4,2.4/1.3,-2.5/-1.4,0.2/0.2,1.4/1.0,-1.8/0.1,2.6/-1.0}{
+    \node[bluepoint] at (\x,\y) {};
+  }
+  \coordinate (Q) at (0.75,0.25);
+  \coordinate (N) at (0.2,0.2);
+  \draw[projection] (Q) -- node[below] {smallest distance} (N);
+  \node[point,label=above right:{query}] at (Q) {};
+  \node[greenpoint,label=below left:{nearest}] at (N) {};
+\end{tikzpicture}
+\caption{Nearest-neighbor search compares a query point to data points using Euclidean distance.}
+\label{fig:nearest-neighbor}
+\end{figure}
+
+\section{Common mistakes and how to avoid them}
+
+\subsection*{Mistake 1: confusing a circle and a sphere}
+
+The equation
+\[
+  x^2+y^2=4
+\]
+is a circle in $\R^2$ but a cylinder in $\R^3$. Always identify the ambient space.
+
+\subsection*{Mistake 2: forgetting free variables}
+
+The equation $z=2$ in $\R^3$ does not describe one point. The variables $x$ and $y$ are free, so it describes a plane.
+
+\subsection*{Mistake 3: using equality when the problem asks for a region}
+
+The equation
+\[
+  x^2+y^2+z^2=1
+\]
+describes a sphere. The inequality
+\[
+  x^2+y^2+z^2\le 1
+\]
+describes a solid ball.
+
+\subsection*{Mistake 4: sign errors in sphere centers}
+
+The sphere
+\[
+  (x-h)^2+(y-k)^2+(z-\ell)^2=r^2
+\]
+has center $(h,k,\ell)$. Thus $(y+5)^2$ corresponds to $k=-5$.
+
+\section{Summary}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.27\textwidth}X}
+\toprule
+Concept & Formula or meaning \\
+\midrule
+Euclidean space & $\R^n=\{(x_1,x_2,\ldots,x_n):x_i\in\R\}$ \\
+Displacement & $\overrightarrow{AB}=B-A$ \\
+Distance & $d(A,B)=\sqrt{\sum_{i=1}^n(a_i-b_i)^2}$ \\
+Coordinate projections & $P_{xy}=(a,b,0)$, $P_{yz}=(0,b,c)$, $P_{xz}=(a,0,c)$ for $P=(a,b,c)$ \\
+Sphere in $\R^3$ & $(x-h)^2+(y-k)^2+(z-\ell)^2=r^2$ \\
+Closed ball in $\R^n$ & $\sum_{i=1}^n(x_i-c_i)^2\le r^2$ \\
+Open ball in $\R^n$ & $\sum_{i=1}^n(x_i-c_i)^2< r^2$ \\
+Hyperplane in $\R^n$ & $a_1x_1+\cdots+a_nx_n=b$ \\
+\bottomrule
+\end{tabularx}
+\caption{Core formulas from the chapter.}
+\label{tab:chapter-two-summary}
+\end{table}
+
+\section*{Practice problems}
+\addcontentsline{toc}{section}{Practice problems}
+
+\begin{enumerate}
+  \item Find the displacement vector from $A=(-1,4,2)$ to $B=(3,-2,5)$.
+  \item Find the projections of $P=(4,-3,6)$ onto the $xy$-, $yz$-, and $xz$-planes.
+  \item Compute the distance between $A=(2,0,-1)$ and $B=(-1,4,3)$.
+  \item Find the equation of the sphere with center $(-2,1,4)$ and radius $5$.
+  \item Find the center and radius of the sphere $(x+3)^2+(y-2)^2+(z+1)^2=16$.
+  \item Describe the object $x^2+y^2=9$ in $\R^2$ and in $\R^3$.
+  \item Describe the region $x^2+y^2+z^2\le 4z$.
+  \item Decide whether $A=(1,2,3)$, $B=(3,6,9)$, and $C=(-1,-2,-3)$ are collinear.
+  \item Write a sentence explaining why an equation with one constraint in $\R^3$ often describes a surface rather than a curve.
+  \item Give a data-science example where a point in $\R^n$ is not a physical location.
+\end{enumerate}
+
+\end{document}

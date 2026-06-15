@@ -1,0 +1,1078 @@
+---
+title: "Chapter 19. Vector Fields and Gradient Fields"
+subtitle: "From local arrows to global motion, force, and optimization"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+--- 
+
+Scalar functions assign numbers to points.  A temperature map assigns a temperature to each location, a density function assigns a density to each point in space, and a loss function assigns an error value to each parameter vector.  Vector fields are different: they assign an arrow to each point.  A wind map assigns a velocity vector to each location, a gravitational field assigns a force vector to each point in space, and gradient descent assigns a motion direction to each set of model parameters.
+
+This chapter begins the vector-calculus part of the book.  We have already used vectors to describe geometry, curves, tangent directions, gradients, and optimization.  Now vectors themselves become the output of a function.
+
+A vector field is the mathematical language of **local direction**.  It answers the question:
+
+> If I stand at this point, which way does the field point, and how strongly?
+
+That question appears in physics, differential equations, probability, statistics, machine learning, computer graphics, robotics, and data science.
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. define and visualize vector fields in $\mathbb R^2$, $\mathbb R^3$, and $\mathbb R^n$;
+2. distinguish scalar fields, vector fields, and vector-valued parameterized curves;
+3. sketch basic vector fields such as constant, radial, rotational, and gradient fields;
+4. compute gradient vector fields from scalar potential functions;
+5. recognize conservative vector fields and potential functions in simple cases;
+6. interpret vector fields as velocity fields, force fields, gradient flows, and optimization dynamics;
+7. use Python to visualize vector fields, gradient fields, and trajectories.
+
+::: {.callout-note}
+## Why this chapter matters
+
+Multiple integrals accumulate scalar quantities over regions.  Vector calculus studies how vector quantities move through curves and surfaces.  Before line integrals, flux, Green's theorem, Stokes' theorem, or the divergence theorem, we need a precise understanding of vector fields.
+:::
+
+## Scalar fields versus vector fields
+
+A **scalar field** assigns one number to each point.  For example,
+
+$$
+f(x,y)=x^2+y^2
+$$
+
+assigns a scalar height, temperature, loss, or density value to each point $(x,y)$.
+
+A **vector field** assigns a vector to each point.  For example,
+
+$$
+F(x,y)=\langle -y,x\rangle
+$$
+
+assigns the vector $\langle -y,x\rangle$ to the point $(x,y)$.  At $(1,0)$, it gives $\langle 0,1\rangle$.  At $(0,1)$, it gives $\langle -1,0\rangle$.
+
+::: {.callout-important}
+## Three different objects
+
+Do not confuse these objects:
+
+- A scalar field has the form $f:\mathbb R^n\to \mathbb R$.
+- A vector field has the form $F:\mathbb R^n\to \mathbb R^n$.
+- A parameterized curve has the form $r:I\to \mathbb R^n$.
+
+A curve uses one parameter to trace points.  A vector field places an arrow at many points.
+:::
+
+## Vector fields in the plane
+
+A vector field on a region $D\subseteq \mathbb R^2$ is a function
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle
+$$
+
+that assigns to each point $(x,y)\in D$ a two-dimensional vector.
+
+Here $P$ is the horizontal component and $Q$ is the vertical component.  In unit-vector notation,
+
+$$
+F(x,y)=P(x,y)i+Q(x,y)j.
+$$
+
+### Example: a constant vector field
+
+The field
+
+$$
+F(x,y)=\langle 1,0\rangle
+$$
+
+places the same right-pointing vector at every point.  It is a model for uniform flow to the right.
+
+### Example: a downward vector field
+
+The field
+
+$$
+G(x,y)=\langle 0,-1\rangle
+$$
+
+places the same downward vector at every point.  It can represent a constant downward force direction.
+
+### Example: a rotational vector field
+
+The field
+
+$$
+R(x,y)=\langle -y,x\rangle
+$$
+
+is tangent to circles centered at the origin.  At each point, the vector is perpendicular to the radial direction $\langle x,y\rangle$, because
+
+$$
+\langle -y,x\rangle\cdot \langle x,y\rangle=-xy+xy=0.
+$$
+
+This field rotates counterclockwise around the origin.
+
+```{python}
+#| label: fig-ch19-basic-vector-fields
+#| fig-cap: 'Constant, radial, and rotational vector fields in the plane.'
+#| fig-width: 8
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 13)
+y = np.linspace(-2, 2, 13)
+X, Y = np.meshgrid(x, y)
+
+fields = [
+    (np.ones_like(X), np.zeros_like(Y), 'Constant field $F=\\langle 1,0\\rangle$'),
+    (X, Y, 'Radial field $F=\\langle x,y\\rangle$'),
+    (-Y, X, 'Rotational field $F=\\langle -y,x\\rangle$')
+]
+
+fig, axes = plt.subplots(1, 3, figsize=(12, 4))
+for ax, (U, V, title) in zip(axes, fields):
+    ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=8)
+    ax.set_aspect('equal')
+    ax.set_xlim(-2.3, 2.3)
+    ax.set_ylim(-2.3, 2.3)
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+    ax.set_title(title)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$y$')
+    ax.grid(True, alpha=0.25)
+plt.tight_layout()
+plt.show()
+```
+
+## Vector fields in space
+
+A vector field on a region $E\subseteq \mathbb R^3$ is a function
+
+$$
+F(x,y,z)=\langle P(x,y,z),Q(x,y,z),R(x,y,z)\rangle
+$$
+
+that assigns a three-dimensional vector to each point $(x,y,z)\in E$.
+
+For example,
+
+$$
+F(x,y,z)=\langle 0,0,z\rangle
+$$
+
+points upward when $z>0$, downward when $z<0$, and is zero on the $xy$-plane.
+
+Another important example is the radial field
+
+$$
+F(x,y,z)=\langle x,y,z\rangle,
+$$
+
+which points away from the origin.  Its magnitude is
+
+$$
+|F(x,y,z)|=\sqrt{x^2+y^2+z^2}.
+$$
+
+So the arrows are longer farther from the origin.
+
+```{python}
+#| label: fig-ch19-space-vector-field
+#| fig-cap: 'A three-dimensional vector field $F(x,y,z)=\langle x,y,z\rangle$ points outward from the origin.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+pts = np.linspace(-1.5, 1.5, 5)
+X, Y, Z = np.meshgrid(pts, pts, pts)
+U, V, W = X, Y, Z
+
+fig = plt.figure(figsize=(7, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.quiver(X, Y, Z, U, V, W, length=0.25, normalize=False)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title(r'Radial vector field $F(x,y,z)=\langle x,y,z\rangle$')
+ax.set_box_aspect((1, 1, 1))
+plt.show()
+```
+
+## Domains and singularities
+
+A vector field is defined only where all component functions are defined.  For instance,
+
+$$
+F(x,y)=\left\langle \frac{x}{x^2+y^2},\frac{y}{x^2+y^2}\right\rangle
+$$
+
+is not defined at $(0,0)$.  Its domain is
+
+$$
+D=\mathbb R^2\setminus \{(0,0)\}.
+$$
+
+The origin is a **singularity**.  Near the singularity, the field becomes very large:
+
+$$
+|F(x,y)|=\frac{1}{\sqrt{x^2+y^2}}.
+$$
+
+Singularities are not just technical details.  They often represent sources, sinks, charges, masses, obstacles, missing data, or model instabilities.
+
+```{python}
+#| label: fig-ch19-singular-field
+#| fig-cap: 'A singular radial field. The field is undefined at the origin and grows large nearby.'
+#| fig-width: 6.5
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 25)
+y = np.linspace(-2, 2, 25)
+X, Y = np.meshgrid(x, y)
+R2 = X**2 + Y**2
+mask = R2 > 0.15
+U = np.full_like(X, np.nan, dtype=float)
+V = np.full_like(Y, np.nan, dtype=float)
+U[mask] = X[mask]/R2[mask]
+V[mask] = Y[mask]/R2[mask]
+M = np.sqrt(U**2 + V**2)
+U_unit = np.full_like(U, np.nan, dtype=float)
+V_unit = np.full_like(V, np.nan, dtype=float)
+U_unit[mask] = U[mask]/M[mask]
+V_unit[mask] = V[mask]/M[mask]
+
+fig, ax = plt.subplots(figsize=(6.5, 5.5))
+ax.quiver(X, Y, U_unit, V_unit, M, angles='xy')
+ax.set_aspect('equal')
+ax.axhline(0, linewidth=0.8)
+ax.axvline(0, linewidth=0.8)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'Singular field $F=\langle x,y\rangle/(x^2+y^2)$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+::: {.callout-warning}
+## Plotting warning
+
+A plotted vector field usually rescales arrows so the picture is readable.  Therefore, a quiver plot may show direction more faithfully than magnitude.  Always check how the plotting command scales the arrows.
+:::
+
+## Gradient vector fields
+
+The most important class of vector fields in this chapter comes from scalar functions.
+
+Let $f(x,y)$ be a differentiable scalar field.  Its gradient is
+
+$$
+\nabla f(x,y)=\langle f_x(x,y),f_y(x,y)\rangle.
+$$
+
+This is a vector field.  At every point, it points in the direction of fastest increase of $f$.
+
+In three variables,
+
+$$
+\nabla f(x,y,z)=\langle f_x(x,y,z),f_y(x,y,z),f_z(x,y,z)\rangle.
+$$
+
+A vector field $F$ is called a **gradient field** if there exists a scalar function $f$ such that
+
+$$
+F=\nabla f.
+$$
+
+The function $f$ is called a **potential function** for $F$.
+
+::: {.callout-tip}
+## Geometry of a gradient field
+
+A gradient vector field is perpendicular to level curves or level surfaces of its potential.  The arrows point uphill; the negative gradient points downhill.
+:::
+
+### Example: a quadratic potential
+
+Let
+
+$$
+f(x,y)=\frac12 x^2+y^2.
+$$
+
+Then
+
+$$
+\nabla f(x,y)=\langle x,2y\rangle.
+$$
+
+The level curves of $f$ are ellipses.  The gradient vectors are perpendicular to those ellipses and point outward toward larger values of $f$.
+
+```{python}
+#| label: fig-ch19-gradient-quadratic
+#| fig-cap: 'Gradient field of a quadratic potential. The arrows are perpendicular to level curves.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 25)
+y = np.linspace(-2, 2, 25)
+X, Y = np.meshgrid(x, y)
+F = 0.5*X**2 + Y**2
+U = X
+V = 2*Y
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.contour(X, Y, F, levels=12)
+ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=18)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'Gradient field $\nabla f=\langle x,2y\rangle$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+### Example: compute a gradient field
+
+Let
+
+$$
+f(x,y)=\sin(xy)+e^y.
+$$
+
+Then
+
+$$
+f_x(x,y)=y\cos(xy),
+$$
+
+and
+
+$$
+f_y(x,y)=x\cos(xy)+e^y.
+$$
+
+Therefore,
+
+$$
+\nabla f(x,y)=\langle y\cos(xy),x\cos(xy)+e^y\rangle.
+$$
+
+### Example: a three-dimensional gradient field
+
+Let
+
+$$
+f(x,y,z)=xyz.
+$$
+
+Then
+
+$$
+\nabla f(x,y,z)=\langle yz,xz,xy\rangle.
+$$
+
+At $(1,2,3)$, this gives
+
+$$
+\nabla f(1,2,3)=\langle 6,3,2\rangle.
+$$
+
+## Gradient fields and optimization
+
+In optimization, the scalar function is often a loss function $L(\theta)$, where $\theta$ is a vector of parameters.  The gradient field
+
+$$
+\nabla L(\theta)
+$$
+
+points in the direction of fastest increase of the loss.  Gradient descent follows the negative gradient:
+
+$$
+\theta_{k+1}=\theta_k-\alpha\nabla L(\theta_k).
+$$
+
+This is not only an algorithm.  It is a discrete approximation to a continuous vector field flow:
+
+$$
+\frac{d\theta}{dt}=-\nabla L(\theta).
+$$
+
+So optimization can be viewed as motion in a vector field.
+
+```{python}
+#| label: fig-ch19-negative-gradient-flow
+#| fig-cap: 'Gradient descent follows the negative gradient field toward smaller values of the loss.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 40)
+y = np.linspace(-2.5, 2.5, 40)
+X, Y = np.meshgrid(x, y)
+Loss = 0.5*(X - 1.0)**2 + 2.0*(Y + 0.5)**2
+U = -(X - 1.0)
+V = -4.0*(Y + 0.5)
+
+# A few gradient descent paths.
+starts = [(-2.5, 2.0), (-2.0, -2.0), (2.5, 2.0), (0.0, 2.2)]
+alpha = 0.18
+paths = []
+for start in starts:
+    p = np.array(start, dtype=float)
+    path = [p.copy()]
+    for _ in range(22):
+        grad = np.array([p[0] - 1.0, 4.0*(p[1] + 0.5)])
+        p = p - alpha*grad
+        path.append(p.copy())
+    paths.append(np.array(path))
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.contour(X, Y, Loss, levels=18)
+ax.quiver(X[::3, ::3], Y[::3, ::3], U[::3, ::3], V[::3, ::3], angles='xy', scale_units='xy', scale=25)
+for path in paths:
+    ax.plot(path[:, 0], path[:, 1], marker='o', markersize=3)
+ax.scatter([1.0], [-0.5], s=70, marker='*')
+ax.set_aspect('equal')
+ax.set_xlabel(r'$\theta_0$')
+ax.set_ylabel(r'$\theta_1$')
+ax.set_title('Negative gradient field and gradient descent paths')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## Conservative vector fields
+
+A vector field $F$ is **conservative** if it is the gradient of some potential function:
+
+$$
+F=\nabla f.
+$$
+
+For example,
+
+$$
+F(x,y)=\langle 2x,2y\rangle
+$$
+
+is conservative because
+
+$$
+F=\nabla(x^2+y^2).
+$$
+
+The potential function is not unique: adding a constant does not change the gradient.  Thus
+
+$$
+f(x,y)=x^2+y^2+C
+$$
+
+has the same gradient field for every constant $C$.
+
+### How to find a potential function
+
+Suppose
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle.
+$$
+
+To find a potential function $f$, we want
+
+$$
+f_x=P, \qquad f_y=Q.
+$$
+
+A practical method is:
+
+1. integrate $P$ with respect to $x$;
+2. include an unknown function of $y$;
+3. differentiate with respect to $y$ and compare with $Q$.
+
+### Example: finding a potential
+
+Let
+
+$$
+F(x,y)=\langle y^2-3x^2,2xy\rangle.
+$$
+
+We seek $f$ such that
+
+$$
+f_x=y^2-3x^2.
+$$
+
+Integrating with respect to $x$ gives
+
+$$
+f(x,y)=xy^2-x^3+g(y),
+$$
+
+where $g(y)$ is unknown.  Now differentiate with respect to $y$:
+
+$$
+f_y=2xy+g'(y).
+$$
+
+Since we need $f_y=2xy$, we get $g'(y)=0$.  Therefore $g$ is constant, and one potential function is
+
+$$
+f(x,y)=xy^2-x^3.
+$$
+
+## A quick test in the plane
+
+For many fields on simple domains, a useful test is based on mixed partial derivatives.  If
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle
+$$
+
+is a gradient field, then $P=f_x$ and $Q=f_y$.  Therefore
+
+$$
+P_y=f_{xy}, \qquad Q_x=f_{yx}.
+$$
+
+When the relevant second partial derivatives are continuous, equality of mixed partials gives
+
+$$
+P_y=Q_x.
+$$
+
+This condition is necessary for being a gradient field, and on many simple regions it is also sufficient.  A complete treatment comes later when we study line integrals and Green's theorem.
+
+### Example: rotational field is not a gradient field on the plane
+
+For
+
+$$
+F(x,y)=\langle -y,x\rangle,
+$$
+
+we have
+
+$$
+P_y=-1, \qquad Q_x=1.
+$$
+
+Since $P_y\ne Q_x$, this field is not a gradient field on the plane.
+
+### Example: radial field is a gradient field
+
+For
+
+$$
+F(x,y)=\langle x,y\rangle,
+$$
+
+we have
+
+$$
+P_y=0, \qquad Q_x=0.
+$$
+
+Indeed,
+
+$$
+F=\nabla\left(\frac12 x^2+\frac12 y^2\right).
+$$
+
+```{python}
+#| label: fig-ch19-gradient-vs-rotational
+#| fig-cap: 'A gradient field has arrows normal to level curves, while a rotational field circulates around them.'
+#| fig-width: 8
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 19)
+y = np.linspace(-2, 2, 19)
+X, Y = np.meshgrid(x, y)
+Phi = 0.5*(X**2 + Y**2)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+axes[0].contour(X, Y, Phi, levels=10)
+axes[0].quiver(X, Y, X, Y, angles='xy', scale_units='xy', scale=12)
+axes[0].set_title(r'Gradient field $\langle x,y\rangle$')
+
+axes[1].contour(X, Y, Phi, levels=10)
+axes[1].quiver(X, Y, -Y, X, angles='xy', scale_units='xy', scale=12)
+axes[1].set_title(r'Rotational field $\langle -y,x\rangle$')
+
+for ax in axes:
+    ax.set_aspect('equal')
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$y$')
+    ax.grid(True, alpha=0.25)
+
+plt.tight_layout()
+plt.show()
+```
+
+## Vector fields as differential equations
+
+A vector field can define motion.  If
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle,
+$$
+
+then a trajectory following the field satisfies the system
+
+$$
+\frac{dx}{dt}=P(x,y), \qquad \frac{dy}{dt}=Q(x,y).
+$$
+
+In vector form,
+
+$$
+\frac{dr}{dt}=F(r(t)).
+$$
+
+The vector field tells the particle's velocity at each point.  The trajectory is a curve whose tangent vector agrees with the field.
+
+### Example: rotation around the origin
+
+For
+
+$$
+F(x,y)=\langle -y,x\rangle,
+$$
+
+the motion equations are
+
+$$
+\frac{dx}{dt}=-y, \qquad \frac{dy}{dt}=x.
+$$
+
+The solutions move around circles centered at the origin.  The vector field is tangent to those circles.
+
+```{python}
+#| label: fig-ch19-trajectories-rotational-field
+#| fig-cap: 'Trajectories following the rotational field move around circles.'
+#| fig-width: 6.5
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2.5, 2.5, 21)
+y = np.linspace(-2.5, 2.5, 21)
+X, Y = np.meshgrid(x, y)
+U, V = -Y, X
+
+t = np.linspace(0, 2*np.pi, 300)
+radii = [0.6, 1.2, 1.8, 2.3]
+
+fig, ax = plt.subplots(figsize=(6.5, 6))
+ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=18)
+for r in radii:
+    ax.plot(r*np.cos(t), r*np.sin(t))
+ax.set_aspect('equal')
+ax.set_xlim(-2.7, 2.7)
+ax.set_ylim(-2.7, 2.7)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'Trajectories for $r^{\prime}(t)=\langle -y,x\rangle$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## Sources, sinks, and radial flow
+
+The radial field
+
+$$
+F(x,y)=\langle x,y\rangle
+$$
+
+points away from the origin.  It behaves like a **source**: trajectories move outward.
+
+The negative radial field
+
+$$
+F(x,y)=\langle -x,-y\rangle
+$$
+
+points toward the origin.  It behaves like a **sink**: trajectories move inward.
+
+In optimization, a sink often represents a local minimum of a loss function.  If $L(x,y)=\frac12(x^2+y^2)$, then
+
+$$
+-\nabla L(x,y)=\langle -x,-y\rangle.
+$$
+
+So the negative gradient flow moves toward the minimizer at the origin.
+
+```{python}
+#| label: fig-ch19-source-sink
+#| fig-cap: 'Source and sink vector fields. The source points outward; the sink points inward.'
+#| fig-width: 8
+#| fig-height: 4
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 19)
+y = np.linspace(-2, 2, 19)
+X, Y = np.meshgrid(x, y)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+for ax, sign, title in [(axes[0], 1, 'Source $F=\\langle x,y\\rangle$'),
+                        (axes[1], -1, 'Sink $F=\\langle -x,-y\\rangle$')]:
+    U, V = sign*X, sign*Y
+    ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=12)
+    ax.set_aspect('equal')
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$y$')
+    ax.set_title(title)
+    ax.grid(True, alpha=0.25)
+
+plt.tight_layout()
+plt.show()
+```
+
+## Vector fields in probability and statistics
+
+Vector fields also appear in probability and statistics.
+
+### Score field
+
+For a positive density $p(x)$ on $\mathbb R^n$, the vector field
+
+$$
+s(x)=\nabla \log p(x)
+$$
+
+is called the **score field**.  It points toward directions where the log-density increases.
+
+For the standard Gaussian density in two dimensions,
+
+$$
+p(x,y)=\frac{1}{2\pi}e^{-(x^2+y^2)/2},
+$$
+
+we have
+
+$$
+\log p(x,y)=C-\frac12(x^2+y^2),
+$$
+
+so
+
+$$
+\nabla \log p(x,y)=\langle -x,-y\rangle.
+$$
+
+Thus the score field points toward the high-density region at the origin.
+
+```{python}
+#| label: fig-ch19-gaussian-score-field
+#| fig-cap: 'The score field of a standard bivariate Gaussian points toward the center of highest density.'
+#| fig-width: 7
+#| fig-height: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 35)
+y = np.linspace(-3, 3, 35)
+X, Y = np.meshgrid(x, y)
+log_density = -0.5*(X**2 + Y**2)
+U, V = -X, -Y
+
+fig, ax = plt.subplots(figsize=(7, 6))
+ax.contour(X, Y, log_density, levels=14)
+ax.quiver(X[::2, ::2], Y[::2, ::2], U[::2, ::2], V[::2, ::2], angles='xy', scale_units='xy', scale=20)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'Gaussian score field $\nabla \log p=\langle -x,-y\rangle$')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+This is one reason vector fields are increasingly important in modern statistics and machine learning: they describe how probability mass, particles, parameters, and samples move.
+
+## A field guide to common vector fields
+
+| Field | Formula | Main behavior |
+|---|---:|---|
+| Constant field | $\langle a,b\rangle$ | uniform direction and magnitude |
+| Radial source | $\langle x,y\rangle$ | points away from origin |
+| Radial sink | $\langle -x,-y\rangle$ | points toward origin |
+| Rotational field | $\langle -y,x\rangle$ | circulates counterclockwise |
+| Gradient field | $\nabla f$ | points toward fastest increase of $f$ |
+| Negative gradient field | $-\nabla f$ | points toward fastest decrease of $f$ |
+| Singular radial field | $\langle x,y\rangle/(x^2+y^2)$ | radial with singularity at origin |
+
+## Worked example: classify and interpret a field
+
+Consider
+
+$$
+F(x,y)=\langle 2x,8y\rangle.
+$$
+
+### Step 1: Check whether it is a gradient field
+
+We look for $f$ such that
+
+$$
+f_x=2x, \qquad f_y=8y.
+$$
+
+Integrating $f_x=2x$ with respect to $x$ gives
+
+$$
+f(x,y)=x^2+g(y).
+$$
+
+Differentiating with respect to $y$ gives
+
+$$
+f_y=g'(y).
+$$
+
+We need $g'(y)=8y$, so
+
+$$
+g(y)=4y^2+C.
+$$
+
+Thus one potential is
+
+$$
+f(x,y)=x^2+4y^2.
+$$
+
+### Step 2: Interpret the field
+
+The level curves of $f$ are ellipses
+
+$$
+x^2+4y^2=c.
+$$
+
+The vector field points outward and is perpendicular to these ellipses.  The negative gradient field
+
+$$
+-F(x,y)=\langle -2x,-8y\rangle
+$$
+
+would drive points toward the minimum at $(0,0)$.
+
+## Worked example: show a field is not conservative
+
+Let
+
+$$
+F(x,y)=\langle y,x+y\rangle.
+$$
+
+Here
+
+$$
+P(x,y)=y, \qquad Q(x,y)=x+y.
+$$
+
+Then
+
+$$
+P_y=1, \qquad Q_x=1.
+$$
+
+This passes the mixed-partial test.  Find a potential:
+
+$$
+f_x=y.
+$$
+
+Integrate with respect to $x$:
+
+$$
+f(x,y)=xy+g(y).
+$$
+
+Then
+
+$$
+f_y=x+g'(y).
+$$
+
+We need
+
+$$
+x+g'(y)=x+y,
+$$
+
+so $g'(y)=y$ and $g(y)=\frac12y^2$.  Hence
+
+$$
+f(x,y)=xy+\frac12y^2.
+$$
+
+Now compare with
+
+$$
+G(x,y)=\langle y,x-y\rangle.
+$$
+
+For $G$, we have
+
+$$
+P_y=1, \qquad Q_x=1,
+$$
+
+so the simple test still passes.  A potential exists:
+
+$$
+f(x,y)=xy-\frac12y^2.
+$$
+
+But for
+
+$$
+H(x,y)=\langle -y,x\rangle,
+$$
+
+we get $P_y=-1$ and $Q_x=1$, so the field cannot be a gradient field on the plane.
+
+::: {.callout-note}
+## What comes next
+
+In the next chapter, we integrate functions along curves.  For a scalar field, a line integral measures accumulated density along a curve.  For a vector field, a line integral measures accumulated tangential work.  Conservative fields will become powerful because their work integrals depend only on endpoints.
+:::
+
+## Python lab: building and visualizing vector fields
+
+The following helper function makes it easy to compare vector fields.
+
+```{python}
+#| label: fig-ch19-vector-field-helper
+#| fig-cap: 'A reusable Python helper for plotting two-dimensional vector fields.'
+#| fig-width: 6.5
+#| fig-height: 5.5
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_vector_field(P, Q, xlim=(-2, 2), ylim=(-2, 2), n=21, title='Vector field'):
+    x = np.linspace(xlim[0], xlim[1], n)
+    y = np.linspace(ylim[0], ylim[1], n)
+    X, Y = np.meshgrid(x, y)
+    U = P(X, Y)
+    V = Q(X, Y)
+    fig, ax = plt.subplots(figsize=(6.5, 5.5))
+    ax.quiver(X, Y, U, V, angles='xy', scale_units='xy', scale=14)
+    ax.set_aspect('equal')
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel('$y$')
+    ax.set_title(title)
+    ax.grid(True, alpha=0.25)
+    plt.show()
+
+plot_vector_field(lambda X, Y: X - Y, lambda X, Y: X + Y, title=r'$F=\langle x-y,x+y\rangle$')
+```
+
+## Chapter summary
+
+A vector field assigns an arrow to each point.  In the plane it has the form
+
+$$
+F(x,y)=\langle P(x,y),Q(x,y)\rangle,
+$$
+
+and in space it has the form
+
+$$
+F(x,y,z)=\langle P(x,y,z),Q(x,y,z),R(x,y,z)\rangle.
+$$
+
+The most important special case is a gradient field:
+
+$$
+F=\nabla f.
+$$
+
+Gradient fields arise from scalar potentials.  They are perpendicular to level curves and level surfaces, and they point in the direction of fastest increase.  Negative gradient fields describe descent, optimization, stable motion toward minima, and score-based movement toward high-density regions.
+
+Vector fields prepare us for line integrals, work, circulation, flux, curl, divergence, Green's theorem, Stokes' theorem, and the divergence theorem.
+
+## Exercises
+
+### Conceptual exercises
+
+1. Explain the difference between a scalar field and a vector field.
+2. Give one physical example and one data-science example of a vector field.
+3. Why is $F(x,y)=\langle -y,x\rangle$ tangent to circles centered at the origin?
+4. Explain why a gradient field is perpendicular to level curves of its potential.
+5. What does it mean for a vector field to have a singularity?
+6. In optimization, why do we usually follow $-\nabla L$ instead of $\nabla L$?
+
+### Computational exercises
+
+1. Sketch the vector field $F(x,y)=\langle x,0\rangle$ by hand.  Describe its behavior.
+2. Sketch the vector field $F(x,y)=\langle 0,y\rangle$ by hand.  Describe its behavior.
+3. Sketch the vector field $F(x,y)=\langle y,x\rangle$.  Is it radial, rotational, or neither?
+4. Compute the gradient field of $f(x,y)=x^2+xy+y^2$.
+5. Compute the gradient field of $f(x,y,z)=x^2y+yz^2$.
+6. Find a potential function for $F(x,y)=\langle 3x^2+y, x+2y\rangle$.
+7. Decide whether $F(x,y)=\langle y^2,2xy\rangle$ is a gradient field.  If so, find a potential.
+8. Decide whether $F(x,y)=\langle x-y,x+y\rangle$ can be a gradient field on the plane.
+9. Let $F(x,y)=\langle -x,-y\rangle$.  Solve the differential equation $r'(t)=F(r(t))$ with $r(0)=(a,b)$.
+10. Let $F(x,y)=\langle -y,x\rangle$.  Show that $x(t)^2+y(t)^2$ is constant along trajectories.
+
+### Applied exercises
+
+1. Suppose $L(\theta_0,\theta_1)=(\theta_0-2)^2+3(\theta_1+1)^2$.  Compute the negative gradient field and identify the minimizer.
+2. For the density $p(x,y)=Ce^{-(x^2+4y^2)/2}$, compute the score field $\nabla\log p$.
+3. A velocity field is $F(x,y)=\langle 1+y,1-x\rangle$.  Compute the velocity at $(0,0)$, $(1,0)$, and $(0,1)$.
+4. A force field is $F(x,y,z)=\langle x,y,z\rangle$.  What is the magnitude of the force at $(1,2,2)$?
+5. Use Python to plot $F(x,y)=\langle \sin y,\cos x\rangle$.  Describe its visible behavior.
+6. Use Python to plot the negative gradient field of $f(x,y)=x^4+y^4-4xy$.  Locate possible stable points visually.
+
+### Challenge exercises
+
+1. Let $F(x,y)=\langle P,Q\rangle$ be a gradient field with potential $f$.  Explain why the vector field is zero at every critical point of $f$.
+2. Find all points where the vector field $F(x,y)=\langle x^2-y^2,2xy\rangle$ is zero.
+3. Let $F(x,y)=\langle ax+by,cx+dy\rangle$.  Find a condition on $a,b,c,d$ that is necessary for $F$ to be a gradient field.
+4. Suppose $F=\nabla f$ and $f$ has a strict local minimum at $p$.  What does the negative gradient field usually do near $p$?
+5. Consider $F(x,y)=\langle -y/(x^2+y^2),x/(x^2+y^2)\rangle$ on $\mathbb R^2\setminus\{0\}$.  Show that $P_y=Q_x$ is not true.  What does the field look like?
+
+## Chapter project: vector fields behind gradient descent
+
+Choose a differentiable loss function $L(\theta_0,\theta_1)$ with at least one local minimum.  Your project is to analyze the vector field
+
+$$
+F(\theta_0,\theta_1)=-\nabla L(\theta_0,\theta_1).
+$$
+
+Your report should include:
+
+1. the formula for $L$;
+2. the formula for $\nabla L$;
+3. a contour plot of $L$;
+4. a quiver plot of $-\nabla L$;
+5. several gradient descent paths from different starting points;
+6. a short explanation of what the field reveals about the geometry of the loss surface.
+
+This project connects multivariable calculus directly to optimization in statistics, machine learning, and artificial intelligence.

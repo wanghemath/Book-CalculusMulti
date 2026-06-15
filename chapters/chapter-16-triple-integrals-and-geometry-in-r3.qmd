@@ -1,0 +1,1060 @@
+---
+title: "Chapter 16. Triple Integrals and Geometry in $\\mathbb R^3$"
+subtitle: "Volume, mass, probability, and continuous sums over solid regions"
+chapter: 16
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+ 
+
+A double integral sums over a two-dimensional region. A triple integral sums over a three-dimensional solid. The change sounds small: replace tiny rectangles by tiny boxes. Conceptually, however, this is a major step. Triple integrals allow us to compute volume, mass, charge, probability, average value, and spatial accumulation over objects in space.
+
+The central geometric skill in this chapter is **describing a solid region by inequalities**. Once the region is described correctly, the integral is often straightforward. Most errors in triple integrals are not integration errors; they are errors in reading the geometry.
+
+This chapter develops triple integrals in rectangular coordinates. Cylindrical and spherical coordinates are treated in the next chapter. For now, we focus on the most important idea:
+
+> A triple integral is a continuous sum over a solid region.
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+1. Interpret $\iiint_E f(x,y,z)\,dV$ as a continuous sum over a solid region $E$.
+2. Compute volume as $\iiint_E 1\,dV$.
+3. Set up triple integrals using projections onto coordinate planes.
+4. Describe solids with bounds such as $g_1(x,y) \le z \le g_2(x,y)$.
+5. Change the order of integration in simple three-dimensional regions.
+6. Compute mass, average value, and probability using triple integrals.
+7. Use Python to visualize regions and approximate triple integrals numerically.
+
+## 16.1 From double integrals to triple integrals
+
+Recall the structure of a double integral over a region $R \subset \mathbb R^2$:
+
+$$
+\iint_R f(x,y)\,dA.
+$$
+
+It is the limit of sums of the form
+
+$$
+\sum f(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+For a triple integral over a solid region $E \subset \mathbb R^3$, we replace area pieces by volume pieces:
+
+$$
+\iiint_E f(x,y,z)\,dV
+  = \lim \sum f(x_{ijk}^*,y_{ijk}^*,z_{ijk}^*)\Delta V.
+$$
+
+In rectangular coordinates,
+
+$$
+\Delta V = \Delta x\,\Delta y\,\Delta z,
+\qquad
+ dV = dx\,dy\,dz.
+$$
+
+The order of the differentials depends on the order in which we integrate. For example,
+
+$$
+\int_a^b\int_c^d\int_p^q f(x,y,z)\,dz\,dy\,dx
+$$
+
+means that we integrate first with respect to $z$, then $y$, then $x$.
+
+::: {.callout-note}
+## The guiding picture
+A double integral sums tiny columns above an area region. A triple integral sums tiny boxes inside a solid region.
+:::
+
+```{python}
+#| label: fig-ch16-voxel-boxes
+#| fig-cap: 'A solid can be approximated by many small rectangular boxes.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+
+# Draw a small stack of boxes that suggest a voxel approximation.
+xs = np.arange(0, 4)
+ys = np.arange(0, 4)
+dx = dy = 0.75
+for i in xs:
+    for j in ys:
+        height = 0.6 + 0.25*i + 0.15*j
+        levels = int(np.ceil(height / 0.28))
+        for k in range(levels):
+            ax.bar3d(i, j, 0.28*k, dx, dy, 0.25, alpha=0.45, shade=True)
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Approximating a solid by small boxes')
+ax.view_init(elev=25, azim=-55)
+plt.show()
+```
+
+## 16.2 Volume as a triple integral
+
+The simplest triple integral occurs when the integrand is $1$.
+
+::: {.callout-important}
+## Volume of a solid
+If $E \subset \mathbb R^3$ is a solid region, then
+
+$$
+\operatorname{Vol}(E)=\iiint_E 1\,dV.
+$$
+:::
+
+This formula says that volume is the sum of all infinitesimal volume elements $dV$ inside the region. It is the three-dimensional analog of
+
+$$
+\operatorname{Area}(R)=\iint_R 1\,dA.
+$$
+
+### Example 16.1: A rectangular box
+
+Let
+
+$$
+E=[0,2]\times[1,4]\times[-1,3].
+$$
+
+Then
+
+$$
+\operatorname{Vol}(E)
+=\int_0^2\int_1^4\int_{-1}^3 1\,dz\,dy\,dx.
+$$
+
+Evaluate from inside to outside:
+
+$$
+\int_{-1}^3 1\,dz=4,
+$$
+
+so
+
+$$
+\operatorname{Vol}(E)
+=\int_0^2\int_1^4 4\,dy\,dx
+=\int_0^2 12\,dx
+=24.
+$$
+
+Of course, the box has side lengths $2$, $3$, and $4$, so the volume is $2\cdot 3\cdot 4=24$.
+
+## 16.3 Solids between two surfaces
+
+A very common solid has the form
+
+$$
+E=\{(x,y,z):(x,y)\in D,\ g_1(x,y)\le z\le g_2(x,y)\}.
+$$
+
+Here $D$ is the projection of $E$ onto the $xy$-plane. The solid lies above the lower surface
+
+$$
+z=g_1(x,y)
+$$
+
+and below the upper surface
+
+$$
+z=g_2(x,y).
+$$
+
+Then
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\iint_D\left[\int_{g_1(x,y)}^{g_2(x,y)} f(x,y,z)\,dz\right]dA.
+$$
+
+If $D$ is a Type I region,
+
+$$
+D=\{(x,y):a\le x\le b,\ h_1(x)\le y\le h_2(x)\},
+$$
+
+then
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\int_a^b\int_{h_1(x)}^{h_2(x)}\int_{g_1(x,y)}^{g_2(x,y)}
+f(x,y,z)\,dz\,dy\,dx.
+$$
+
+::: {.callout-tip}
+## Projection-first method
+To set up a triple integral, first choose a projection plane. Then write the outer two bounds for the projection and the inner bounds for the variable perpendicular to that projection.
+:::
+
+```{python}
+#| label: fig-ch16-projection-onto-xy
+#| fig-cap: 'A solid between two surfaces is described by a projection region in the xy-plane and vertical z-bounds.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1.2, 1.2, 80)
+y = np.linspace(-1.2, 1.2, 80)
+X, Y = np.meshgrid(x, y)
+mask = X**2 + Y**2 <= 1
+Z_lower = 0.25*(X**2 + Y**2)
+Z_upper = 1.2 - 0.3*(X**2 + Y**2)
+Z_lower = np.where(mask, Z_lower, np.nan)
+Z_upper = np.where(mask, Z_upper, np.nan)
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z_upper, alpha=0.55, linewidth=0)
+ax.plot_surface(X, Y, Z_lower, alpha=0.55, linewidth=0)
+
+# projection boundary
+theta = np.linspace(0, 2*np.pi, 200)
+ax.plot(np.cos(theta), np.sin(theta), 0*theta, linewidth=2)
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Projection plus vertical bounds')
+ax.view_init(elev=24, azim=-55)
+plt.show()
+```
+
+### Example 16.2: Volume under a plane over a triangle
+
+Let $E$ be the tetrahedron in the first octant bounded by the coordinate planes and
+
+$$
+x+y+z=1.
+$$
+
+Because the coordinate planes are $x=0$, $y=0$, and $z=0$, the region is
+
+$$
+E=\{(x,y,z):x\ge 0,\ y\ge 0,\ z\ge 0,\ x+y+z\le 1\}.
+$$
+
+Project onto the $xy$-plane. Since $z$ ranges from $0$ to $1-x-y$, we need
+
+$$
+1-x-y\ge 0,
+$$
+
+so the projection is the triangle
+
+$$
+D=\{(x,y):0\le x\le 1,\ 0\le y\le 1-x\}.
+$$
+
+Thus
+
+$$
+\operatorname{Vol}(E)
+=\int_0^1\int_0^{1-x}\int_0^{1-x-y}1\,dz\,dy\,dx.
+$$
+
+Evaluate:
+
+$$
+\operatorname{Vol}(E)
+=\int_0^1\int_0^{1-x}(1-x-y)\,dy\,dx.
+$$
+
+The inner integral is
+
+$$
+\int_0^{1-x}(1-x-y)\,dy
+=\left[(1-x)y-\frac{y^2}{2}\right]_0^{1-x}
+=\frac{(1-x)^2}{2}.
+$$
+
+Therefore
+
+$$
+\operatorname{Vol}(E)
+=\int_0^1\frac{(1-x)^2}{2}\,dx
+=\frac16.
+$$
+
+This matches the formula for a tetrahedron with intercepts $1$, $1$, and $1$.
+
+```{python}
+#| label: fig-ch16-tetrahedron-first-octant
+#| fig-cap: 'The tetrahedron x+y+z <= 1 in the first octant.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+verts = np.array([
+    [0, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1]
+])
+faces = [
+    [verts[0], verts[1], verts[2]],
+    [verts[0], verts[1], verts[3]],
+    [verts[0], verts[2], verts[3]],
+    [verts[1], verts[2], verts[3]]
+]
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+poly = Poly3DCollection(faces, alpha=0.45, edgecolor='black')
+ax.add_collection3d(poly)
+ax.scatter(verts[:,0], verts[:,1], verts[:,2], s=40)
+ax.set_xlim(0, 1.1)
+ax.set_ylim(0, 1.1)
+ax.set_zlim(0, 1.1)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('First-octant tetrahedron')
+ax.view_init(elev=25, azim=-55)
+plt.show()
+```
+
+## 16.4 Integrating functions over solids
+
+Volume is only one example. If $f(x,y,z)$ measures a density, intensity, probability density, energy density, or cost density, then
+
+$$
+\iiint_E f(x,y,z)\,dV
+$$
+
+sums that quantity over the whole solid.
+
+### Example 16.3: A triple integral over the standard tetrahedron
+
+Evaluate
+
+$$
+\iiint_E y\,dV,
+$$
+
+where
+
+$$
+E=\{(x,y,z):x\ge 0,\ y\ge 0,\ z\ge 0,\ x+y+z\le 1\}.
+$$
+
+Using the same bounds as before,
+
+$$
+\iiint_E y\,dV
+=\int_0^1\int_0^{1-x}\int_0^{1-x-y} y\,dz\,dy\,dx.
+$$
+
+Since $y$ does not depend on $z$,
+
+$$
+\int_0^{1-x-y}y\,dz=y(1-x-y).
+$$
+
+Thus
+
+$$
+\iiint_E y\,dV
+=\int_0^1\int_0^{1-x} y(1-x-y)\,dy\,dx.
+$$
+
+For fixed $x$,
+
+$$
+\int_0^{1-x} y(1-x-y)\,dy
+=\int_0^{1-x}((1-x)y-y^2)\,dy
+=\frac{(1-x)^3}{6}.
+$$
+
+Therefore
+
+$$
+\iiint_E y\,dV
+=\int_0^1\frac{(1-x)^3}{6}\,dx
+=\frac1{24}.
+$$
+
+Because of symmetry,
+
+$$
+\iiint_E x\,dV=\iiint_E y\,dV=\iiint_E z\,dV=\frac1{24}.
+$$
+
+## 16.5 Mass and density in three dimensions
+
+Suppose an object occupies a solid region $E$ and has density
+
+$$
+\rho=\rho(x,y,z).
+$$
+
+The mass of a small box is approximately
+
+$$
+\Delta m \approx \rho(x_{ijk}^*,y_{ijk}^*,z_{ijk}^*)\Delta V.
+$$
+
+Summing and passing to a limit gives the mass formula.
+
+::: {.callout-important}
+## Mass from density
+If an object occupies $E\subset\mathbb R^3$ and has density $\rho(x,y,z)$, then
+
+$$
+M=\iiint_E \rho(x,y,z)\,dV.
+$$
+:::
+
+### Example 16.4: Density increasing with height
+
+Let $E$ be the box
+
+$$
+0\le x\le 2,
+\qquad
+0\le y\le 3,
+\qquad
+0\le z\le 1,
+$$
+
+and suppose the density is
+
+$$
+\rho(x,y,z)=1+z.
+$$
+
+Then
+
+$$
+M=\int_0^2\int_0^3\int_0^1(1+z)\,dz\,dy\,dx.
+$$
+
+First,
+
+$$
+\int_0^1(1+z)\,dz=\frac32.
+$$
+
+Thus
+
+$$
+M=\int_0^2\int_0^3\frac32\,dy\,dx
+=\int_0^2\frac92\,dx
+=9.
+$$
+
+If the density were constant $1$, the mass would be the volume $6$. Since the density increases with height, the mass is larger.
+
+## 16.6 Average value over a solid
+
+For a function $f(x,y,z)$ on a solid $E$, its average value over $E$ is
+
+$$
+f_{\operatorname{avg}}
+=\frac{1}{\operatorname{Vol}(E)}\iiint_E f(x,y,z)\,dV.
+$$
+
+This is the three-dimensional version of the average value of a function over an interval or a plane region.
+
+### Example 16.5: Average height in a tetrahedron
+
+For the standard tetrahedron
+
+$$
+E=\{(x,y,z):x,y,z\ge 0,\ x+y+z\le 1\},
+$$
+
+the average value of $z$ is
+
+$$
+z_{\operatorname{avg}}
+=\frac{1}{\operatorname{Vol}(E)}\iiint_E z\,dV.
+$$
+
+By symmetry, $\iiint_E z\,dV=1/24$ and $\operatorname{Vol}(E)=1/6$. Therefore
+
+$$
+z_{\operatorname{avg}}=\frac{1/24}{1/6}=\frac14.
+$$
+
+The centroid of the tetrahedron is
+
+$$
+\left(\frac14,\frac14,\frac14\right).
+$$
+
+This example previews the role of triple integrals in computing centers of mass.
+
+## 16.7 Other projection directions
+
+Projection onto the $xy$-plane is common, but not always best. A solid may also be described by projecting onto the $yz$-plane or the $xz$-plane.
+
+### Projection onto the $yz$-plane
+
+If
+
+$$
+E=\{(x,y,z):(y,z)\in D,\ g_1(y,z)\le x\le g_2(y,z)\},
+$$
+
+then
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\iint_D\left[\int_{g_1(y,z)}^{g_2(y,z)} f(x,y,z)\,dx\right]dA.
+$$
+
+### Projection onto the $xz$-plane
+
+If
+
+$$
+E=\{(x,y,z):(x,z)\in D,\ g_1(x,z)\le y\le g_2(x,z)\},
+$$
+
+then
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\iint_D\left[\int_{g_1(x,z)}^{g_2(x,z)} f(x,y,z)\,dy\right]dA.
+$$
+
+::: {.callout-warning}
+## Do not choose the projection too early
+A difficult integral often becomes easier if you project in a different direction. Before writing bounds, sketch the solid and ask: which variable naturally runs between two simple surfaces?
+:::
+
+## 16.8 Changing the order of integration
+
+In double integrals, changing order means rewriting a region in the plane. In triple integrals, changing order means rewriting a solid in space. There are six possible orders:
+
+$$
+dz\,dy\,dx,
+\qquad
+ dz\,dx\,dy,
+\qquad
+ dy\,dz\,dx,
+\qquad
+ dy\,dx\,dz,
+\qquad
+ dx\,dz\,dy,
+\qquad
+ dx\,dy\,dz.
+$$
+
+The main principle is simple:
+
+> The innermost variable should have bounds that describe a line segment through the solid parallel to that coordinate axis.
+
+### Example 16.6: The tetrahedron in another order
+
+For the standard tetrahedron
+
+$$
+E=\{(x,y,z):x,y,z\ge 0,\ x+y+z\le 1\},
+$$
+
+we wrote
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\int_0^1\int_0^{1-x}\int_0^{1-x-y} f(x,y,z)\,dz\,dy\,dx.
+$$
+
+Now write the order $dx\,dz\,dy$. For fixed $y$ and $z$,
+
+$$
+0\le x\le 1-y-z.
+$$
+
+The projection onto the $yz$-plane is
+
+$$
+0\le y\le 1,
+\qquad
+0\le z\le 1-y.
+$$
+
+Therefore
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\int_0^1\int_0^{1-y}\int_0^{1-y-z} f(x,y,z)\,dx\,dz\,dy.
+$$
+
+Because the tetrahedron is symmetric, all six orders have similar bounds.
+
+```{python}
+#| label: fig-ch16-tetrahedron-slices
+#| fig-cap: 'Horizontal slices of the first-octant tetrahedron are triangles.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+
+for z0 in [0.0, 0.2, 0.4, 0.6, 0.8]:
+    a = 1 - z0
+    triangle = np.array([[0, 0, z0], [a, 0, z0], [0, a, z0], [0, 0, z0]])
+    ax.plot(triangle[:,0], triangle[:,1], triangle[:,2], linewidth=2)
+
+# Slanted edges
+for p in [(1,0,0), (0,1,0), (0,0,0)]:
+    xs = [p[0], 0]
+    ys = [p[1], 0]
+    zs = [p[2], 1]
+    ax.plot(xs, ys, zs, linestyle='--')
+
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_zlim(0, 1)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Slicing by planes z = constant')
+ax.view_init(elev=24, azim=-55)
+plt.show()
+```
+
+## 16.9 Triple integrals and probability
+
+A joint probability density for three continuous random variables $X,Y,Z$ is a nonnegative function $p(x,y,z)$ such that
+
+$$
+\iiint_{\mathbb R^3} p(x,y,z)\,dV=1.
+$$
+
+For a solid event $E\subset \mathbb R^3$,
+
+$$
+P((X,Y,Z)\in E)=\iiint_E p(x,y,z)\,dV.
+$$
+
+This interpretation is essential in statistics and machine learning. Many models use high-dimensional integrals, but the geometric meaning begins here: probability is accumulated density over a region.
+
+### Example 16.7: Uniform distribution in a box
+
+Suppose $(X,Y,Z)$ is uniformly distributed in the box
+
+$$
+0\le x\le 2,
+\qquad
+0\le y\le 1,
+\qquad
+0\le z\le 3.
+$$
+
+The volume is $6$, so the density is
+
+$$
+p(x,y,z)=\frac16
+$$
+
+inside the box and $0$ outside. The probability of the sub-box
+
+$$
+0\le x\le 1,
+\qquad
+0\le y\le 1,
+\qquad
+1\le z\le 3
+$$
+
+is
+
+$$
+\int_0^1\int_0^1\int_1^3\frac16\,dz\,dy\,dx
+=\frac{2}{6}
+=\frac13.
+$$
+
+## 16.10 Numerical triple integration
+
+In practice, many triple integrals cannot be evaluated exactly. Numerical integration is then necessary.
+
+For a rectangular box
+
+$$
+[a,b]\times[c,d]\times[p,q],
+$$
+
+a midpoint rule approximation is
+
+$$
+\iiint_E f(x,y,z)\,dV
+\approx
+\sum_{i=1}^m\sum_{j=1}^n\sum_{k=1}^\ell
+f(\bar x_i,\bar y_j,\bar z_k)\Delta x\Delta y\Delta z.
+$$
+
+```{python}
+#| label: fig-ch16-midpoint-convergence
+#| fig-cap: 'Midpoint approximations for a triple integral converge as the grid is refined.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def midpoint_triple(N):
+    # Integral of f=x+y+z over [0,1]^3 equals 3/2.
+    xs = (np.arange(N) + 0.5) / N
+    ys = (np.arange(N) + 0.5) / N
+    zs = (np.arange(N) + 0.5) / N
+    X, Y, Z = np.meshgrid(xs, ys, zs, indexing='ij')
+    values = X + Y + Z
+    return values.mean()  # volume is 1
+
+Ns = np.arange(2, 31)
+approx = np.array([midpoint_triple(N) for N in Ns])
+exact = 1.5
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(Ns, approx, marker='o', label='midpoint approximation')
+ax.axhline(exact, linestyle='--', label='exact value')
+ax.set_xlabel('N subdivisions in each direction')
+ax.set_ylabel('integral estimate')
+ax.set_title('Triple midpoint rule on the unit cube')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+```
+
+Because $f(x,y,z)=x+y+z$ is linear, the midpoint rule is exact for every $N$ in this example. For nonlinear functions, the approximations generally improve as the grid is refined.
+
+```{python}
+#| label: fig-ch16-nonlinear-midpoint
+#| fig-cap: 'Midpoint approximations for a nonlinear function over the unit cube.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+def midpoint_nonlinear(N):
+    xs = (np.arange(N) + 0.5) / N
+    ys = (np.arange(N) + 0.5) / N
+    zs = (np.arange(N) + 0.5) / N
+    X, Y, Z = np.meshgrid(xs, ys, zs, indexing='ij')
+    values = np.exp(-(X**2 + Y**2 + Z**2))
+    return values.mean()
+
+Ns = np.arange(3, 51)
+approx = np.array([midpoint_nonlinear(N) for N in Ns])
+reference = midpoint_nonlinear(180)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(Ns, approx, marker='o', markersize=3, label='N-grid midpoint')
+ax.axhline(reference, linestyle='--', label='fine-grid reference')
+ax.set_xlabel('N subdivisions in each direction')
+ax.set_ylabel('estimate')
+ax.set_title(r'Estimate of $\int_0^1\int_0^1\int_0^1 e^{-(x^2+y^2+z^2)}\,dV$')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+```
+
+## 16.11 Monte Carlo integration in three dimensions
+
+Monte Carlo integration estimates an integral by random sampling. Suppose $E$ is a box of volume $V$ and we want
+
+$$
+I=\iiint_E f(x,y,z)\,dV.
+$$
+
+If $P_1,\dots,P_N$ are uniformly sampled from $E$, then
+
+$$
+I\approx V\cdot \frac1N\sum_{i=1}^N f(P_i).
+$$
+
+Monte Carlo methods become especially important in high-dimensional statistics, Bayesian inference, uncertainty quantification, and machine learning.
+
+```{python}
+#| label: fig-ch16-monte-carlo-ball
+#| fig-cap: 'Monte Carlo estimation of the volume of the unit ball.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(16)
+Ns = np.unique(np.logspace(2, 5, 45).astype(int))
+estimates = []
+for N in Ns:
+    pts = rng.uniform(-1, 1, size=(N, 3))
+    inside = np.sum(np.sum(pts**2, axis=1) <= 1)
+    estimates.append(8 * inside / N)
+
+exact = 4*np.pi/3
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(Ns, estimates, marker='o', markersize=3, label='Monte Carlo estimate')
+ax.axhline(exact, linestyle='--', label=r'exact $4\pi/3$')
+ax.set_xscale('log')
+ax.set_xlabel('number of random points')
+ax.set_ylabel('estimated volume')
+ax.set_title('Volume of the unit ball by random sampling')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+```
+
+## 16.12 Moments and centers of mass
+
+Triple integrals also compute balance points. Suppose an object occupies $E$ with density $\rho(x,y,z)$ and mass
+
+$$
+M=\iiint_E \rho(x,y,z)\,dV.
+$$
+
+The moments about the coordinate planes are
+
+$$
+M_{yz}=\iiint_E x\rho(x,y,z)\,dV,
+$$
+
+$$
+M_{xz}=\iiint_E y\rho(x,y,z)\,dV,
+$$
+
+$$
+M_{xy}=\iiint_E z\rho(x,y,z)\,dV.
+$$
+
+The center of mass is
+
+$$
+(\bar x,\bar y,\bar z)
+=
+\left(
+\frac{M_{yz}}{M},
+\frac{M_{xz}}{M},
+\frac{M_{xy}}{M}
+\right).
+$$
+
+If $\rho$ is constant, the center of mass is the centroid of the region.
+
+### Example 16.8: Centroid of the standard tetrahedron
+
+For the standard tetrahedron, by symmetry and the computation above,
+
+$$
+\bar x=\bar y=\bar z=\frac14.
+$$
+
+Thus the centroid is
+
+$$
+\left(\frac14,\frac14,\frac14\right).
+$$
+
+This point is closer to the origin than to the opposite face because the tetrahedron is widest near the coordinate planes.
+
+```{python}
+#| label: fig-ch16-centroid-tetrahedron
+#| fig-cap: 'The centroid of the first-octant tetrahedron is (1/4, 1/4, 1/4).'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+verts = np.array([[0,0,0],[1,0,0],[0,1,0],[0,0,1]])
+faces = [
+    [verts[0], verts[1], verts[2]],
+    [verts[0], verts[1], verts[3]],
+    [verts[0], verts[2], verts[3]],
+    [verts[1], verts[2], verts[3]],
+]
+centroid = np.array([0.25, 0.25, 0.25])
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+poly = Poly3DCollection(faces, alpha=0.35, edgecolor='black')
+ax.add_collection3d(poly)
+ax.scatter(*centroid, s=80, label='centroid')
+ax.text(*centroid, '  (1/4,1/4,1/4)')
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_zlim(0, 1)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Centroid of a tetrahedron')
+ax.legend()
+ax.view_init(elev=25, azim=-55)
+plt.show()
+```
+
+## 16.13 Triple integrals in the age of data and AI
+
+Triple integrals appear naturally in modern applied mathematics, statistics, and machine learning.
+
+### Spatial data and voxel models
+
+Medical imaging, climate models, fluid simulations, and 3D computer vision often represent space using voxels. A voxel is a small three-dimensional box. A triple integral is the mathematical limit of summing quantities over voxels.
+
+Examples:
+
+- total mass in a scanned object,
+- total heat in a region,
+- average intensity in a 3D image,
+- probability that a random spatial point lies in a target region.
+
+### Probability and Bayesian inference
+
+For three parameters $\theta_1,\theta_2,\theta_3$, a posterior density $p(\theta_1,\theta_2,\theta_3\mid \text{data})$ satisfies
+
+$$
+\iiint p(\theta_1,\theta_2,\theta_3\mid \text{data})\,d\theta_1\,d\theta_2\,d\theta_3=1.
+$$
+
+A probability statement about the parameters is a triple integral over a region in parameter space.
+
+### Continuous loss and risk
+
+In statistical learning, expected loss may be written as an integral over feature space. In three variables, a risk functional may look like
+
+$$
+R(w)=\iiint L(w;x,y,z)p(x,y,z)\,dV.
+$$
+
+This is a triple integral of loss weighted by a probability density.
+
+## 16.14 Common mistakes
+
+1. **Forgetting the projection.** Bounds such as $0\le z\le g(x,y)$ are incomplete unless the allowed $(x,y)$ values are described.
+2. **Using the wrong upper surface.** Always check which surface is above on the projection region.
+3. **Mixing the order of bounds and differentials.** In $dz\,dy\,dx$, the $z$-bounds come first, then $y$-bounds, then $x$-bounds.
+4. **Treating dependent variables as constants incorrectly.** When integrating with respect to $z$, expressions involving $x$ and $y$ are constant, but the $z$-bounds may depend on $x$ and $y$.
+5. **Assuming every solid is a box.** Most real regions require variable bounds.
+6. **Not checking units.** If $f$ has units of density, then $f\,dV$ has units of mass.
+
+## 16.15 Summary
+
+A triple integral is a continuous sum over a solid region:
+
+$$
+\iiint_E f(x,y,z)\,dV.
+$$
+
+The most important special cases are:
+
+$$
+\operatorname{Vol}(E)=\iiint_E 1\,dV,
+$$
+
+$$
+M=\iiint_E \rho(x,y,z)\,dV,
+$$
+
+$$
+f_{\operatorname{avg}}=rac{1}{\operatorname{Vol}(E)}\iiint_E f(x,y,z)\,dV.
+$$
+
+The most common rectangular-coordinate setup is
+
+$$
+E=\{(x,y,z):(x,y)\in D,\ g_1(x,y)\le z\le g_2(x,y)\},
+$$
+
+which gives
+
+$$
+\iiint_E f(x,y,z)\,dV
+=\iint_D\left[\int_{g_1(x,y)}^{g_2(x,y)} f(x,y,z)\,dz\right]dA.
+$$
+
+The key skill is not merely integration. The key skill is **turning geometry into correct bounds**.
+
+## Exercises
+
+### Conceptual exercises
+
+1. Explain why $\iiint_E 1\,dV$ gives the volume of $E$.
+2. What is the projection of a solid onto the $xy$-plane?
+3. In the integral
+   $$
+   \int_0^2\int_0^{4-x}\int_{x+y}^{5} f(x,y,z)\,dz\,dy\,dx,
+   $$
+   describe the solid region in words.
+4. Why might it be easier to project a region onto the $yz$-plane instead of the $xy$-plane?
+5. Explain the difference between mass and volume in terms of triple integrals.
+6. What does it mean for $p(x,y,z)$ to be a joint probability density?
+
+### Computational exercises
+
+7. Evaluate
+   $$
+   \int_0^1\int_0^2\int_0^3 (x+y+z)\,dz\,dy\,dx.
+   $$
+8. Find the volume of the box $-1\le x\le 2$, $0\le y\le 4$, $1\le z\le 5$.
+9. Evaluate
+   $$
+   \int_0^1\int_0^{1-x}\int_0^{1-x-y} 1\,dz\,dy\,dx.
+   $$
+10. Evaluate
+    $$
+    \int_0^1\int_0^{1-x}\int_0^{1-x-y} x\,dz\,dy\,dx.
+    $$
+11. Let $E$ be the solid under $z=4-x^2-y^2$ and above the rectangle $0\le x\le 1$, $0\le y\le 1$. Set up a triple integral for the volume of $E$.
+12. Let $E$ be the solid between $z=x^2+y^2$ and $z=4$. Set up the volume integral in rectangular coordinates using projection onto the $xy$-plane. Do not evaluate.
+13. Let $E$ be the tetrahedron $x,y,z\ge 0$, $x+y+z\le 2$. Find its volume.
+14. Let $E=[0,1]^3$ and $\rho(x,y,z)=1+x+y+z$. Find the mass of $E$.
+15. Find the average value of $f(x,y,z)=z$ over the unit cube $[0,1]^3$.
+
+### Geometry and setup exercises
+
+16. Describe the solid represented by
+    $$
+    0\le x\le 1,
+    \qquad
+    0\le y\le 1-x,
+    \qquad
+    0\le z\le 2-x-y.
+    $$
+17. Rewrite the tetrahedron integral
+    $$
+    \int_0^1\int_0^{1-x}\int_0^{1-x-y} f(x,y,z)\,dz\,dy\,dx
+    $$
+    in the order $dy\,dz\,dx$.
+18. Set up, but do not evaluate, an integral for the volume of the solid above $z=0$, below $z=9-x^2-y^2$, and above the first quadrant of the $xy$-plane.
+19. Set up a triple integral for the mass of the solid in Exercise 18 if $\rho(x,y,z)=z+1$.
+20. Let $E$ be the region bounded by $z=0$, $z=1-y$, $x=0$, $x=2$, and $y=0$. Write $\iiint_E f(x,y,z)\,dV$ as an iterated integral.
+
+### Python exercises
+
+21. Use a midpoint rule on a grid to approximate
+    $$
+    \int_0^1\int_0^1\int_0^1 e^{-(x^2+y^2+z^2)}\,dV.
+    $$
+22. Use random sampling to estimate the volume of the region
+    $$
+    x^2+y^2+z^2\le 1.
+    $$
+23. Use random sampling to estimate the volume of the tetrahedron
+    $$
+    x,y,z\ge 0,
+    \qquad
+    x+y+z\le 1.
+    $$
+24. Plot horizontal slices of the solid under $z=4-x^2-y^2$ and above the $xy$-plane.
+25. Write a function that estimates $\iiint_E f\,dV$ over a box using the midpoint rule.
+
+## Python lab
+
+A companion Python lab for this chapter should include:
+
+- plotting basic solid regions,
+- voxel approximations of volume,
+- midpoint approximation for triple integrals,
+- Monte Carlo estimation of volumes,
+- probability integrals over 3D regions,
+- center-of-mass computations for simple solids.

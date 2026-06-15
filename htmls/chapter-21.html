@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 21. Conservative Fields, Potentials, and Green's Theorem</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; line-height: 1.55; max-width: 900px; }
+    h1 { color: #12355b; }
+    .box { border-left: 5px solid #0f766e; background: #eef7f6; padding: 1rem; }
+    code, pre { background: #f6f8fa; padding: 0.2rem 0.35rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 21. Conservative Fields, Potentials, and Green's Theorem</h1>
+  <div class="box">
+    <p>This is a starter standalone interactive page for the chapter. Replace or extend this page with a richer JavaScript, Plotly, GeoGebra, or Desmos activity.</p>
+  </div>
+  <h2>Python idea behind this page</h2>
+  <pre><code>import numpy as np
+
+# For F=&lt;-y/2, x/2&gt;, circulation around unit circle should be pi.
+t = np.linspace(0, 2*np.pi, 10001)
+x, y = np.cos(t), np.sin(t)
+dxdt, dydt = -np.sin(t), np.cos(t)
+P, Q = -y/2, x/2
+print(np.trapz(P*dxdt + Q*dydt, t))</code></pre>
+  <p><a href="index.html">Back to HTML index</a></p>
+</body>
+</html>

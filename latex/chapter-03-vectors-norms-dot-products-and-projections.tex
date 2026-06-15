@@ -1,0 +1,1025 @@
+% -----------------------------------------------------------------------------
+% Chapter 3 LaTeX version
+% Source QMD: chapter-03-vectors-norms-dot-products-and-projections.qmd
+% This file is self-contained. To use inside a larger book, copy the material
+% after \begin{document}, or move the preamble definitions to the main preamble.
+% -----------------------------------------------------------------------------
+
+\documentclass[11pt,oneside]{book}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,calc,positioning,shadows.blur,decorations.pathreplacing,patterns,backgrounds,fit,angles,quotes}
+
+% -----------------------------------------------------------------------------
+% Colors and style
+% -----------------------------------------------------------------------------
+\definecolor{chapterblue}{HTML}{1F5AA6}
+\definecolor{chapterteal}{HTML}{168A8F}
+\definecolor{chapterorange}{HTML}{D9822B}
+\definecolor{chaptergreen}{HTML}{2D8A4E}
+\definecolor{chapterpurple}{HTML}{6B4EAA}
+\definecolor{chapterred}{HTML}{B23B3B}
+\definecolor{softblue}{HTML}{EAF3FF}
+\definecolor{softgreen}{HTML}{EAF8EF}
+\definecolor{softorange}{HTML}{FFF4E6}
+\definecolor{softpurple}{HTML}{F3EEFF}
+\definecolor{softred}{HTML}{FFF0F0}
+\definecolor{softgray}{HTML}{F6F7F9}
+\definecolor{darkgray}{HTML}{30343B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=chapterblue,
+  urlcolor=chapterteal,
+  citecolor=chapterpurple
+}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{topsep=0.3em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  axisline/.style={-Latex,thick,darkgray},
+  vector/.style={-Latex,very thick,chapterblue},
+  vectororange/.style={-Latex,very thick,chapterorange},
+  vectorgreen/.style={-Latex,very thick,chaptergreen},
+  vectorpurple/.style={-Latex,very thick,chapterpurple},
+  smallvector/.style={-Latex,thick,chapterblue},
+  guide/.style={dash pattern=on 3pt off 2pt,gray!70},
+  projection/.style={dash pattern=on 4pt off 2pt,thick,chapterorange},
+  point/.style={circle,fill=chapterorange,draw=white,line width=0.4pt,inner sep=1.8pt},
+  bluepoint/.style={circle,fill=chapterblue,draw=white,line width=0.4pt,inner sep=1.8pt},
+  greenpoint/.style={circle,fill=chaptergreen,draw=white,line width=0.4pt,inner sep=1.8pt},
+  boxnode/.style={rounded corners=3pt,draw=chapterblue,fill=softblue,thick,align=center,inner sep=6pt},
+  greennode/.style={rounded corners=3pt,draw=chaptergreen,fill=softgreen,thick,align=center,inner sep=6pt},
+  orangenode/.style={rounded corners=3pt,draw=chapterorange,fill=softorange,thick,align=center,inner sep=6pt},
+  purplenode/.style={rounded corners=3pt,draw=chapterpurple,fill=softpurple,thick,align=center,inner sep=6pt},
+  rednode/.style={rounded corners=3pt,draw=chapterred,fill=softred,thick,align=center,inner sep=6pt}
+}
+
+\newtcolorbox{mainideabox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterblue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Main idea},
+  sharp corners=south,
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{definitionbox}[1][] {
+  enhanced, breakable,
+  colback=softpurple,
+  colframe=chapterpurple,
+  fonttitle=\bfseries,
+  title={Definition},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{examplebox}[1][] {
+  enhanced, breakable,
+  colback=softorange,
+  colframe=chapterorange,
+  fonttitle=\bfseries,
+  title={Example},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{warningbox}[1][] {
+  enhanced, breakable,
+  colback=softred,
+  colframe=chapterred,
+  fonttitle=\bfseries,
+  title={Common mistake},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{notebox}[1][] {
+  enhanced, breakable,
+  colback=softgreen,
+  colframe=chaptergreen,
+  fonttitle=\bfseries,
+  title={Note},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{bridgebox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterteal,
+  fonttitle=\bfseries,
+  title={Bridge to applications},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\lstdefinestyle{pythonstyle}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{chapterblue}\bfseries,
+  stringstyle=\color{chaptergreen},
+  commentstyle=\color{gray},
+  numberstyle=\tiny\color{gray},
+  numbers=left,
+  stepnumber=1,
+  numbersep=7pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!50},
+  backgroundcolor=\color{softgray}
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\vect}[1]{\left\langle #1\right\rangle}
+\newcommand{\proj}{\operatorname{proj}}
+\newcommand{\comp}{\operatorname{comp}}
+\newcommand{\dist}{\operatorname{dist}}
+
+\begin{document}
+\setcounter{chapter}{2}
+
+\chapter{Vectors, Norms, Dot Products, and Projections}
+\label{ch:vectors-norms-dot-products-projections}
+
+\section*{Chapter overview}
+
+Chapter 2 introduced Euclidean space as the natural home for points such as $(x,y)$, $(x,y,z)$, and $(x_1,\ldots,x_n)$. This chapter develops the algebra and geometry of \textbf{vectors} in that space.
+
+A vector can represent a displacement, a velocity, a force, a row of data, a direction of change, a model parameter, or a feature embedding. In multivariable calculus, vectors are the language used to describe motion, tangent lines, tangent planes, gradients, flux, optimization, and linear approximation. In statistics and machine learning, vectors are also used to store observations, coefficients, residuals, gradients, and learned representations.
+
+\begin{mainideabox}
+A vector has both magnitude and direction. The norm measures magnitude, the dot product measures alignment, and projection separates a vector into a part along a chosen direction and a part perpendicular to that direction.
+\end{mainideabox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.92]
+  \node[boxnode,minimum width=3.15cm] (vectors) at (0,2.3) {Vectors\\$v=(v_1,\ldots,v_n)$};
+  \node[greennode,minimum width=3.15cm] (norms) at (-4.0,0) {Norms\\$\norm{v}$};
+  \node[orangenode,minimum width=3.15cm] (dots) at (0,0) {Dot products\\$u\cdot v$};
+  \node[purplenode,minimum width=3.15cm] (projs) at (4.0,0) {Projections\\$\proj_v(u)$};
+  \node[rednode,minimum width=3.15cm] (apps) at (0,-2.25) {Applications\\work, similarity, least squares};
+  \draw[smallvector] (vectors) -- (norms);
+  \draw[smallvector] (vectors) -- (dots);
+  \draw[smallvector] (vectors) -- (projs);
+  \draw[smallvector] (norms) -- (apps);
+  \draw[smallvector] (dots) -- (apps);
+  \draw[smallvector] (projs) -- (apps);
+\end{tikzpicture}
+\caption{The main objects of the chapter and how they connect.}
+\end{figure}
+
+\section*{Learning goals}
+
+After studying this chapter, you should be able to:
+
+\begin{enumerate}
+\item perform vector addition, subtraction, and scalar multiplication in $\R^n$;
+\item compute the Euclidean norm of a vector and construct unit vectors;
+\item interpret distance as the norm of a displacement vector;
+\item compute dot products and use them to find angles;
+\item recognize orthogonal vectors and understand why orthogonality means zero dot product;
+\item project one vector onto another and decompose a vector into parallel and perpendicular parts;
+\item use the dot product to compute work and cosine similarity;
+\item connect vector geometry to data science, statistics, optimization, and AI.
+\end{enumerate}
+
+\section{Vectors as displacement, direction, and data}
+
+\begin{definitionbox}
+A vector in $\R^n$ is an ordered list
+\[
+  v=(v_1,v_2,\ldots,v_n).
+\]
+Geometrically, we often draw a vector as an arrow. Algebraically, we compute with its components.
+\end{definitionbox}
+
+The same component list can represent different kinds of objects.
+
+\begin{center}
+\begin{tabularx}{0.92\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Context} & \textbf{Vector meaning} \\
+\midrule
+Geometry & displacement, direction, normal vector \\
+Physics & force, velocity, acceleration \\
+Statistics & data point, residual vector, coefficient vector \\
+Machine learning & feature vector, weight vector, gradient vector \\
+Optimization & search direction, update direction \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+If $A=(a_1,\ldots,a_n)$ and $B=(b_1,\ldots,b_n)$ are points, the displacement from $A$ to $B$ is
+\[
+  \overrightarrow{AB}=B-A=(b_1-a_1,\ldots,b_n-a_n).
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.05]
+  \draw[axisline] (-0.5,0) -- (4.4,0) node[right] {$x$};
+  \draw[axisline] (0,-0.5) -- (0,3.1) node[above] {$y$};
+  \draw[step=0.5,gray!20,very thin] (-0.5,-0.5) grid (4,3);
+  \coordinate (A) at (0.8,0.8);
+  \coordinate (B) at (3.5,2.4);
+  \draw[vector] (A) -- (B) node[midway,above,sloped] {$\overrightarrow{AB}=B-A$};
+  \fill[bluepoint] (A) circle (2pt) node[below left] {$A$};
+  \fill[greenpoint] (B) circle (2pt) node[above right] {$B$};
+  \draw[guide] (A) -- (3.5,0.8) -- (B);
+  \node[orangenode,anchor=west] at (4.05,1.7) {displacement\\not location};
+\end{tikzpicture}
+\caption{A displacement vector records how to move from one point to another.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.1: A displacement vector in space}]
+Let
+\[
+  A=(1,-2,3), \qquad B=(2,1,5).
+\]
+Then
+\[
+  \overrightarrow{AB}=(2-1,1-(-2),5-3)=(1,3,2).
+\]
+This vector tells us how to move from $A$ to $B$: increase $x$ by $1$, increase $y$ by $3$, and increase $z$ by $2$.
+\end{examplebox}
+
+\begin{notebox}[title={Point versus vector}]
+The ordered triple $(1,3,2)$ can be interpreted as a point or as a vector. As a point, it is a location. As a vector, it is a displacement. In calculus and applied mathematics, the interpretation matters as much as the arithmetic.
+\end{notebox}
+
+\section{Vector addition and scalar multiplication}
+
+If
+\[
+  u=(u_1,\ldots,u_n), \qquad v=(v_1,\ldots,v_n),
+\]
+then vector addition is defined componentwise:
+\[
+  u+v=(u_1+v_1,\ldots,u_n+v_n).
+\]
+If $c$ is a real number, scalar multiplication is
+\[
+  cv=(cv_1,\ldots,cv_n).
+\]
+
+Geometrically:
+\begin{itemize}
+\item $u+v$ means follow displacement $u$ and then displacement $v$;
+\item $v-u$ means the displacement from the endpoint of $u$ to the endpoint of $v$;
+\item $cv$ stretches $v$ by the factor $\abs{c}$;
+\item if $c<0$, then $cv$ also reverses direction.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[step=0.5,gray!18,very thin] (-0.5,-1) grid (6.2,3.4);
+  \draw[axisline] (-0.5,0) -- (6.3,0) node[right] {$x$};
+  \draw[axisline] (0,-1) -- (0,3.5) node[above] {$y$};
+  \coordinate (O) at (0,0);
+  \coordinate (U) at (3,2);
+  \coordinate (W) at (5,1);
+  \draw[vector] (O) -- (U) node[midway,above left] {$u=(3,2)$};
+  \draw[vectorgreen] (U) -- (W) node[midway,above right] {$v=(2,-1)$};
+  \draw[vectororange] (O) -- (W) node[midway,below right] {$u+v=(5,1)$};
+  \draw[guide] (3,0) -- (U) -- (3,0);
+  \draw[guide] (5,0) -- (W);
+  \fill[bluepoint] (O) circle (2pt);
+\end{tikzpicture}
+\caption{Vector addition by following one displacement after another.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.2: Net displacement}]
+A particle is displaced first by $(3,2)$ and then by $(2,-1)$. Its net displacement is
+\[
+  (3,2)+(2,-1)=(5,1).
+\]
+The final location depends on the initial location, but the net displacement does not.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-3.0,0) -- (4.2,0) node[right] {$x$};
+  \draw[axisline] (0,-2.0) -- (0,2.2) node[above] {$y$};
+  \coordinate (O) at (0,0);
+  \coordinate (V) at (1.5,0.8);
+  \coordinate (TwoV) at (3,1.6);
+  \coordinate (NegV) at (-1.5,-0.8);
+  \draw[vector] (O) -- (V) node[midway,above] {$v$};
+  \draw[vectororange] (O) -- (TwoV) node[midway,above left] {$2v$};
+  \draw[vectorgreen] (O) -- (NegV) node[midway,below] {$-v$};
+  \node[boxnode,anchor=west] at (-2.8,1.55) {$cv$ scales length\\and may reverse direction};
+\end{tikzpicture}
+\caption{Scalar multiplication changes the magnitude of a vector, and negative scalars reverse its direction.}
+\end{figure}
+
+\section{Norm, length, and unit vectors}
+
+\begin{definitionbox}
+The \textbf{Euclidean norm} of a vector $v=(v_1,\ldots,v_n)$ is
+\[
+  \norm{v}=\sqrt{v_1^2+v_2^2+\cdots+v_n^2}.
+\]
+A vector $u$ is a \textbf{unit vector} if $\norm{u}=1$.
+\end{definitionbox}
+
+This generalizes the Pythagorean theorem. In $\R^2$, it gives the length of an arrow in the plane. In $\R^3$, it gives the length of an arrow in space. In $\R^n$, it gives the standard size of a data vector or parameter vector.
+
+If $v\ne 0$, then the unit vector in the direction of $v$ is
+\[
+  \widehat v=\frac{v}{\norm{v}}.
+\]
+The vector $v$ can be decomposed as
+\[
+  v=\norm{v}\,\widehat v.
+\]
+This formula says that a nonzero vector is determined by two pieces of information: its magnitude and its direction.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.82]
+  \draw[step=1,gray!18,very thin] (-1,-5) grid (4.2,1.2);
+  \draw[axisline] (-1,0) -- (4.4,0) node[right] {$x$};
+  \draw[axisline] (0,-5) -- (0,1.25) node[above] {$y$};
+  \coordinate (O) at (0,0);
+  \coordinate (V) at (3,-4);
+  \coordinate (U) at (0.6,-0.8);
+  \draw[vector] (O) -- (V) node[midway,right] {$v=(3,-4)$};
+  \draw[vectororange] (O) -- (U) node[near end,left] {$\widehat v$};
+  \draw[guide] (3,0) -- (V) -- (0,-4);
+  \node[greennode,anchor=west] at (1.1,-1.0) {$\norm{\widehat v}=1$};
+  \node[boxnode,anchor=west] at (1.0,-4.45) {$\norm{v}=5$};
+\end{tikzpicture}
+\caption{A vector and its unit direction have the same direction but different lengths.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.3: Unit vector parallel to $(3,-4)$}]
+Let $v=(3,-4)$. Then
+\[
+  \norm{v}=\sqrt{3^2+(-4)^2}=5.
+\]
+Therefore a unit vector parallel to $v$ and pointing in the same direction is
+\[
+  \widehat v=\frac{1}{5}(3,-4)=\left(\frac35,-\frac45\right).
+\]
+A unit vector parallel to $v$ but pointing in the opposite direction is
+\[
+  -\widehat v=\left(-\frac35,\frac45\right).
+\]
+\end{examplebox}
+
+\begin{examplebox}[title={Example 3.4: Unit vectors perpendicular to $(3,-4)$}]
+In the plane, if $v=(a,b)$, then $(-b,a)$ and $(b,-a)$ are perpendicular to $v$. For $v=(3,-4)$, two perpendicular vectors are
+\[
+  (4,3), \qquad (-4,-3).
+\]
+Both have length $5$, so the corresponding unit vectors are
+\[
+  \left(\frac45,\frac35\right), \qquad
+  \left(-\frac45,-\frac35\right).
+\]
+\end{examplebox}
+
+\begin{warningbox}
+Do not confuse a vector with its norm. The vector $(3,-4)$ has direction and magnitude. The norm $\norm{(3,-4)}=5$ is only a number.
+\end{warningbox}
+
+\section{Distance as norm of displacement}
+
+The distance between two points is the length of the displacement vector connecting them. If
+\[
+  A=(a_1,\ldots,a_n), \qquad B=(b_1,\ldots,b_n),
+\]
+then
+\[
+  \dist(A,B)=\norm{B-A}=\sqrt{(b_1-a_1)^2+\cdots+(b_n-a_n)^2}.
+\]
+
+This is one of the most important bridges between geometry and computation. In data science, distance is used in nearest-neighbor methods, clustering, anomaly detection, and similarity search.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-0.5,0) -- (5.0,0) node[right] {$x$};
+  \draw[axisline] (0,-0.5) -- (0,3.7) node[above] {$y$};
+  \coordinate (A) at (1,1);
+  \coordinate (B) at (4,3);
+  \coordinate (C) at (4,1);
+  \draw[very thick,chaptergreen] (A) -- (C) node[midway,below] {$b_1-a_1$};
+  \draw[very thick,chapterorange] (C) -- (B) node[midway,right] {$b_2-a_2$};
+  \draw[vector] (A) -- (B) node[midway,above,sloped] {$B-A$};
+  \draw pic[draw=darkgray,thick,angle radius=7pt] {right angle=B--C--A};
+  \fill[bluepoint] (A) circle (2pt) node[below left] {$A$};
+  \fill[greenpoint] (B) circle (2pt) node[above right] {$B$};
+  \node[boxnode,anchor=west] at (0.7,3.35) {$\dist(A,B)=\norm{B-A}$};
+\end{tikzpicture}
+\caption{Distance is the norm of displacement. In two dimensions this is the Pythagorean theorem.}
+\end{figure}
+
+\section{Dot product}
+
+\begin{definitionbox}
+The \textbf{dot product} of two vectors
+\[
+  u=(u_1,\ldots,u_n), \qquad v=(v_1,\ldots,v_n)
+\]
+is
+\[
+  u\cdot v=u_1v_1+u_2v_2+\cdots+u_nv_n.
+\]
+The dot product takes two vectors and returns one number. It measures alignment.
+\end{definitionbox}
+
+The geometric identity is
+\[
+  u\cdot v=\norm{u}\,\norm{v}\cos\theta,
+\]
+where $\theta$ is the angle between $u$ and $v$. Therefore, for nonzero vectors,
+\[
+  \cos\theta=\frac{u\cdot v}{\norm{u}\,\norm{v}}.
+\]
+This formula is central in geometry, statistics, and machine learning.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.05]
+  \draw[axisline] (-0.4,0) -- (4.4,0) node[right] {$x$};
+  \draw[axisline] (0,-0.4) -- (0,3.2) node[above] {$y$};
+  \coordinate (O) at (0,0);
+  \coordinate (U) at (3.2,0.7);
+  \coordinate (V) at (1.4,2.6);
+  \draw[vector] (O) -- (U) node[near end,below] {$u$};
+  \draw[vectororange] (O) -- (V) node[near end,left] {$v$};
+  \pic[draw=chapterpurple,thick,"$\theta$",angle eccentricity=1.35,angle radius=0.75cm] {angle=U--O--V};
+  \node[boxnode,anchor=west] at (2.0,2.35) {$u\cdot v=\norm{u}\norm{v}\cos\theta$};
+\end{tikzpicture}
+\caption{The dot product connects algebraic components with the angle between vectors.}
+\end{figure}
+
+Suppose $u$ and $v$ are nonzero.
+\begin{itemize}
+\item If $u\cdot v>0$, the angle is acute and the vectors point generally in the same direction.
+\item If $u\cdot v=0$, the angle is $90^\circ$ and the vectors are orthogonal.
+\item If $u\cdot v<0$, the angle is obtuse and the vectors point generally in opposite directions.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.88]
+  % positive
+  \begin{scope}[xshift=-5.0cm]
+    \draw[axisline] (-0.2,0)--(2.6,0);
+    \coordinate (O) at (0,0); \coordinate (A) at (2.2,0.4); \coordinate (B) at (1.5,1.3);
+    \draw[vector] (O)--(A); \draw[vectororange] (O)--(B);
+    \node at (1.1,-0.6) {$u\cdot v>0$};
+    \node at (1.1,-1.05) {acute};
+  \end{scope}
+  % zero
+  \begin{scope}[xshift=0cm]
+    \coordinate (O) at (0,0); \coordinate (A) at (2,0); \coordinate (B) at (0,1.8);
+    \draw[axisline] (-0.2,0)--(2.5,0);
+    \draw[vector] (O)--(A); \draw[vectororange] (O)--(B);
+    \draw pic[draw=darkgray,thick,angle radius=7pt] {right angle=A--O--B};
+    \node at (1.0,-0.6) {$u\cdot v=0$};
+    \node at (1.0,-1.05) {orthogonal};
+  \end{scope}
+  % negative
+  \begin{scope}[xshift=5.0cm]
+    \coordinate (O) at (0,0); \coordinate (A) at (2,0.2); \coordinate (B) at (-1.3,1.4);
+    \draw[axisline] (-1.8,0)--(2.4,0);
+    \draw[vector] (O)--(A); \draw[vectororange] (O)--(B);
+    \node at (0.5,-0.6) {$u\cdot v<0$};
+    \node at (0.5,-1.05) {obtuse};
+  \end{scope}
+\end{tikzpicture}
+\caption{The sign of the dot product gives qualitative information about the angle.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.5: Angle between two vectors}]
+Let
+\[
+  F=(1,2), \qquad v=(-1,3).
+\]
+Then
+\[
+  F\cdot v=(1)(-1)+(2)(3)=5,
+\]
+and
+\[
+  \norm{F}=\sqrt{1^2+2^2}=\sqrt5, \qquad \norm{v}=\sqrt{(-1)^2+3^2}=\sqrt{10}.
+\]
+Thus
+\[
+  \cos\theta=\frac{F\cdot v}{\norm{F}\norm{v}}=\frac{5}{\sqrt5\sqrt{10}}=\frac{1}{\sqrt2}.
+\]
+So
+\[
+  \theta=\cos^{-1}\left(\frac{1}{\sqrt2}\right)=\frac{\pi}{4}.
+\]
+The angle is $45^\circ$, so the two vectors are strongly aligned.
+\end{examplebox}
+
+\section{Orthogonality}
+
+\begin{definitionbox}
+Two vectors $u$ and $v$ are \textbf{orthogonal} if
+\[
+  u\cdot v=0.
+\]
+\end{definitionbox}
+
+Orthogonality generalizes perpendicularity. In $\R^2$ and $\R^3$, it means the vectors meet at a right angle. In $\R^n$, where we may not be able to draw the vectors, the equation $u\cdot v=0$ is still meaningful.
+
+\begin{examplebox}[title={Example 3.6: Checking orthogonality}]
+Let
+\[
+  u=(2,-1,3), \qquad v=(1,5,1).
+\]
+Then
+\[
+  u\cdot v=(2)(1)+(-1)(5)+(3)(1)=2-5+3=0.
+\]
+Therefore $u$ and $v$ are orthogonal.
+\end{examplebox}
+
+\begin{bridgebox}
+Orthogonality is one of the main organizing ideas of applied mathematics. It appears in least squares, projections, Fourier series, PCA, QR factorization, residual analysis, and the geometry of independent directions in data.
+\end{bridgebox}
+
+\section{Projection onto a direction}
+
+Projection answers a basic question:
+
+\begin{center}
+\large\emph{How much of one vector points in the direction of another vector?}
+\end{center}
+
+Let $v\ne 0$. The vector projection of $u$ onto $v$ is
+\[
+  \proj_v(u)=\frac{u\cdot v}{v\cdot v}v.
+\]
+The scalar component of $u$ in the direction of $v$ is
+\[
+  \comp_v(u)=\frac{u\cdot v}{\norm{v}}.
+\]
+If $\widehat v=v/\norm{v}$ is the unit vector in the direction of $v$, then
+\[
+  \proj_v(u)=(u\cdot \widehat v)\widehat v.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.15]
+  \draw[axisline] (-2.0,0) -- (2.3,0) node[right] {$x$};
+  \draw[axisline] (0,-0.4) -- (0,3.55) node[above] {$y$};
+  \coordinate (O) at (0,0);
+  \coordinate (U) at (1,2);
+  \coordinate (V) at (-1,3);
+  \coordinate (P) at (-0.5,1.5);
+  \draw[vectorpurple] (O)--(V) node[near end,left] {$v$};
+  \draw[vector] (O)--(U) node[near end,right] {$u$};
+  \draw[vectororange] (O)--(P) node[midway,left] {$\proj_v(u)$};
+  \draw[vectorgreen] (P)--(U) node[midway,right] {$u-\proj_v(u)$};
+  \draw[projection] (U)--(P);
+  \draw pic[draw=darkgray,thick,angle radius=7pt] {right angle=U--P--O};
+  \fill[point] (P) circle (2pt);
+\end{tikzpicture}
+\caption{Projection decomposes a vector into a part parallel to $v$ and a residual perpendicular to $v$.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.7: Projecting $(1,2)$ onto $(-1,3)$}]
+Let
+\[
+  F=(1,2), \qquad v=(-1,3).
+\]
+Then
+\[
+  F\cdot v=5, \qquad v\cdot v=(-1)^2+3^2=10.
+\]
+Therefore
+\[
+  \proj_v(F)=\frac{F\cdot v}{v\cdot v}v
+  =\frac{5}{10}(-1,3)
+  =\left(-\frac12,\frac32\right).
+\]
+This is the part of $F$ that lies in the direction of $v$.
+\end{examplebox}
+
+\subsection*{Projection creates an orthogonal decomposition}
+
+Let
+\[
+  p=\proj_v(u), \qquad r=u-p.
+\]
+Then
+\[
+  u=p+r,
+\]
+where $p$ is parallel to $v$ and $r$ is orthogonal to $v$.
+
+To check this, compute
+\[
+\begin{aligned}
+  r\cdot v
+  &=(u-p)\cdot v \\
+  &=u\cdot v-\left(\frac{u\cdot v}{v\cdot v}v\right)\cdot v \\
+  &=u\cdot v-\frac{u\cdot v}{v\cdot v}(v\cdot v)=0.
+\end{aligned}
+\]
+
+\begin{bridgebox}[title={Bridge to least squares}]
+In linear regression, the fitted values are projections of the response vector onto a column space. The residual vector is orthogonal to every column of the design matrix. This is why dot products and projections are essential for statistics.
+\end{bridgebox}
+
+\section{Work as a dot product}
+
+If a constant force $F$ moves an object through a displacement $d$, then the work done by the force is
+\[
+  W=F\cdot d.
+\]
+Only the component of the force in the direction of motion contributes to work.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-0.4,0)--(5.2,0) node[right] {$x$};
+  \draw[axisline] (0,-0.6)--(0,3.4) node[above] {$y$};
+  \coordinate (A) at (0.8,0.8);
+  \coordinate (B) at (4.2,1.5);
+  \coordinate (Ftip) at (2.3,3.0);
+  \draw[vector] (A)--(B) node[midway,below] {$d$};
+  \draw[vectororange] (A)--(Ftip) node[midway,left] {$F$};
+  \draw[projection] (Ftip)--($(A)!0.45!(B)$);
+  \node[boxnode,anchor=west] at (2.6,2.6) {$W=F\cdot d$};
+  \node[greennode,anchor=west] at (2.6,2.05) {only the component\\along motion counts};
+  \fill[bluepoint] (A) circle (2pt) node[below left] {start};
+  \fill[greenpoint] (B) circle (2pt) node[below right] {end};
+\end{tikzpicture}
+\caption{Work is the dot product of force and displacement.}
+\end{figure}
+
+\begin{examplebox}[title={Example 3.8: Work by a constant force}]
+A constant force
+\[
+  F=(-1,-3,4)
+\]
+is applied while an object moves from
+\[
+  A=(1,2,0)
+\]
+to
+\[
+  B=(2,0,1).
+\]
+The displacement is
+\[
+  d=B-A=(1,-2,1).
+\]
+The work is
+\[
+  W=F\cdot d=(-1)(1)+(-3)(-2)+(4)(1)=-1+6+4=9.
+\]
+The positive result means that the force has a net component in the direction of motion.
+\end{examplebox}
+
+\section{Cosine similarity and data vectors}
+
+For nonzero vectors $u$ and $v$, the quantity
+\[
+  \frac{u\cdot v}{\norm{u}\norm{v}}
+\]
+is the cosine of the angle between them. In data science and AI, this value is often called \textbf{cosine similarity}.
+
+Cosine similarity focuses on direction rather than magnitude:
+\begin{itemize}
+\item similar direction: value near $1$;
+\item orthogonal or unrelated direction: value near $0$;
+\item opposite direction: value near $-1$.
+\end{itemize}
+
+This is useful when the magnitude of a vector is less important than its pattern. For example, in text analysis, two documents may have different lengths but similar word-frequency directions.
+
+\begin{examplebox}[title={Example 3.9: Cosine similarity of data vectors}]
+Suppose two observations are
+\[
+  x=(2,1,0,3), \qquad y=(4,2,0,6).
+\]
+Then $y=2x$, so the two observations point in exactly the same direction. Their cosine similarity is $1$.
+
+Now compare
+\[
+  x=(2,1,0,3), \qquad z=(0,3,4,0).
+\]
+The dot product is
+\[
+  x\cdot z=(2)(0)+(1)(3)+(0)(4)+(3)(0)=3,
+\]
+so the cosine similarity is positive but not close to $1$.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85]
+  \def\cell#1#2#3#4{\fill[#4] (#1,#2) rectangle ++(1,1); \draw[white,line width=0.5pt] (#1,#2) rectangle ++(1,1); \node at (#1+0.5,#2+0.5) {#3};}
+  \cell{0}{3}{1.00}{chapterblue!75}
+  \cell{1}{3}{1.00}{chapterblue!75}
+  \cell{2}{3}{0.12}{chapterblue!18}
+  \cell{3}{3}{0.71}{chapterblue!52}
+  \cell{0}{2}{1.00}{chapterblue!75}
+  \cell{1}{2}{1.00}{chapterblue!75}
+  \cell{2}{2}{0.12}{chapterblue!18}
+  \cell{3}{2}{0.71}{chapterblue!52}
+  \cell{0}{1}{0.12}{chapterblue!18}
+  \cell{1}{1}{0.12}{chapterblue!18}
+  \cell{2}{1}{1.00}{chapterblue!75}
+  \cell{3}{1}{0.36}{chapterblue!32}
+  \cell{0}{0}{0.71}{chapterblue!52}
+  \cell{1}{0}{0.71}{chapterblue!52}
+  \cell{2}{0}{0.36}{chapterblue!32}
+  \cell{3}{0}{1.00}{chapterblue!75}
+  \foreach \i/\lab in {0/$x$,1/$y$,2/$z$,3/$w$}{
+    \node[above] at (\i+0.5,4.08) {\lab};
+    \node[left] at (-0.08,3.5-\i) {\lab};
+  }
+  \node[font=\bfseries] at (2,-0.75) {cosine similarity matrix};
+  \draw[darkgray,thick] (0,0) rectangle (4,4);
+\end{tikzpicture}
+\caption{Cosine similarity measures direction rather than length. A value near $1$ means similar direction.}
+\end{figure}
+
+\section{High-dimensional geometry: most random directions are nearly orthogonal}
+
+High-dimensional geometry can be surprising. In low dimensions, random vectors often have visibly meaningful angles. In high dimensions, randomly chosen directions are usually close to orthogonal.
+
+This fact helps explain why high-dimensional data can be difficult to visualize and why algorithms must be designed carefully.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\textwidth,
+  height=6.0cm,
+  xmin=-1,xmax=1,
+  ymin=0,ymax=4.3,
+  xlabel={cosine between random unit vectors},
+  ylabel={relative density},
+  grid=both,
+  legend style={draw=none,fill=white,at={(0.97,0.95)},anchor=north east}
+]
+  \addplot[very thick,chapterorange,domain=-1:1,samples=180] {0.95};
+  \addlegendentry{$d=2$ spread across $[-1,1]$}
+  \addplot[very thick,chaptergreen,domain=-1:1,samples=200] {1.25*exp(-x^2/(2*0.32^2))};
+  \addlegendentry{$d=10$ more concentrated}
+  \addplot[very thick,chapterblue,domain=-1:1,samples=200] {4.0*exp(-x^2/(2*0.10^2))};
+  \addlegendentry{$d=100$ near zero}
+\end{axis}
+\end{tikzpicture}
+\caption{Cosines between random unit vectors concentrate near zero in high dimensions. The plotted curves are schematic density shapes emphasizing the concentration effect.}
+\end{figure}
+
+\begin{notebox}[title={Modern interpretation}]
+In high-dimensional data spaces, distance and angle can behave differently from our three-dimensional intuition. This is one reason why normalization, projection, regularization, and dimensionality reduction are central in statistics and machine learning.
+\end{notebox}
+
+\section{Norms beyond the Euclidean norm}
+
+The Euclidean norm is the main norm used in this chapter, but other norms are important in applied mathematics and data science.
+
+For $v=(v_1,\ldots,v_n)$:
+\[
+  \norm{v}_1=\abs{v_1}+\cdots+\abs{v_n}
+\]
+is the $\ell^1$ norm, and
+\[
+  \norm{v}_\infty=\max\{\abs{v_1},\ldots,\abs{v_n}\}
+\]
+is the $\ell^\infty$ norm. The Euclidean norm is
+\[
+  \norm{v}_2=\sqrt{v_1^2+\cdots+v_n^2}.
+\]
+Different norms encode different ideas of size.
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Norm} & \textbf{Formula} & \textbf{Common interpretation} \\
+\midrule
+$\norm{v}_1$ & sum of absolute values & sparsity, total variation, Manhattan distance \\
+$\norm{v}_2$ & square root of sum of squares & Euclidean length, energy, least squares \\
+$\norm{v}_\infty$ & maximum absolute component & worst-case component size \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=2.45]
+  \draw[step=0.5,gray!15,very thin] (-1.25,-1.25) grid (1.25,1.25);
+  \draw[axisline] (-1.25,0)--(1.35,0) node[right] {$x$};
+  \draw[axisline] (0,-1.25)--(0,1.35) node[above] {$y$};
+  \draw[very thick,chapterorange] (0,1)--(1,0)--(0,-1)--(-1,0)--cycle;
+  \draw[very thick,chapterblue] (0,0) circle (1);
+  \draw[very thick,chaptergreen] (-1,-1) rectangle (1,1);
+  \node[chapterorange,anchor=west] at (0.14,1.10) {$\norm{v}_1=1$};
+  \node[chapterblue,anchor=west] at (0.72,0.72) {$\norm{v}_2=1$};
+  \node[chaptergreen,anchor=west] at (1.05,-0.92) {$\norm{v}_\infty=1$};
+\end{tikzpicture}
+\caption{Different norms produce different unit balls in the plane.}
+\end{figure}
+
+\begin{bridgebox}[title={Why this matters later}]
+Least-squares regression is built from the $\ell^2$ norm. Lasso regression is built from the $\ell^1$ norm. Robust and worst-case methods often use $\ell^\infty$-type constraints. Norms are not just geometric objects; they shape models.
+\end{bridgebox}
+
+\section{Computational implementation of core vector operations}
+
+The formulas in this chapter are simple enough to compute by hand, but they also form the basic operations used by numerical linear algebra and machine learning libraries.
+
+\begin{lstlisting}[style=pythonstyle]
+import numpy as np
+
+u = np.array([1.0, 2.0])
+v = np.array([-1.0, 3.0])
+
+norm_u = np.linalg.norm(u)
+norm_v = np.linalg.norm(v)
+dot_uv = u @ v
+cos_theta = dot_uv / (norm_u * norm_v)
+projection = (dot_uv / (v @ v)) * v
+residual = u - projection
+
+print("||u|| =", norm_u)
+print("||v|| =", norm_v)
+print("u dot v =", dot_uv)
+print("cos(theta) =", cos_theta)
+print("projection of u onto v =", projection)
+print("residual =", residual)
+print("residual dot v =", residual @ v)
+\end{lstlisting}
+
+The last line should be approximately zero. This confirms that the residual $u-\proj_v(u)$ is orthogonal to $v$.
+
+\section{Worked example summary}
+
+\begin{examplebox}[title={Example 3.10: Full vector analysis}]
+Let
+\[
+  u=(2,-1,2), \qquad v=(1,2,2).
+\]
+
+\textbf{Step 1: Compute the norms.}
+\[
+  \norm{u}=\sqrt{2^2+(-1)^2+2^2}=3,
+\]
+and
+\[
+  \norm{v}=\sqrt{1^2+2^2+2^2}=3.
+\]
+
+\textbf{Step 2: Compute the dot product.}
+\[
+  u\cdot v=(2)(1)+(-1)(2)+(2)(2)=2-2+4=4.
+\]
+
+\textbf{Step 3: Find the angle.}
+\[
+  \cos\theta=\frac{u\cdot v}{\norm{u}\norm{v}}=\frac{4}{9},
+  \qquad
+  \theta=\cos^{-1}\left(\frac49\right).
+\]
+
+\textbf{Step 4: Project $u$ onto $v$.}
+\[
+  \proj_v(u)=\frac{u\cdot v}{v\cdot v}v
+  =\frac49(1,2,2)
+  =\left(\frac49,\frac89,\frac89\right).
+\]
+
+\textbf{Step 5: Interpret.}
+The vector $u$ has a component in the direction of $v$ and a residual component perpendicular to $v$. This is the same geometric idea that later appears in least-squares approximation.
+\end{examplebox}
+
+\section{Mini-project: cosine similarity for short documents}
+
+A simple way to represent a document is by a vector of word counts. Suppose our vocabulary is
+\[
+  (\text{calculus},\text{data},\text{matrix},\text{gradient}).
+\]
+Three short documents might have count vectors
+\[
+  d_1=(3,1,0,2), \qquad d_2=(2,1,0,3), \qquad d_3=(0,3,4,0).
+\]
+Cosine similarity compares their directions.
+
+\begin{lstlisting}[style=pythonstyle]
+import numpy as np
+
+docs = np.array([
+    [3, 1, 0, 2],
+    [2, 1, 0, 3],
+    [0, 3, 4, 0]
+], dtype=float)
+
+names = ["doc1", "doc2", "doc3"]
+unit_docs = docs / np.linalg.norm(docs, axis=1, keepdims=True)
+sim = unit_docs @ unit_docs.T
+
+for i, name_i in enumerate(names):
+    for j, name_j in enumerate(names):
+        print(f"{name_i} vs {name_j}: {sim[i, j]:.3f}")
+\end{lstlisting}
+
+Documents $d_1$ and $d_2$ are more similar to each other than either is to $d_3$. This is a small example of the geometry behind search, clustering, and embedding models.
+
+\section{Practice problems}
+
+\subsection*{Conceptual questions}
+
+\begin{enumerate}
+\item Explain the difference between a point and a vector using an example in $\R^2$.
+\item Why does multiplying a vector by a negative scalar reverse its direction?
+\item What does it mean for two vectors in $\R^n$ to be orthogonal?
+\item Why is the dot product a measure of alignment?
+\item Explain why cosine similarity ignores magnitude.
+\item Why is projection important for least-squares approximation?
+\end{enumerate}
+
+\subsection*{Computational practice}
+
+\begin{enumerate}
+\item Let $v=(6,8)$. Find $\norm{v}$ and a unit vector in the direction of $v$.
+\item Let $u=(1,2,3)$ and $v=(4,0,-1)$. Compute $u+v$, $u-v$, $3u$, and $-2v$.
+\item Find the displacement vector from $A=(2,-1,4)$ to $B=(5,3,-2)$.
+\item Compute the distance between $A=(2,-1,4)$ and $B=(5,3,-2)$.
+\item Compute the dot product of $u=(2,-1,3)$ and $v=(1,5,1)$. Are they orthogonal?
+\item Find the angle between $u=(1,1)$ and $v=(1,-1)$.
+\item Find the projection of $u=(3,4)$ onto $v=(1,0)$.
+\item Find the projection of $u=(1,2)$ onto $v=(-1,3)$.
+\item A force $F=(2,-1,4)$ moves an object from $A=(0,1,2)$ to $B=(3,0,5)$. Compute the work done.
+\item Let $x=(1,0,2,2)$ and $y=(2,0,4,4)$. Compute their cosine similarity.
+\end{enumerate}
+
+\subsection*{Applied and data-oriented problems}
+
+\begin{enumerate}
+\item Suppose two students have feature vectors $x=(80,90,70)$ and $y=(40,45,35)$ representing scores on three assessments. Compute their cosine similarity. Interpret why this similarity may be high even though the magnitudes differ.
+\item Suppose $r=y-\widehat y$ is a residual vector in a regression problem. What does it mean geometrically if $r$ is orthogonal to the fitted-value vector $\widehat y$?
+\item In a nearest-neighbor method, why might scaling the features change the computed distances?
+\item Find a vector perpendicular to $(5,-2)$. Then normalize it.
+\item Let $w=(w_1,w_2,\ldots,w_n)$ be a model parameter vector. Explain why $\norm{w}_2$ can be interpreted as a measure of model size.
+\end{enumerate}
+
+\subsection*{Challenge problems}
+
+\begin{enumerate}
+\item Prove that if $v\ne 0$, then $u-\proj_v(u)$ is orthogonal to $v$.
+\item Prove the Cauchy-Schwarz inequality in the special case of $\R^2$:
+\[
+  \abs{u\cdot v}\le \norm{u}\norm{v}.
+\]
+\item Show that the projection formula minimizes the distance from $u$ to the line spanned by $v$:
+\[
+  \min_{c\in\R}\norm{u-cv}.
+\]
+\item Let $u$ and $v$ be nonzero vectors. Show that their cosine similarity is unchanged if $u$ and $v$ are multiplied by positive constants.
+\item In $\R^n$, show that if $u$ is orthogonal to $v_1,\ldots,v_k$, then $u$ is orthogonal to every linear combination $c_1v_1+\cdots+c_kv_k$.
+\end{enumerate}
+
+\end{document}

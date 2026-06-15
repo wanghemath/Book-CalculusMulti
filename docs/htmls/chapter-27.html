@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 27. Review, Synthesis, and Bridge to Graduate Study</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; line-height: 1.55; max-width: 900px; }
+    h1 { color: #12355b; }
+    .box { border-left: 5px solid #0f766e; background: #eef7f6; padding: 1rem; }
+    code, pre { background: #f6f8fa; padding: 0.2rem 0.35rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 27. Review, Synthesis, and Bridge to Graduate Study</h1>
+  <div class="box">
+    <p>This is a starter standalone interactive page for the chapter. Replace or extend this page with a richer JavaScript, Plotly, GeoGebra, or Desmos activity.</p>
+  </div>
+  <h2>Python idea behind this page</h2>
+  <pre><code>import numpy as np
+
+def finite_grad(f, x, h=1e-6):
+    x = np.array(x, dtype=float)
+    g = np.zeros_like(x)
+    for j in range(len(x)):
+        e = np.zeros_like(x); e[j] = 1
+        g[j] = (f(x+h*e) - f(x-h*e))/(2*h)
+    return g
+
+f = lambda x: x[0]**2 + 3*x[1]**2
+print(finite_grad(f, [1,2]))</code></pre>
+  <p><a href="index.html">Back to HTML index</a></p>
+</body>
+</html>

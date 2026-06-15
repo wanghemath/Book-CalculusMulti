@@ -1,0 +1,1358 @@
+---
+title: "Chapter 4: Lines, Planes, Hyperplanes, and Parametric Geometry"
+subtitle: "Affine geometry for multivariable calculus, statistics, data science, and machine learning"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+execute:
+  echo: true
+  warning: false
+  message: false
+jupyter: python3
+---
+ 
+
+In single-variable calculus, the most important local geometric object is the **tangent line**. In multivariable calculus, the corresponding objects are **lines**, **planes**, and more generally **hyperplanes**. These are not only geometric objects in $\mathbb R^2$ and $\mathbb R^3$; they are also the basic language of linear models, constraints, optimization, regression, classification, tangent spaces, and numerical algorithms.
+
+A line can describe a path of motion. A plane can describe a constraint surface or a local approximation. A hyperplane can separate two classes of data. A line segment can describe interpolation between data points. A parametric surface can describe a plane patch, a sphere, a cylinder, or the local tangent plane to a curved surface.
+
+This chapter builds a careful foundation for these ideas. The main theme is simple:
+
+> A geometric object is usually easier to understand when we describe it using points and vectors.
+
+We will move between three complementary descriptions:
+
+1. **Parametric form**, useful for tracing an object.
+2. **Normal form**, useful for testing whether a point lies on an object.
+3. **Standard scalar form**, useful for algebra and computation.
+
+By the end of the chapter, lines and planes should feel less like formulas to memorize and more like flexible geometric objects that can be used in calculus, optimization, and data science.
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+- write vector, parametric, and symmetric equations for lines;
+- parameterize line segments between two points;
+- write point-normal and scalar equations of planes in $\mathbb R^3$;
+- parameterize planes using two direction vectors;
+- find intersections among lines and planes;
+- compute angles and distances involving lines, planes, and hyperplanes;
+- interpret hyperplanes as linear constraints and decision boundaries;
+- use Python to visualize lines, planes, hyperplanes, and simple geometric algorithms.
+
+## 4.1 Why parametric geometry matters
+
+A line in the plane is often introduced as
+
+$$
+y = mx + b.
+$$
+
+This is useful, but it has two limitations. First, it does not describe vertical lines. Second, it does not generalize naturally to curves, lines in $\mathbb R^3$, planes in $\mathbb R^3$, or hyperplanes in $\mathbb R^n$.
+
+The vector point of view is more general. A line is determined by:
+
+- one point on the line;
+- one nonzero direction vector.
+
+A plane is determined by either:
+
+- one point and one normal vector; or
+- one point and two nonparallel direction vectors.
+
+A hyperplane in $\mathbb R^n$ is determined by:
+
+- one point and one nonzero normal vector.
+
+This is the same geometry that appears in calculus when we construct tangent lines, tangent planes, and local linear approximations.
+
+::: {.callout-tip}
+## Conceptual principle
+A point tells us **where** an object is. A vector tells us **how to move** along the object or **which direction is perpendicular** to it.
+:::
+
+## 4.2 Lines in the plane
+
+### Slope form
+
+A nonvertical line in $\mathbb R^2$ through $(x_0,y_0)$ with slope $m$ has equation
+
+$$
+y-y_0=m(x-x_0).
+$$
+
+This form is familiar from algebra and single-variable calculus. But it hides the vector structure of the line. The slope $m$ means that a direction vector for the line is
+
+$$
+v = \langle 1,m\rangle.
+$$
+
+Thus the same line can be written as
+
+$$
+\langle x,y\rangle = \langle x_0,y_0\rangle + t\langle 1,m\rangle.
+$$
+
+Here $t$ is a parameter. As $t$ changes, the point moves along the line.
+
+### Vector form
+
+More generally, if $P=(x_0,y_0)$ is a point and $v=\langle a,b\rangle$ is a nonzero direction vector, then the line through $P$ parallel to $v$ is
+
+$$
+r(t)=r_0+tv,
+$$
+
+or
+
+$$
+\langle x,y\rangle = \langle x_0,y_0\rangle + t\langle a,b\rangle.
+$$
+
+In coordinates,
+
+$$
+x=x_0+at, \qquad y=y_0+bt.
+$$
+
+The same idea works in $\mathbb R^3$ and $\mathbb R^n$.
+
+### Point-normal form in the plane
+
+A line in $\mathbb R^2$ can also be described by a normal vector. If $n=\langle A,B\rangle$ is perpendicular to a line and $P_0=(x_0,y_0)$ is on the line, then any point $P=(x,y)$ on the line satisfies
+
+$$
+n\cdot(P-P_0)=0.
+$$
+
+Therefore
+
+$$
+A(x-x_0)+B(y-y_0)=0.
+$$
+
+Expanding gives the standard form
+
+$$
+Ax+By+C=0.
+$$
+
+::: {.callout-note}
+## Direction vector versus normal vector
+For a line in $\mathbb R^2$:
+
+- a **direction vector** points along the line;
+- a **normal vector** points perpendicular to the line.
+
+If $v=\langle a,b\rangle$ is a direction vector, then $n=\langle -b,a\rangle$ and $n=\langle b,-a\rangle$ are normal vectors.
+:::
+
+### Example 4.1: Same line, three descriptions
+
+Find vector, parametric, and standard equations for the line through $P=(2,-1)$ with direction vector $v=\langle 3,2\rangle$.
+
+**Solution.** The vector equation is
+
+$$
+r(t)=\langle 2,-1\rangle+t\langle 3,2\rangle.
+$$
+
+The parametric equations are
+
+$$
+x=2+3t, \qquad y=-1+2t.
+$$
+
+A normal vector is $n=\langle -2,3\rangle$. Therefore
+
+$$
+-2(x-2)+3(y+1)=0.
+$$
+
+Expanding,
+
+$$
+-2x+3y+7=0.
+$$
+
+```{python}
+#| label: fig-ch04-line-three-forms
+#| fig-cap: 'A line in the plane described by a point and a direction vector'
+#| fig-width: 6.5
+#| fig-height: 5
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+P = np.array([2.0, -1.0])
+v = np.array([3.0, 2.0])
+t = np.linspace(-1.5, 1.5, 200)
+pts = P[:, None] + v[:, None] * t
+
+fig, ax = plt.subplots()
+ax.plot(pts[0], pts[1], label='line')
+ax.scatter([P[0]], [P[1]], s=60, label='P')
+ax.quiver(P[0], P[1], v[0], v[1], angles='xy', scale_units='xy', scale=1, width=0.006)
+ax.text(P[0] + 0.1, P[1] - 0.35, 'P')
+ax.text(P[0] + v[0] * 0.45, P[1] + v[1] * 0.45, 'v')
+ax.axhline(0, linewidth=0.8)
+ax.axvline(0, linewidth=0.8)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim(-3, 7)
+ax.set_ylim(-5, 4)
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+```
+
+## 4.3 Lines in $\mathbb R^n$
+
+The vector equation of a line is dimension independent. In $\mathbb R^n$, a line through a point
+
+$$
+p=(p_1,p_2,\dots,p_n)
+$$
+
+with nonzero direction vector
+
+$$
+v=(v_1,v_2,\dots,v_n)
+$$
+
+is
+
+$$
+r(t)=p+tv, \qquad -\infty<t<\infty.
+$$
+
+In coordinates,
+
+$$
+x_1=p_1+tv_1,\quad x_2=p_2+tv_2,\quad \dots,\quad x_n=p_n+tv_n.
+$$
+
+The parameter $t$ is not always time, but it often behaves like time: as $t$ increases, the point moves along the line at constant velocity $v$.
+
+### Lines in $\mathbb R^3$
+
+If $P=(x_0,y_0,z_0)$ and $v=\langle a,b,c\rangle$, then
+
+$$
+\langle x,y,z\rangle = \langle x_0,y_0,z_0\rangle + t\langle a,b,c\rangle.
+$$
+
+Equivalently,
+
+$$
+x=x_0+at,\qquad y=y_0+bt,\qquad z=z_0+ct.
+$$
+
+If $a,b,c$ are nonzero, the symmetric form is
+
+$$
+\frac{x-x_0}{a}=\frac{y-y_0}{b}=\frac{z-z_0}{c}.
+$$
+
+If one component of the direction vector is zero, the corresponding coordinate is constant and should not be placed in the denominator.
+
+### Example 4.2: A line through two points
+
+Find a vector equation and symmetric equation for the line through
+
+$$
+P=(-5,5,4), \qquad Q=(7,-1,2).
+$$
+
+**Solution.** A direction vector is
+
+$$
+v=Q-P=\langle 12,-6,-2\rangle.
+$$
+
+Thus
+
+$$
+r(t)=\langle -5,5,4\rangle+t\langle 12,-6,-2\rangle.
+$$
+
+The parametric equations are
+
+$$
+x=-5+12t,\qquad y=5-6t,\qquad z=4-2t.
+$$
+
+The symmetric form is
+
+$$
+\frac{x+5}{12}=\frac{y-5}{-6}=\frac{z-4}{-2}.
+$$
+
+```{python}
+#| label: fig-ch04-line-in-space
+#| fig-cap: 'A line in space passing through two specified points'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+P = np.array([-5.0, 5.0, 4.0])
+Q = np.array([7.0, -1.0, 2.0])
+v = Q - P
+
+t = np.linspace(-0.15, 1.15, 100)
+L = P[:, None] + v[:, None] * t
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(L[0], L[1], L[2])
+ax.scatter([P[0], Q[0]], [P[1], Q[1]], [P[2], Q[2]], s=60)
+ax.text(P[0], P[1], P[2], ' P')
+ax.text(Q[0], Q[1], Q[2], ' Q')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Line through P and Q')
+plt.show()
+```
+
+## 4.4 Line segments and interpolation
+
+The full line through $P$ and $Q$ extends infinitely in both directions. The **line segment** from $P$ to $Q$ is obtained by restricting the parameter:
+
+$$
+r(t)=P+t(Q-P),\qquad 0\le t\le 1.
+$$
+
+At $t=0$, we get $P$. At $t=1$, we get $Q$. At $t=1/2$, we get the midpoint.
+
+This formula is one of the most useful formulas in applied mathematics. It describes linear interpolation between two states, two observations, two images, two parameter vectors, or two model weights.
+
+::: {.callout-tip}
+## Line segment formula
+The line segment from $P$ to $Q$ is
+
+$$
+r(t)=(1-t)P+tQ,\qquad 0\le t\le 1.
+$$
+
+This is the same as $P+t(Q-P)$, but the form $(1-t)P+tQ$ makes the interpolation interpretation clear.
+:::
+
+### Example 4.3: Interpolating between two model parameter vectors
+
+Suppose a simple model has parameter vector
+
+$$
+w_0=(1,-2,0.5)
+$$
+
+before training and
+
+$$
+w_1=(3,1,-1)
+$$
+
+after training. The path
+
+$$
+w(t)=(1-t)w_0+tw_1,\qquad 0\le t\le 1,
+$$
+
+linearly interpolates between the two models. This does not mean gradient descent moves along this exact path. It only gives a useful way to compare intermediate parameter vectors.
+
+```{python}
+#| label: fig-ch04-linear-interpolation
+#| fig-cap: 'Linear interpolation between two vectors in three-dimensional parameter space'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+w0 = np.array([1.0, -2.0, 0.5])
+w1 = np.array([3.0, 1.0, -1.0])
+t = np.linspace(0, 1, 30)
+W = (1 - t)[:, None] * w0 + t[:, None] * w1
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(W[:, 0], W[:, 1], W[:, 2], marker='o', markersize=3)
+ax.scatter([w0[0], w1[0]], [w0[1], w1[1]], [w0[2], w1[2]], s=80)
+ax.text(w0[0], w0[1], w0[2], ' start')
+ax.text(w1[0], w1[1], w1[2], ' end')
+ax.set_xlabel('w1')
+ax.set_ylabel('w2')
+ax.set_zlabel('w3')
+ax.set_title('A straight path in parameter space')
+plt.show()
+```
+
+## 4.5 Planes in $\mathbb R^3$: point-normal form
+
+A plane in $\mathbb R^3$ is determined by a point $P_0=(x_0,y_0,z_0)$ and a nonzero normal vector
+
+$$
+n=\langle a,b,c\rangle.
+$$
+
+A point $P=(x,y,z)$ lies on the plane exactly when $P-P_0$ is perpendicular to $n$. Therefore
+
+$$
+n\cdot(P-P_0)=0.
+$$
+
+This gives
+
+$$
+\langle a,b,c\rangle\cdot\langle x-x_0,y-y_0,z-z_0\rangle=0.
+$$
+
+Equivalently,
+
+$$
+a(x-x_0)+b(y-y_0)+c(z-z_0)=0.
+$$
+
+Expanding gives standard form
+
+$$
+ax+by+cz+d=0.
+$$
+
+::: {.callout-note}
+## Meaning of the normal vector
+In the equation
+
+$$
+ax+by+cz+d=0,
+$$
+
+the vector $n=\langle a,b,c\rangle$ is perpendicular to the plane. This is why the coefficients of $x$, $y$, and $z$ are geometrically meaningful.
+:::
+
+### Example 4.4: Equation of a plane from point and normal vector
+
+Find the equation of the plane through $P_0=(1,2,3)$ with normal vector $n=\langle 4,5,6\rangle$.
+
+**Solution.** Use the point-normal equation:
+
+$$
+4(x-1)+5(y-2)+6(z-3)=0.
+$$
+
+Expanding,
+
+$$
+4x+5y+6z-32=0.
+$$
+
+```{python}
+#| label: fig-ch04-plane-normal
+#| fig-cap: 'A plane in space with a normal vector drawn from a point on the plane'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+P0 = np.array([1.0, 2.0, 3.0])
+n = np.array([4.0, 5.0, 6.0])
+
+# Plane: 4(x-1)+5(y-2)+6(z-3)=0
+x = np.linspace(-1.5, 3.5, 20)
+y = np.linspace(-0.5, 4.5, 20)
+X, Y = np.meshgrid(x, y)
+Z = P0[2] - (n[0] * (X - P0[0]) + n[1] * (Y - P0[1])) / n[2]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.45, linewidth=0)
+ax.scatter([P0[0]], [P0[1]], [P0[2]], s=70)
+ax.quiver(P0[0], P0[1], P0[2], n[0], n[1], n[2], length=0.45, normalize=True)
+ax.text(P0[0], P0[1], P0[2], ' P0')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Plane and normal vector')
+plt.show()
+```
+
+## 4.6 Planes from three points
+
+Three noncollinear points determine a plane. Suppose
+
+$$
+P,\quad Q,\quad R
+$$
+
+are three points in $\mathbb R^3$. Two direction vectors in the plane are
+
+$$
+Q-P,\qquad R-P.
+$$
+
+If the points are not collinear, then these vectors are not parallel. A normal vector is
+
+$$
+n=(Q-P)\times(R-P).
+$$
+
+Then the plane is
+
+$$
+n\cdot\bigl(\langle x,y,z\rangle-P\bigr)=0.
+$$
+
+### Example 4.5: Plane through three points
+
+Find the plane through
+
+$$
+P=(1,2,3),\qquad Q=(2,2,5),\qquad R=(3,4,1).
+$$
+
+**Solution.** Compute
+
+$$
+Q-P=\langle 1,0,2\rangle,
+$$
+
+and
+
+$$
+R-P=\langle 2,2,-2\rangle.
+$$
+
+A normal vector is
+
+$$
+(Q-P)\times(R-P)=\langle -4,6,2\rangle.
+$$
+
+We may divide by $2$ and use
+
+$$
+n=\langle -2,3,1\rangle.
+$$
+
+Therefore the plane is
+
+$$
+-2(x-1)+3(y-2)+(z-3)=0.
+$$
+
+Expanding,
+
+$$
+-2x+3y+z-7=0.
+$$
+
+## 4.7 Parametric form of a plane
+
+A plane may also be described by one point and two nonparallel direction vectors. If $P_0$ is a point and $u,v$ are nonparallel vectors, then
+
+$$
+r(s,t)=P_0+su+tv
+$$
+
+is the plane through $P_0$ spanned by $u$ and $v$.
+
+This is the two-parameter analogue of a line.
+
+- A line has one parameter: $r(t)=P_0+tv$.
+- A plane has two parameters: $r(s,t)=P_0+su+tv$.
+
+The normal vector to the plane is
+
+$$
+n=u\times v.
+$$
+
+If $u\times v=0$, then $u$ and $v$ are parallel, and the formula does not describe a genuine plane.
+
+### Example 4.6: Parametric and scalar plane equations
+
+Let
+
+$$
+P_0=(1,0,2),\qquad u=\langle 1,2,0\rangle,\qquad v=\langle 0,1,3\rangle.
+$$
+
+A parametric equation of the plane is
+
+$$
+r(s,t)=\langle 1,0,2\rangle+s\langle 1,2,0\rangle+t\langle 0,1,3\rangle.
+$$
+
+In coordinates,
+
+$$
+x=1+s,\qquad y=2s+t,\qquad z=2+3t.
+$$
+
+A normal vector is
+
+$$
+u\times v=\langle 6,-3,1\rangle.
+$$
+
+Therefore a scalar equation is
+
+$$
+6(x-1)-3(y-0)+(z-2)=0,
+$$
+
+or
+
+$$
+6x-3y+z-8=0.
+$$
+
+```{python}
+#| label: fig-ch04-parametric-plane
+#| fig-cap: 'A parametric plane generated by two nonparallel direction vectors'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+P0 = np.array([1.0, 0.0, 2.0])
+u = np.array([1.0, 2.0, 0.0])
+v = np.array([0.0, 1.0, 3.0])
+
+s = np.linspace(-1, 1, 15)
+t = np.linspace(-1, 1, 15)
+S, T = np.meshgrid(s, t)
+X = P0[0] + S * u[0] + T * v[0]
+Y = P0[1] + S * u[1] + T * v[1]
+Z = P0[2] + S * u[2] + T * v[2]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.45, linewidth=0)
+ax.scatter([P0[0]], [P0[1]], [P0[2]], s=70)
+ax.quiver(P0[0], P0[1], P0[2], u[0], u[1], u[2], length=1, normalize=False)
+ax.quiver(P0[0], P0[1], P0[2], v[0], v[1], v[2], length=1, normalize=False)
+ax.text(P0[0], P0[1], P0[2], ' P0')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Parametric plane')
+plt.show()
+```
+
+## 4.8 Intersections
+
+Intersections are where algebra meets geometry. In calculus and applied mathematics, intersection problems appear when we solve constraints, find feasible sets, or describe where surfaces meet.
+
+### Line-plane intersection
+
+Suppose a line is given by
+
+$$
+r(t)=P+tv
+$$
+
+and a plane is given by
+
+$$
+n\cdot(x-P_0)=0.
+$$
+
+Substitute $x=r(t)$ into the plane equation:
+
+$$
+n\cdot(P+tv-P_0)=0.
+$$
+
+This is a linear equation in $t$:
+
+$$
+n\cdot(P-P_0)+t(n\cdot v)=0.
+$$
+
+If $n\cdot v\ne 0$, there is one intersection point:
+
+$$
+t=-\frac{n\cdot(P-P_0)}{n\cdot v}.
+$$
+
+If $n\cdot v=0$, then the line is parallel to the plane. It either never intersects the plane or lies entirely in the plane.
+
+### Example 4.7: A line intersects a plane
+
+Find the intersection point of
+
+$$
+x=1-2t,\qquad y=3+t,\qquad z=2+4t
+$$
+
+with the plane
+
+$$
+2x-y+z=0.
+$$
+
+**Solution.** Substitute the line into the plane:
+
+$$
+2(1-2t)-(3+t)+(2+4t)=0.
+$$
+
+Simplifying gives
+
+$$
+1-t=0,
+$$
+
+so $t=1$. Therefore
+
+$$
+(x,y,z)=(-1,4,6).
+$$
+
+```{python}
+#| label: fig-ch04-line-plane-intersection
+#| fig-cap: 'A line meeting a plane at one point'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Line: (1,3,2) + t(-2,1,4)
+P = np.array([1.0, 3.0, 2.0])
+v = np.array([-2.0, 1.0, 4.0])
+
+t = np.linspace(-0.5, 1.4, 100)
+L = P[:, None] + v[:, None] * t
+intersection = P + v * 1.0
+
+# Plane: 2x - y + z = 0, so z = -2x + y
+x = np.linspace(-2.5, 2.5, 20)
+y = np.linspace(1.0, 5.0, 20)
+X, Y = np.meshgrid(x, y)
+Z = -2 * X + Y
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.35, linewidth=0)
+ax.plot(L[0], L[1], L[2], linewidth=2)
+ax.scatter([intersection[0]], [intersection[1]], [intersection[2]], s=80)
+ax.text(intersection[0], intersection[1], intersection[2], ' intersection')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+ax.set_title('Line-plane intersection')
+plt.show()
+```
+
+### Intersection of two planes
+
+Two nonparallel planes in $\mathbb R^3$ intersect in a line. Suppose
+
+$$
+n_1\cdot x=d_1,
+$$
+
+and
+
+$$
+n_2\cdot x=d_2.
+$$
+
+If $n_1$ and $n_2$ are not parallel, then the direction vector of the intersection line is
+
+$$
+v=n_1\times n_2.
+$$
+
+To find a point on the line, solve the two plane equations simultaneously. Since there are two equations in three unknowns, one variable can usually be chosen freely.
+
+### Example 4.8: Intersection of two planes
+
+Find a parametric equation for the intersection of
+
+$$
+x+y+z=3
+$$
+
+and
+
+$$
+2x+3y+z=8.
+$$
+
+**Solution.** Subtract the first equation from the second:
+
+$$
+x+2y=5.
+$$
+
+Let $z=t$. Then from the first equation,
+
+$$
+x+y=3-t.
+$$
+
+Solving
+
+$$
+x+2y=5,\qquad x+y=3-t
+$$
+
+gives
+
+$$
+y=2+t,
+$$
+
+and
+
+$$
+x=1-2t.
+$$
+
+So the intersection line is
+
+$$
+r(t)=\langle 1,2,0\rangle+t\langle -2,1,1\rangle.
+$$
+
+The direction vector can also be found from the cross product of normal vectors:
+
+$$
+\langle 1,1,1\rangle\times\langle 2,3,1\rangle=\langle -2,1,1\rangle.
+$$
+
+## 4.9 Angles involving lines and planes
+
+### Angle between two lines
+
+If two lines have direction vectors $u$ and $v$, the angle $\theta$ between the lines satisfies
+
+$$
+\cos\theta=\frac{|u\cdot v|}{|u||v|}.
+$$
+
+The absolute value gives the acute angle between the lines.
+
+### Angle between two planes
+
+If two planes have normal vectors $n_1$ and $n_2$, then the angle between the planes is the acute angle between their normal vectors:
+
+$$
+\cos\theta=\frac{|n_1\cdot n_2|}{|n_1||n_2|}.
+$$
+
+### Example 4.9: Angle between two planes
+
+Find the angle between
+
+$$
+x+2y+z=5
+$$
+
+and
+
+$$
+x+y=8.
+$$
+
+**Solution.** The normal vectors are
+
+$$
+n_1=\langle 1,2,1\rangle,
+\qquad
+n_2=\langle 1,1,0\rangle.
+$$
+
+Then
+
+$$
+\cos\theta=\frac{|n_1\cdot n_2|}{|n_1||n_2|}
+=\frac{3}{\sqrt{6}\sqrt{2}}
+=\frac{\sqrt{3}}{2}.
+$$
+
+Therefore
+
+$$
+\theta=\frac{\pi}{6}.
+$$
+
+## 4.10 Distances to lines, planes, and hyperplanes
+
+Distance formulas are important because they turn geometry into quantitative measurement. In data science, the distance from a data point to a hyperplane is a signed confidence score for a linear classifier. In optimization, it measures violation of a linear constraint.
+
+### Distance from a point to a plane
+
+Suppose the plane is
+
+$$
+ax+by+cz+d=0.
+$$
+
+The distance from $P=(x_0,y_0,z_0)$ to the plane is
+
+$$
+\operatorname{dist}(P,\Pi)=\frac{|ax_0+by_0+cz_0+d|}{\sqrt{a^2+b^2+c^2}}.
+$$
+
+The signed distance is
+
+$$
+\frac{ax_0+by_0+cz_0+d}{\sqrt{a^2+b^2+c^2}}.
+$$
+
+### Distance from a point to a line in $\mathbb R^3$
+
+If a line is $r(t)=P_0+tv$ and $P$ is a point, then
+
+$$
+\operatorname{dist}(P,L)=\frac{|(P-P_0)\times v|}{|v|}.
+$$
+
+This formula comes from the area of a parallelogram. The numerator is the area of the parallelogram with sides $P-P_0$ and $v$, and the base length is $|v|$.
+
+### Example 4.10: Distance from a point to a plane
+
+Find the distance from $P=(1,2,3)$ to
+
+$$
+2x-y+2z-5=0.
+$$
+
+**Solution.** Use the formula:
+
+$$
+\operatorname{dist}(P,\Pi)
+=\frac{|2(1)-2+2(3)-5|}{\sqrt{2^2+(-1)^2+2^2}}
+=\frac{1}{3}.
+$$
+
+```{python}
+#| label: fig-ch04-signed-distance
+#| fig-cap: 'Signed distances to a line used as a linear decision boundary'
+#| fig-width: 7
+#| fig-height: 5.5
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(10)
+X1 = rng.normal(loc=[-1.2, -0.6], scale=0.45, size=(35, 2))
+X2 = rng.normal(loc=[1.2, 0.8], scale=0.45, size=(35, 2))
+X = np.vstack([X1, X2])
+y_label = np.array([0] * len(X1) + [1] * len(X2))
+
+# Decision boundary: w dot x + b = 0
+w = np.array([1.0, -0.75])
+b = -0.05
+xx = np.linspace(-2.8, 2.8, 200)
+yy = -(w[0] * xx + b) / w[1]
+
+signed_dist = (X @ w + b) / np.linalg.norm(w)
+
+fig, ax = plt.subplots()
+ax.scatter(X[y_label == 0, 0], X[y_label == 0, 1], label='class 0')
+ax.scatter(X[y_label == 1, 0], X[y_label == 1, 1], label='class 1')
+ax.plot(xx, yy, label='w dot x + b = 0')
+
+# Draw distance segments for a few points
+for p in X[::12]:
+    foot = p - ((p @ w + b) / (w @ w)) * w
+    ax.plot([p[0], foot[0]], [p[1], foot[1]], linewidth=1)
+
+ax.axhline(0, linewidth=0.8)
+ax.axvline(0, linewidth=0.8)
+ax.set_aspect('equal', adjustable='box')
+ax.set_xlim(-3, 3)
+ax.set_ylim(-3, 3)
+ax.set_xlabel('feature 1')
+ax.set_ylabel('feature 2')
+ax.set_title('Distances to a decision boundary')
+ax.grid(True, alpha=0.3)
+ax.legend()
+plt.show()
+
+print('First five signed distances:', np.round(signed_dist[:5], 3))
+```
+
+## 4.11 Hyperplanes in $\mathbb R^n$
+
+A **hyperplane** in $\mathbb R^n$ is the set of points satisfying one linear equation:
+
+$$
+w\cdot x+b=0,
+$$
+
+where $w\ne 0$ is a vector in $\mathbb R^n$ and $b$ is a scalar.
+
+The vector $w$ is normal to the hyperplane. The hyperplane has dimension $n-1$. For example:
+
+- in $\mathbb R^2$, a hyperplane is a line;
+- in $\mathbb R^3$, a hyperplane is a plane;
+- in $\mathbb R^{100}$, a hyperplane is a $99$-dimensional flat object.
+
+We usually cannot draw high-dimensional hyperplanes, but the algebra remains the same.
+
+The two sides of the hyperplane are half-spaces:
+
+$$
+w\cdot x+b>0
+$$
+
+and
+
+$$
+w\cdot x+b<0.
+$$
+
+The signed distance from $x$ to the hyperplane is
+
+$$
+\frac{w\cdot x+b}{|w|}.
+$$
+
+### Hyperplanes and linear classifiers
+
+A linear classifier assigns a label according to the sign of
+
+$$
+w\cdot x+b.
+$$
+
+This is the geometric core of logistic regression, support vector machines, perceptrons, and the final linear layer of many neural networks.
+
+::: {.callout-important}
+## Hyperplane as a decision boundary
+A classifier of the form
+
+$$
+\hat y=\operatorname{sign}(w\cdot x+b)
+$$
+
+separates feature space into two half-spaces. The boundary between the two predicted classes is the hyperplane $w\cdot x+b=0$.
+:::
+
+```{python}
+#| label: fig-ch04-hyperplane-3d-classifier
+#| fig-cap: 'A plane used as a linear decision boundary in three-dimensional feature space'
+#| fig-width: 7
+#| fig-height: 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(24)
+A = rng.normal(loc=[-1.0, -0.5, -0.4], scale=0.35, size=(35, 3))
+B = rng.normal(loc=[1.0, 0.7, 0.5], scale=0.35, size=(35, 3))
+
+# Hyperplane: x + y + z = 0.2
+w = np.array([1.0, 1.0, 1.0])
+b = -0.2
+x = np.linspace(-1.8, 1.8, 15)
+y = np.linspace(-1.8, 1.8, 15)
+Xg, Yg = np.meshgrid(x, y)
+Zg = -(w[0] * Xg + w[1] * Yg + b) / w[2]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(A[:, 0], A[:, 1], A[:, 2], label='class 0')
+ax.scatter(B[:, 0], B[:, 1], B[:, 2], label='class 1')
+ax.plot_surface(Xg, Yg, Zg, alpha=0.25, linewidth=0)
+ax.set_xlabel('feature 1')
+ax.set_ylabel('feature 2')
+ax.set_zlabel('feature 3')
+ax.set_title('Linear decision boundary in 3D')
+ax.legend()
+plt.show()
+```
+
+## 4.12 Affine subspaces and constraints
+
+A line, plane, or hyperplane is an example of an **affine subspace**. The word affine means that the object may not pass through the origin.
+
+A linear subspace has the form
+
+$$
+\operatorname{span}\{v_1,\dots,v_k\}.
+$$
+
+An affine subspace has the form
+
+$$
+p+\operatorname{span}\{v_1,\dots,v_k\}.
+$$
+
+Examples:
+
+- A line through the origin is a one-dimensional linear subspace.
+- A line not through the origin is a one-dimensional affine subspace.
+- A plane through the origin is a two-dimensional linear subspace.
+- A plane not through the origin is a two-dimensional affine subspace.
+
+In optimization, linear equality constraints form affine subspaces. For example,
+
+$$
+Ax=b
+$$
+
+describes an affine set when it is consistent. The geometry of constraints is the foundation for Lagrange multipliers, constrained least squares, and convex optimization.
+
+## 4.13 Computational templates
+
+The following functions are useful for computational geometry.
+
+```{python}
+#| label: ch04-computational-templates
+import numpy as np
+
+def line_point(P, v, t):
+    """Return P + t v."""
+    return np.asarray(P, dtype=float) + t * np.asarray(v, dtype=float)
+
+
+def plane_signed_distance(P, normal, d):
+    """Signed distance from P to the plane normal dot x + d = 0."""
+    P = np.asarray(P, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    return (normal @ P + d) / np.linalg.norm(normal)
+
+
+def project_point_to_plane(P, normal, d):
+    """Orthogonal projection of P onto normal dot x + d = 0."""
+    P = np.asarray(P, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    return P - ((normal @ P + d) / (normal @ normal)) * normal
+
+
+def line_plane_intersection(P, v, normal, d):
+    """Intersection of P + t v and normal dot x + d = 0, if unique."""
+    P = np.asarray(P, dtype=float)
+    v = np.asarray(v, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    denom = normal @ v
+    if abs(denom) < 1e-12:
+        return None
+    t = -(normal @ P + d) / denom
+    return P + t * v
+
+# Test examples
+print('Point on a line:', line_point([1, 2, 3], [5, 1, -2], 0.5))
+print('Signed distance:', plane_signed_distance([1, 2, 3], [2, -1, 2], -5))
+print('Projection:', np.round(project_point_to_plane([1, 2, 3], [2, -1, 2], -5), 3))
+print('Line-plane intersection:', line_plane_intersection([1, 3, 2], [-2, 1, 4], [2, -1, 1], 0))
+```
+
+The same templates appear in many numerical algorithms. For example, projection onto a hyperplane is used in constrained optimization and feasibility methods. Signed distance to a hyperplane is used in classification. Line-plane intersection is used in graphics, computational geometry, and ray tracing.
+
+## 4.14 Problem-solving strategies
+
+### Strategy 1: Identify the data type
+
+Ask: are you given points, direction vectors, normal vectors, or equations?
+
+- Two points usually give a direction vector by subtraction.
+- A plane equation gives a normal vector from its coefficients.
+- A parametric line gives a direction vector from the coefficients of $t$.
+- A parametric plane gives two direction vectors from the coefficients of the two parameters.
+
+### Strategy 2: Choose the form that matches the task
+
+- To **trace** a line or plane, use parametric form.
+- To **test membership**, use scalar or normal form.
+- To **find intersections**, substitute parametric equations into scalar equations.
+- To **compute angles**, use dot products between direction vectors or normal vectors.
+- To **compute distances**, use projections and normal vectors.
+
+### Strategy 3: Check dimensions
+
+A common source of mistakes is using a formula in the wrong dimension.
+
+- A line in $\mathbb R^2$ can be represented by one scalar equation.
+- A plane in $\mathbb R^3$ can be represented by one scalar equation.
+- A line in $\mathbb R^3$ usually needs either a parametric equation or two scalar equations.
+- A hyperplane in $\mathbb R^n$ is represented by one scalar equation.
+
+### Strategy 4: Check degeneracy
+
+Some formulas require nonzero or nonparallel vectors.
+
+- A direction vector for a line cannot be zero.
+- Two direction vectors for a plane cannot be parallel.
+- Three points determine a plane only if they are not collinear.
+- A symmetric line equation cannot divide by a zero component.
+
+## 4.15 Worked review examples
+
+### Example 4.11: Line perpendicular to a plane
+
+Find the line through $(1,2,3)$ perpendicular to
+
+$$
+5x+y-2z=4.
+$$
+
+**Solution.** A normal vector to the plane is
+
+$$
+n=\langle 5,1,-2\rangle.
+$$
+
+A line perpendicular to the plane has this normal vector as a direction vector. Therefore
+
+$$
+r(t)=\langle 1,2,3\rangle+t\langle 5,1,-2\rangle.
+$$
+
+In coordinates,
+
+$$
+x=1+5t,\qquad y=2+t,\qquad z=3-2t.
+$$
+
+### Example 4.12: Is a line parallel to a plane?
+
+Show that the line
+
+$$
+r(t)=\langle 1,4,5\rangle+t\langle 1,1,1\rangle
+$$
+
+is parallel to the plane
+
+$$
+4x-9y+5z-8=0.
+$$
+
+**Solution.** The direction vector of the line is
+
+$$
+v=\langle 1,1,1\rangle.
+$$
+
+The normal vector of the plane is
+
+$$
+n=\langle 4,-9,5\rangle.
+$$
+
+Compute
+
+$$
+v\cdot n=4-9+5=0.
+$$
+
+Thus the line direction is perpendicular to the plane normal, so the line is parallel to the plane. To decide whether the line lies in the plane or is disjoint from it, plug in a point on the line. At $(1,4,5)$,
+
+$$
+4(1)-9(4)+5(5)-8=-15\ne 0.
+$$
+
+So the line is parallel to the plane but does not lie in the plane.
+
+### Example 4.13: A hyperplane in four dimensions
+
+Let
+
+$$
+w=\langle 2,-1,3,4\rangle,
+\qquad b=-5.
+$$
+
+The hyperplane in $\mathbb R^4$ is
+
+$$
+2x_1-x_2+3x_3+4x_4-5=0.
+$$
+
+For the point
+
+$$
+x=(1,0,2,-1),
+$$
+
+we get
+
+$$
+w\cdot x+b=2(1)-0+3(2)+4(-1)-5=-1.
+$$
+
+So the point lies on the negative side of the hyperplane. Its signed distance is
+
+$$
+\frac{-1}{\sqrt{2^2+(-1)^2+3^2+4^2}}=
+-\frac{1}{\sqrt{30}}.
+$$
+
+## 4.16 Python lab preview
+
+The full lab for this chapter should ask students to:
+
+1. write functions for lines, planes, and hyperplanes;
+2. plot lines and planes in $\mathbb R^2$ and $\mathbb R^3$;
+3. compute line-plane intersections;
+4. compute distances to hyperplanes;
+5. build a simple linear classifier from a given hyperplane;
+6. visualize how changing $w$ and $b$ changes the decision boundary.
+
+The goal is not just to draw pictures. The goal is to make the formulas computationally useful.
+
+## 4.17 Exercises
+
+### Conceptual questions
+
+1. Explain the difference between a direction vector and a normal vector.
+2. Why does $r(t)=P+tv$ describe a line when $v\ne 0$?
+3. Why does $r(s,t)=P+su+tv$ describe a plane only when $u$ and $v$ are not parallel?
+4. What is the geometric meaning of the coefficients $a,b,c$ in $ax+by+cz+d=0$?
+5. What does the sign of $w\cdot x+b$ tell us about a point relative to a hyperplane?
+
+### Skills practice
+
+6. Find vector and parametric equations for the line through $(2,-1,3)$ with direction vector $\langle 4,0,-2\rangle$.
+7. Find the line segment from $P=(1,2,3)$ to $Q=(4,5,7)$.
+8. Find the plane through $(1,2,3)$ with normal vector $\langle -1,4,2\rangle$.
+9. Find the plane through $(0,1,2)$, $(1,0,3)$, and $(2,1,5)$.
+10. Find the angle between the planes $x-y+z=2$ and $2x+y-z=5$.
+11. Find the intersection of the line $x=1+t$, $y=2-t$, $z=3+2t$ with the plane $x+y+z=10$.
+12. Determine whether the line $r(t)=\langle 1,0,2\rangle+t\langle 2,-1,3\rangle$ is parallel to the plane $2x+y-z=4$.
+
+### Applications and computation
+
+13. Write a Python function that returns the signed distance from a point in $\mathbb R^n$ to the hyperplane $w\cdot x+b=0$.
+14. Generate random points in $\mathbb R^2$ and classify them by the sign of $2x_1-x_2+1$.
+15. For the hyperplane $x_1+x_2+x_3=1$, compute the signed distances of the points $(1,0,0)$, $(1,1,1)$, and $(0,0,0)$.
+16. A linear regression model with two features has prediction $\hat y=\beta_0+\beta_1x_1+\beta_2x_2$. Explain why the graph of $\hat y$ as a function of $(x_1,x_2)$ is a plane.
+17. In logistic regression, the decision boundary is $w\cdot x+b=0$. Explain why this boundary is a line in two features and a plane in three features.
+
+### Challenge problems
+
+18. Derive the point-to-plane distance formula using projection onto the normal vector.
+19. Let $P,Q,R$ be three points in $\mathbb R^3$. Prove that they are collinear if and only if $(Q-P)\times(R-P)=0$.
+20. Let $H=\{x\in\mathbb R^n:w\cdot x+b=0\}$. Show that $H$ is a translate of the subspace $\{x\in\mathbb R^n:w\cdot x=0\}$ whenever $H$ is nonempty.
+21. Suppose $A$ is a $k\times n$ matrix and $b\in\mathbb R^k$. Explain why the solution set of $Ax=b$ is an affine subspace when it is nonempty.
+22. Let $H$ be a hyperplane $w\cdot x+b=0$. Derive the formula for the orthogonal projection of a point $p$ onto $H$.
+
+## 4.18 Chapter summary
+
+The central objects of this chapter are the flat geometric objects of multivariable calculus.
+
+- A line is described by $r(t)=P+tv$.
+- A line segment is described by $r(t)=(1-t)P+tQ$ for $0\le t\le 1$.
+- A plane in $\mathbb R^3$ can be written as $n\cdot(x-P_0)=0$.
+- A plane can also be parameterized as $r(s,t)=P_0+su+tv$.
+- A hyperplane in $\mathbb R^n$ is described by $w\cdot x+b=0$.
+- Normal vectors are used for scalar equations, distances, and decision boundaries.
+- Direction vectors are used for parametric equations and tracing objects.
+- Intersections are usually found by substitution or by solving linear systems.
+
+These ideas prepare us for cross products, curves, tangent planes, gradients, optimization, constrained problems, and linear models in statistics and machine learning.

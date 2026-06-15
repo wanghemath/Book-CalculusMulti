@@ -1,0 +1,68 @@
+---
+title: "Python Labs"
+description: "Cloud-ready computational laboratories for the multivariable calculus book."
+---
+
+# Python Labs
+
+This page collects the Python labs for the book. Each lab is a Jupyter notebook designed for computation, visualization, simulation, and modeling. The labs can be opened directly in Google Colab, so students can run the code in a browser without installing Python first.
+
+## How to use the labs
+
+1. Click **Open in Google Colab** for the chapter you are studying.
+2. In Colab, choose **Runtime > Run all** to execute the notebook from top to bottom.
+3. To edit and save your own version, choose **File > Save a copy in Drive**.
+4. For local work, download or clone the repository and open the notebook from the `labs/` folder.
+
+The lab filenames are chapter-based and do not use course-number prefixes.
+
+## Lab index
+
+| Chapter | Topic | Open in Google Colab | Local notebook |
+|---:|---|---|---|
+| 1 | From Single Variable Calculus to Multivariable Thinking | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb) | [Notebook](labs/Chapter01_From_Single_Variable_Calculus_to_Multivariable_Thinking.ipynb) |
+| 2 | Euclidean Space $\mathbb R^n$ | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb) | [Notebook](labs/Chapter02_Euclidean_Space_mathbb_R_n.ipynb) |
+| 3 | Vectors, Norms, Dot Products, and Projections | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb) | [Notebook](labs/Chapter03_Vectors_Norms_Dot_Products_and_Projections.ipynb) |
+| 4 | Lines, Planes, Hyperplanes, and Parametric Geometry | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb) | [Notebook](labs/Chapter04_Lines_Planes_Hyperplanes_and_Parametric_Geometry.ipynb) |
+| 5 | Cross Products, Curves, and Motion in Space | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb) | [Notebook](labs/Chapter05_Cross_Products_Curves_and_Motion_in_Space.ipynb) |
+| 6 | Functions of Several Variables | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter06_Functions_of_Several_Variables.ipynb) | [Notebook](labs/Chapter06_Functions_of_Several_Variables.ipynb) |
+| 7 | Limits and Continuity in Several Variables | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb) | [Notebook](labs/Chapter07_Limits_and_Continuity_in_Several_Variables.ipynb) |
+| 8 | Partial Derivatives and the Gradient | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb) | [Notebook](labs/Chapter08_Partial_Derivatives_and_the_Gradient.ipynb) |
+| 9 | Linear Approximation, Tangent Planes, and Differentials | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb) | [Notebook](labs/Chapter09_Linear_Approximation_Tangent_Planes_and_Differentials.ipynb) |
+| 10 | Chain Rule, Jacobians, and Automatic Differentiation | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb) | [Notebook](labs/Chapter10_Chain_Rule_Jacobians_and_Automatic_Differentiation.ipynb) |
+| 11 | Directional Derivatives, Hessians, and Optimization | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb) | [Notebook](labs/Chapter11_Directional_Derivatives_Hessians_and_Optimization.ipynb) |
+| 12 | Constrained Optimization and Lagrange Multipliers | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb) | [Notebook](labs/Chapter12_Constrained_Optimization_and_Lagrange_Multipliers.ipynb) |
+| 13 | Double Integrals and Riemann Sums | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb) | [Notebook](labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb) |
+| 14 | Double Integrals over General Regions | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter14_Double_Integrals_over_General_Regions.ipynb) | [Notebook](labs/Chapter14_Double_Integrals_over_General_Regions.ipynb) |
+| 15 | Polar Coordinates and Change of Variables in the Plane | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb) | [Notebook](labs/Chapter15_Polar_Coordinates_and_Change_of_Variables_in_the_Plane.ipynb) |
+| 16 | Triple Integrals and Geometry in $\mathbb R^3$ | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb) | [Notebook](labs/Chapter16_Triple_Integrals_and_Geometry_in_R3.ipynb) |
+| 17 | Cylindrical and Spherical Coordinates | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb) | [Notebook](labs/Chapter17_Cylindrical_and_Spherical_Coordinates.ipynb) |
+| 18 | Multivariable Taylor Approximation and Quadratic Forms | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb) | [Notebook](labs/Chapter18_Multivariable_Taylor_Approximation_and_Quadratic_Forms.ipynb) |
+| 19 | Vector Fields and Gradient Fields | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb) | [Notebook](labs/Chapter19_Vector_Fields_and_Gradient_Fields.ipynb) |
+| 20 | Line Integrals and Work | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter20_Line_Integrals_and_Work.ipynb) | [Notebook](labs/Chapter20_Line_Integrals_and_Work.ipynb) |
+| 21 | Conservative Fields, Potentials, and Green's Theorem | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb) | [Notebook](labs/Chapter21_Conservative_Fields_Potentials_and_Greens_Theorem.ipynb) |
+| 22 | Curl, Divergence, and Surface Integrals | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb) | [Notebook](labs/Chapter22_Curl_Divergence_and_Surface_Integrals.ipynb) |
+| 23 | Stokes' Theorem and the Divergence Theorem | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb) | [Notebook](labs/Chapter23_Stokes_Theorem_and_the_Divergence_Theorem.ipynb) |
+| 24 | Multivariable Calculus for Probability and Statistics | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb) | [Notebook](labs/Chapter24_Multivariable_Calculus_for_Probability_and_Statistics.ipynb) |
+| 25 | Multivariable Calculus for Data Science and Machine Learning | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb) | [Notebook](labs/Chapter25_Multivariable_Calculus_for_Data_Science_and_Machine_Learning.ipynb) |
+| 26 | Multivariable Calculus for Applied Mathematics | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb) | [Notebook](labs/Chapter26_Multivariable_Calculus_for_Applied_Mathematics.ipynb) |
+| 27 | Review, Synthesis, and Bridge to Graduate Study | [Open in Google Colab](https://colab.research.google.com/github/wanghemath/Book-CalculusMulti/blob/main/labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb) | [Notebook](labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb) |
+
+## Suggested workflow for instructors
+
+The labs are intended to support a modern, computation-rich multivariable calculus course. A typical use pattern is:
+
+- before class: students run selected visualization cells to prepare for geometric concepts;
+- during class: the instructor modifies parameters live to show how formulas respond to changes;
+- after class: students complete short computational exercises and submit selected plots, explanations, or numerical conclusions;
+- before exams: students revisit the labs as concept maps connecting formulas, geometry, and computation.
+
+## Suggested workflow for students
+
+Do not treat the labs as code to copy mechanically. For each notebook, focus on three questions:
+
+1. What mathematical object is being computed or visualized?
+2. Which formula or theorem explains the computation?
+3. How does the output change when the parameters, region, vector field, or model are changed?
+
+A good lab write-up should combine code, plots, formulas, and short mathematical explanations.

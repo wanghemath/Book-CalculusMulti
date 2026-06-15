@@ -1,0 +1,907 @@
+---
+title: "Chapter 13. Double Integrals and Riemann Sums"
+subtitle: "Area accumulation, volume, numerical approximation, and iterated integration"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> **Chapter goal.** A single integral adds small contributions along a line. A double integral adds small contributions over a two-dimensional region. This chapter develops double integrals from Riemann sums, explains their geometric meaning, and shows how Fubini's theorem turns a two-dimensional accumulation problem into two ordinary one-variable integrations.
+
+The ideas in this chapter are among the most important bridges from calculus to modern applied mathematics, statistics, data science, and machine learning. A double integral may represent volume, mass, charge, expected value, average temperature, total risk, probability over a region, or total loss accumulated over a two-parameter domain.
+
+The central pattern is simple:
+
+$$
+\text{total amount} \approx \sum \text{value at a sample point}\times \text{small area}.
+$$
+
+When the rectangles become very small, the approximation becomes an integral.
+
+## Learning objectives
+
+After studying this chapter, you should be able to:
+
+1. explain a double integral as the limit of double Riemann sums;
+2. compute area elements $dA=\Delta x\Delta y$ on rectangular partitions;
+3. interpret $\iint_R f(x,y)\,dA$ as volume when $f\ge 0$;
+4. interpret double integrals as signed accumulation when $f$ changes sign;
+5. approximate double integrals using sample points and the midpoint rule;
+6. evaluate double integrals over rectangles using Fubini's theorem;
+7. compute average values over rectangles;
+8. connect double integrals to density, mass, numerical integration, and probability.
+
+## 13.1 From one-dimensional area to two-dimensional accumulation
+
+Recall the definite integral of a continuous function $f(x)$ on an interval $[a,b]$:
+
+$$
+\int_a^b f(x)\,dx
+=
+\lim_{\Delta x\to 0}\sum_i f(x_i^*)\Delta x.
+$$
+
+Geometrically, if $f(x)\ge 0$, this is the area under the curve $y=f(x)$ above the interval $[a,b]$. Computationally, it means:
+
+1. divide the interval into small subintervals;
+2. choose a sample point in each subinterval;
+3. multiply height by width;
+4. add the pieces;
+5. pass to the limit.
+
+A double integral follows exactly the same idea, but the base region is two-dimensional. Instead of small intervals, we use small rectangles. Instead of length $\Delta x$, each small piece has area
+
+$$
+\Delta A=\Delta x\Delta y.
+$$
+
+If the height above $(x,y)$ is $f(x,y)$, then a small rectangular column has approximate volume
+
+$$
+f(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+Adding all such columns gives a double Riemann sum.
+
+```{python}
+#| label: fig-ch13-from-curve-to-surface
+#| fig-cap: 'A single integral accumulates over an interval; a double integral accumulates over a region.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 2, 300)
+y = x**2 + 0.5
+
+fig = plt.figure(figsize=(7, 4))
+ax1 = fig.add_subplot(1, 2, 1)
+ax1.plot(x, y)
+ax1.fill_between(x, 0, y, alpha=0.25)
+ax1.set_xlabel('$x$')
+ax1.set_ylabel('$f(x)$')
+ax1.set_title('Single integral')
+ax1.grid(True, alpha=0.25)
+
+ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+X = np.linspace(0, 2, 60)
+Y = np.linspace(0, 2, 60)
+X, Y = np.meshgrid(X, Y)
+Z = 4 - X**2/2 - Y**2/3
+ax2.plot_surface(X, Y, Z, alpha=0.75, linewidth=0)
+ax2.set_xlabel('$x$')
+ax2.set_ylabel('$y$')
+ax2.set_zlabel('$z$')
+ax2.set_title('Double integral')
+plt.tight_layout()
+plt.show()
+```
+
+::: {.callout-note}
+## The main shift
+
+A single integral adds over a line-like set. A double integral adds over an area-like set. The algebra looks similar, but the geometry changes from intervals to regions and from rectangles to columns.
+:::
+
+## 13.2 Rectangular regions and partitions
+
+For the first part of the theory, we focus on a rectangular region
+
+$$
+R=[a,b]\times[c,d]
+=
+\{(x,y):a\le x\le b,\ c\le y\le d\}.
+$$
+
+Divide $[a,b]$ into $m$ equal subintervals and $[c,d]$ into $n$ equal subintervals. Then
+
+$$
+\Delta x=\frac{b-a}{m},
+\qquad
+\Delta y=\frac{d-c}{n},
+\qquad
+\Delta A=\Delta x\Delta y.
+$$
+
+This divides $R$ into $mn$ small rectangles $R_{ij}$. In each $R_{ij}$, choose a sample point $(x_{ij}^*,y_{ij}^*)$. The associated double Riemann sum is
+
+$$
+\sum_{i=1}^m\sum_{j=1}^n f(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+If $f(x,y)\ge 0$, this sum estimates the volume under $z=f(x,y)$ and above $R$.
+
+```{python}
+#| label: fig-ch13-rectangular-partition
+#| fig-cap: 'A rectangle divided into subrectangles. Each subrectangle contributes one term to a double Riemann sum.'
+#| fig-width: 6
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 5))
+a, b, c, d = 1, 4, 0, 2
+m, n = 3, 2
+xs = np.linspace(a, b, m + 1)
+ys = np.linspace(c, d, n + 1)
+for x0 in xs:
+    ax.plot([x0, x0], [c, d], color='black', linewidth=1)
+for y0 in ys:
+    ax.plot([a, b], [y0, y0], color='black', linewidth=1)
+
+x_mid = (xs[:-1] + xs[1:]) / 2
+y_mid = (ys[:-1] + ys[1:]) / 2
+for xm in x_mid:
+    for ym in y_mid:
+        ax.plot(xm, ym, 'o')
+        ax.text(xm + 0.04, ym + 0.04, 'sample', fontsize=8)
+
+ax.set_xlim(0.7, 4.3)
+ax.set_ylim(-0.2, 2.3)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Partition of $R=[1,4]\times[0,2]$')
+ax.set_aspect('equal', adjustable='box')
+ax.grid(False)
+plt.show()
+```
+
+## 13.3 The double integral on a rectangle
+
+Let $f$ be a function defined on a rectangle $R=[a,b]\times[c,d]$. If the double Riemann sums approach a single limiting value as the partition becomes finer, independent of the sample points, then $f$ is integrable on $R$. The limit is called the **double integral** of $f$ over $R$.
+
+::: {.callout-important}
+## Definition: double integral over a rectangle
+
+For a sufficiently nice function $f$ on $R$,
+
+$$
+\iint_R f(x,y)\,dA
+=
+\lim_{m,n\to\infty}
+\sum_{i=1}^m\sum_{j=1}^n f(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+Here $dA$ represents a small piece of area. In rectangular coordinates, it is approximated by $\Delta A=\Delta x\Delta y$.
+:::
+
+The notation $dA$ is important. It reminds us that the integral is adding over area. Later, when we change coordinates, the expression for $dA$ will change. In rectangular coordinates, however,
+
+$$
+dA=dx\,dy
+\qquad \text{or} \qquad
+ dA=dy\,dx.
+$$
+
+### Volume interpretation
+
+If $f(x,y)\ge 0$ on $R$, then
+
+$$
+\iint_R f(x,y)\,dA
+$$
+
+is the volume of the solid below the surface $z=f(x,y)$ and above the base region $R$.
+
+```{python}
+#| label: fig-ch13-riemann-columns
+#| fig-cap: 'A double Riemann sum approximates volume by rectangular columns.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x, y: 16 - x**2 - 2*y**2
+m = n = 6
+a, b, c, d = 0, 2, 0, 2
+dx = (b - a) / m
+dy = (d - c) / n
+x_edges = np.linspace(a, b, m + 1)
+y_edges = np.linspace(c, d, n + 1)
+x_mid = (x_edges[:-1] + x_edges[1:]) / 2
+y_mid = (y_edges[:-1] + y_edges[1:]) / 2
+Xc, Yc = np.meshgrid(x_mid, y_mid)
+Z = f(Xc, Yc)
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.bar3d(Xc.ravel() - dx/2, Yc.ravel() - dy/2, np.zeros_like(Z).ravel(),
+         dx, dy, Z.ravel(), alpha=0.7, shade=True)
+
+X = np.linspace(a, b, 50)
+Y = np.linspace(c, d, 50)
+X, Y = np.meshgrid(X, Y)
+ax.plot_surface(X, Y, f(X, Y), alpha=0.25, linewidth=0)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('$z=16-x^2-2y^2$ above $[0,2]\times[0,2]$')
+plt.show()
+```
+
+## 13.4 Worked example: upper-right Riemann sum
+
+Consider
+
+$$
+f(x,y)=x^2y,
+\qquad
+R=[1,4]\times[0,2].
+$$
+
+Use $m=3$ subdivisions in the $x$-direction and $n=2$ subdivisions in the $y$-direction. Then
+
+$$
+\Delta x=\frac{4-1}{3}=1,
+\qquad
+\Delta y=\frac{2-0}{2}=1,
+\qquad
+\Delta A=1.
+$$
+
+Using upper-right corners as sample points gives
+
+$$
+x=2,3,4,
+\qquad
+ y=1,2.
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+\sum_{i=1}^3\sum_{j=1}^2 f(x_i^*,y_j^*)\Delta A
+&=f(2,1)+f(3,1)+f(4,1)+f(2,2)+f(3,2)+f(4,2) \\
+&=4+9+16+8+18+32 \\
+&=87.
+\end{aligned}
+$$
+
+This is an approximation to the exact double integral. Since $x^2y$ increases as $x$ and $y$ increase on this rectangle, upper-right corners overestimate the integral.
+
+```{python}
+#| label: tbl-ch13-upper-right-sum
+#| tbl-cap: 'Upper-right Riemann sum for $f(x,y)=x^2y$ on $[1,4]\times[0,2]$.'
+import pandas as pd
+
+points = []
+for x0 in [2, 3, 4]:
+    for y0 in [1, 2]:
+        points.append({"x": x0, "y": y0, "f(x,y)": x0**2 * y0, "Delta A": 1, "contribution": x0**2 * y0})
+
+df = pd.DataFrame(points)
+df.loc["Total"] = ["", "", "", "", df["contribution"].sum()]
+df
+```
+
+## 13.5 The midpoint rule for double integrals
+
+The **midpoint rule** uses the center of each subrectangle as the sample point. For a rectangle divided into $m$ by $n$ equal subrectangles,
+
+$$
+\iint_R f(x,y)\,dA
+\approx
+\sum_{i=1}^m\sum_{j=1}^n f(\bar x_i,\bar y_j)\Delta A,
+$$
+
+where $\bar x_i$ and $\bar y_j$ are midpoint coordinates.
+
+### Worked example: midpoint rule for $x^2y$
+
+Again let
+
+$$
+f(x,y)=x^2y,
+\qquad
+R=[1,4]\times[0,2],
+\qquad
+m=3,
+\qquad
+n=2.
+$$
+
+The midpoint sample values are
+
+$$
+x=1.5,2.5,3.5,
+\qquad
+ y=0.5,1.5.
+$$
+
+Thus
+
+$$
+\begin{aligned}
+\iint_R x^2y\,dA
+&\approx
+\sum_{x\in\{1.5,2.5,3.5\}}\sum_{y\in\{0.5,1.5\}}x^2y \\
+&=44.5.
+\end{aligned}
+$$
+
+The exact value, found later in this chapter, is $42$, so the midpoint estimate is much closer than the upper-right estimate $87$.
+
+```{python}
+#| label: fig-ch13-midpoint-convergence
+#| fig-cap: 'Midpoint Riemann sums converge to the exact double integral as the grid becomes finer.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+f = lambda x, y: x**2 * y
+exact = 42.0
+sizes = np.arange(1, 31)
+approx = []
+for N in sizes:
+    xs = np.linspace(1, 4, N + 1)
+    ys = np.linspace(0, 2, N + 1)
+    xmid = (xs[:-1] + xs[1:]) / 2
+    ymid = (ys[:-1] + ys[1:]) / 2
+    dx = 3 / N
+    dy = 2 / N
+    total = sum(f(x0, y0) for x0 in xmid for y0 in ymid) * dx * dy
+    approx.append(total)
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(sizes, approx, marker='o', markersize=3, label='midpoint estimate')
+ax.axhline(exact, linestyle='--', label='exact value')
+ax.set_xlabel('number of subdivisions in each direction')
+ax.set_ylabel('integral estimate')
+ax.set_title('Convergence of midpoint sums for $x^2y$')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+::: {.callout-tip}
+## Why midpoint sampling is often good
+
+The midpoint rule samples each rectangle at its center. For smooth functions, this often balances overestimates and underestimates better than using only corners. This is one reason midpoint-type ideas appear in numerical integration, finite-volume methods, and simulation.
+:::
+
+## 13.6 Fubini's theorem on rectangles
+
+Riemann sums define the double integral, but limits of double sums are rarely the easiest way to compute exact answers. The key computational result is Fubini's theorem.
+
+::: {.callout-important}
+## Fubini's theorem for rectangles
+
+If $f$ is continuous on $R=[a,b]\times[c,d]$, then
+
+$$
+\iint_R f(x,y)\,dA
+=
+\int_a^b\int_c^d f(x,y)\,dy\,dx
+=
+\int_c^d\int_a^b f(x,y)\,dx\,dy.
+$$
+
+The double integral can be computed by integrating one variable at a time.
+:::
+
+The inner integral treats the other variable as constant. For example,
+
+$$
+\int_1^4 x^2y\,dx
+=
+y\int_1^4 x^2\,dx
+=
+y\left[\frac{x^3}{3}\right]_1^4
+=21y.
+$$
+
+Then
+
+$$
+\int_0^2 21y\,dy
+=
+\left[\frac{21y^2}{2}\right]_0^2
+=42.
+$$
+
+Therefore
+
+$$
+\iint_{[1,4]\times[0,2]}x^2y\,dA=42.
+$$
+
+### Same answer in the other order
+
+We can also compute
+
+$$
+\int_1^4\int_0^2 x^2y\,dy\,dx.
+$$
+
+The inner integral is
+
+$$
+\int_0^2 x^2y\,dy
+=x^2\left[\frac{y^2}{2}\right]_0^2
+=2x^2.
+$$
+
+Then
+
+$$
+\int_1^4 2x^2\,dx
+=2\left[\frac{x^3}{3}\right]_1^4
+=42.
+$$
+
+The order changes the intermediate expressions, but not the final value.
+
+```{python}
+#| label: fig-ch13-fubini-slices
+#| fig-cap: 'Fubini theorem computes a double integral by accumulating one-dimensional slices.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(1, 4, 80)
+y = np.linspace(0, 2, 80)
+X, Y = np.meshgrid(x, y)
+Z = X**2 * Y
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.55, linewidth=0)
+
+# A fixed-y slice.
+y0 = 1.3
+x_slice = np.linspace(1, 4, 120)
+z_slice = x_slice**2 * y0
+ax.plot(x_slice, y0*np.ones_like(x_slice), z_slice, linewidth=3)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('A slice of $z=x^2y$ at fixed $y$')
+plt.show()
+```
+
+## 13.7 Separability and product structure
+
+Sometimes a function separates into a product of a function of $x$ and a function of $y$:
+
+$$
+f(x,y)=g(x)h(y).
+$$
+
+On a rectangle, Fubini's theorem gives
+
+$$
+\iint_{[a,b]\times[c,d]}g(x)h(y)\,dA
+=
+\left(\int_a^b g(x)\,dx\right)
+\left(\int_c^d h(y)\,dy\right).
+$$
+
+For example,
+
+$$
+\iint_{[0,\pi]\times[0,1]} y\sin x\,dA
+=
+\left(\int_0^\pi \sin x\,dx\right)
+\left(\int_0^1 y\,dy\right)
+=2\cdot \frac12=1.
+$$
+
+This product structure appears frequently in probability. If two random variables are independent, their joint density often factors as
+
+$$
+p(x,y)=p_X(x)p_Y(y).
+$$
+
+Then probabilities and expectations over rectangles may factor into one-dimensional integrals.
+
+## 13.8 Signed accumulation
+
+If $f(x,y)$ takes both positive and negative values, then
+
+$$
+\iint_R f(x,y)\,dA
+$$
+
+is no longer ordinary volume. It is **signed volume**: positive parts above the $xy$-plane count positively, and negative parts below the $xy$-plane count negatively.
+
+For example, on a symmetric rectangle,
+
+$$
+\iint_{[-1,1]\times[0,2]} xy\,dA=0,
+$$
+
+because the positive and negative contributions cancel.
+
+```{python}
+#| label: fig-ch13-signed-accumulation
+#| fig-cap: 'A double integral can measure signed accumulation when the surface has positive and negative parts.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-1, 1, 80)
+y = np.linspace(0, 2, 80)
+X, Y = np.meshgrid(x, y)
+Z = X * Y
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.75, linewidth=0)
+ax.plot_surface(X, Y, np.zeros_like(Z), alpha=0.15, linewidth=0)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('$z=xy$ has cancellation over a symmetric rectangle')
+plt.show()
+```
+
+::: {.callout-warning}
+## Volume versus signed volume
+
+If $f\ge 0$, the double integral is a volume. If $f$ changes sign, the double integral is signed volume. To compute total physical volume between the surface and the plane, one would integrate $|f(x,y)|$ instead.
+:::
+
+## 13.9 Average value over a rectangle
+
+The average value of a one-variable function over $[a,b]$ is
+
+$$
+f_{\mathrm{avg}}
+=
+\frac{1}{b-a}\int_a^b f(x)\,dx.
+$$
+
+The average value of a two-variable function over a region $R$ is
+
+$$
+f_{\mathrm{avg}}
+=
+\frac{1}{\operatorname{Area}(R)}\iint_R f(x,y)\,dA.
+$$
+
+For a rectangle $R=[a,b]\times[c,d]$,
+
+$$
+\operatorname{Area}(R)=(b-a)(d-c).
+$$
+
+### Example: average height
+
+Let
+
+$$
+f(x,y)=16-x^2-2y^2,
+\qquad
+R=[0,2]\times[0,2].
+$$
+
+The double integral is
+
+$$
+\begin{aligned}
+\iint_R (16-x^2-2y^2)\,dA
+&=\int_0^2\int_0^2(16-x^2-2y^2)\,dy\,dx \\
+&=\frac{136}{3}.
+\end{aligned}
+$$
+
+Since $\operatorname{Area}(R)=4$, the average value is
+
+$$
+f_{\mathrm{avg}}
+=\frac{1}{4}\cdot \frac{136}{3}
+=\frac{34}{3}.
+$$
+
+In a physical interpretation, this is the average height of the surface over the rectangular base.
+
+```{python}
+#| label: fig-ch13-average-value
+#| fig-cap: 'The average value is the constant height that gives the same total volume over the base region.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 2, 80)
+y = np.linspace(0, 2, 80)
+X, Y = np.meshgrid(x, y)
+Z = 16 - X**2 - 2*Y**2
+avg = 34 / 3
+
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, alpha=0.5, linewidth=0)
+ax.plot_surface(X, Y, avg*np.ones_like(Z), alpha=0.35, linewidth=0)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_zlabel('$z$')
+ax.set_title('Surface and its average height')
+plt.show()
+```
+
+## 13.10 Mass and density on a rectangular plate
+
+Suppose a thin rectangular plate occupies a region $R$ in the $xy$-plane. If its density at $(x,y)$ is $\rho(x,y)$, then the mass of a small rectangle is approximately
+
+$$
+\rho(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+The total mass is therefore
+
+$$
+M=\iint_R \rho(x,y)\,dA.
+$$
+
+### Example
+
+Let
+
+$$
+\rho(x,y)=2+x+y,
+\qquad
+R=[0,3]\times[0,2].
+$$
+
+Then
+
+$$
+\begin{aligned}
+M
+&=\int_0^3\int_0^2(2+x+y)\,dy\,dx \\
+&=\int_0^3\left[2y+xy+\frac{y^2}{2}\right]_0^2\,dx \\
+&=\int_0^3(6+2x)\,dx \\
+&=27.
+\end{aligned}
+$$
+
+The double integral is not just a geometric volume. It is a general accumulation tool: density times area gives mass, and the integral adds these contributions.
+
+## 13.11 Numerical double integration in Python
+
+In applications, exact symbolic integration may not be available. A function may be known only through data, simulation, or a black-box model. Then Riemann sums become algorithms.
+
+Here is a reusable midpoint integrator for rectangles.
+
+```{python}
+#| label: code-ch13-midpoint-integrator
+import numpy as np
+
+def midpoint_double_integral(f, a, b, c, d, m=100, n=100):
+    dx = (b - a) / m
+    dy = (d - c) / n
+    x_edges = np.linspace(a, b, m + 1)
+    y_edges = np.linspace(c, d, n + 1)
+    x_mid = (x_edges[:-1] + x_edges[1:]) / 2
+    y_mid = (y_edges[:-1] + y_edges[1:]) / 2
+    total = 0.0
+    for x0 in x_mid:
+        for y0 in y_mid:
+            total += f(x0, y0) * dx * dy
+    return total
+
+estimate = midpoint_double_integral(lambda x, y: x**2 * y, 1, 4, 0, 2, m=50, n=50)
+print(round(estimate, 6))
+```
+
+For high-dimensional applied mathematics and machine learning, this point of view matters. Integrals are often approximated numerically, and sums over grids, samples, or data points are discrete versions of continuous accumulation.
+
+## 13.12 Monte Carlo viewpoint
+
+A double integral over a rectangle can also be estimated by random sampling. If $R$ has area $A$ and $(X,Y)$ is sampled uniformly from $R$, then
+
+$$
+\iint_R f(x,y)\,dA
+=
+A\,\mathbb E[f(X,Y)].
+$$
+
+This gives the Monte Carlo estimator
+
+$$
+\iint_R f(x,y)\,dA
+\approx
+A\cdot \frac{1}{N}\sum_{k=1}^N f(X_k,Y_k).
+$$
+
+Monte Carlo integration is usually less accurate than grid-based integration in low dimensions, but it becomes central in statistics, Bayesian computation, uncertainty quantification, and high-dimensional integration.
+
+```{python}
+#| label: fig-ch13-monte-carlo-estimates
+#| fig-cap: 'Monte Carlo estimates fluctuate randomly but approach the true integral as the number of samples increases.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(13)
+f = lambda x, y: x**2 * y
+true_value = 42.0
+area = (4 - 1) * (2 - 0)
+Ns = np.array([50, 100, 200, 500, 1000, 2000, 5000, 10000])
+estimates = []
+for N in Ns:
+    x = rng.uniform(1, 4, N)
+    y = rng.uniform(0, 2, N)
+    estimates.append(area * np.mean(f(x, y)))
+
+fig, ax = plt.subplots(figsize=(7, 4))
+ax.plot(Ns, estimates, marker='o', label='Monte Carlo estimate')
+ax.axhline(true_value, linestyle='--', label='true value')
+ax.set_xscale('log')
+ax.set_xlabel('number of random samples')
+ax.set_ylabel('estimated integral')
+ax.set_title('Monte Carlo integration for $x^2y$')
+ax.grid(True, alpha=0.25)
+ax.legend()
+plt.show()
+```
+
+## 13.13 Double integrals and probability on rectangles
+
+If $p(x,y)$ is a joint probability density on a region $R$, then probabilities are double integrals:
+
+$$
+P((X,Y)\in A)=\iint_A p(x,y)\,dA.
+$$
+
+For a rectangular event
+
+$$
+A=[a,b]\times[c,d],
+$$
+
+we compute
+
+$$
+P(a\le X\le b,\ c\le Y\le d)
+=\int_a^b\int_c^d p(x,y)\,dy\,dx.
+$$
+
+This is one reason double integrals are essential preparation for statistics. Later chapters will develop non-rectangular regions, change of variables, and multivariate normal densities in more detail.
+
+```{python}
+#| label: fig-ch13-density-over-rectangle
+#| fig-cap: 'Probability over a rectangle is the double integral of a density over that rectangle.'
+#| fig-width: 7
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-3, 3, 200)
+y = np.linspace(-3, 3, 200)
+X, Y = np.meshgrid(x, y)
+P = (1/(2*np.pi))*np.exp(-(X**2 + Y**2)/2)
+
+fig, ax = plt.subplots(figsize=(6, 5))
+levels = ax.contourf(X, Y, P, levels=25)
+rect = plt.Rectangle((-1, -0.5), 2, 1.5, fill=False, linewidth=2)
+ax.add_patch(rect)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('A rectangular probability event')
+fig.colorbar(levels, ax=ax, label='density')
+ax.set_aspect('equal', adjustable='box')
+plt.show()
+```
+
+## 13.14 Common mistakes
+
+### Mistake 1: forgetting $\Delta A$
+
+A Riemann sum must have the form
+
+$$
+\sum f(x_{ij}^*,y_{ij}^*)\Delta A.
+$$
+
+The values of $f$ alone do not approximate an integral. They must be multiplied by area.
+
+### Mistake 2: confusing the order of integration
+
+The expression
+
+$$
+\int_a^b\int_c^d f(x,y)\,dy\,dx
+$$
+
+means: integrate with respect to $y$ first, then integrate the resulting function of $x$ with respect to $x$.
+
+### Mistake 3: assuming every double integral is volume
+
+A double integral is ordinary volume only when $f\ge 0$. Otherwise it is signed accumulation.
+
+### Mistake 4: using Fubini without checking the region
+
+In this chapter, the main region is a rectangle. In the next chapter, we will study general regions where bounds may depend on variables.
+
+## 13.15 Chapter exercises
+
+### Conceptual problems
+
+1. Explain in words why the term $f(x_{ij}^*,y_{ij}^*)\Delta A$ represents a small volume when $f\ge 0$.
+2. What is the difference between a double Riemann sum and a double integral?
+3. Why does $dA$ represent area rather than length?
+4. Explain why $\iint_R f(x,y)\,dA$ may be negative if $f$ changes sign.
+5. Describe the difference between a midpoint estimate and an upper-right corner estimate.
+
+### Computational problems
+
+6. Let $f(x,y)=3x+2y$ on $R=[0,2]\times[1,3]$. Use $m=2$, $n=2$, and upper-right sample points to approximate $\iint_R f\,dA$.
+7. Repeat Problem 6 using midpoint sample points.
+8. Compute the exact value of $\iint_R (3x+2y)\,dA$.
+9. Evaluate $\iint_{[0,1]\times[0,2]} xy^2\,dA$.
+10. Evaluate $\iint_{[1,3]\times[0,\pi]} x\cos y\,dA$.
+11. Evaluate $\iint_{[-1,1]\times[-1,1]} x^3y^2\,dA$ without doing a long calculation. Explain the cancellation.
+12. Find the average value of $f(x,y)=x+y$ on $[0,4]\times[0,2]$.
+13. Find the mass of a rectangular plate $[0,2]\times[0,3]$ with density $\rho(x,y)=1+x+2y$.
+14. Find the volume below $z=9-x^2-y^2$ and above $[0,1]\times[0,2]$.
+15. Compute $\iint_{[0,1]\times[0,1]} e^{x+y}\,dA$.
+
+### Modeling and interpretation problems
+
+16. A temperature field on a rectangular plate is $T(x,y)=20+3x-y$. Write a double integral for the average temperature over $[0,4]\times[0,2]$ and evaluate it.
+17. A risk surface over two model parameters is $L(\theta_1,\theta_2)=\theta_1^2+4\theta_2^2$. Compute the average risk over $[-1,1]\times[-1,1]$.
+18. Suppose $p(x,y)=cx y$ on $[0,1]\times[0,1]$. Find $c$ so that $p$ is a probability density.
+19. For the density in Problem 18, compute $P(0\le X\le 1/2,0\le Y\le 1)$.
+20. Explain why numerical integration is important when $f(x,y)$ is only available through simulation or data.
+
+### Python problems
+
+21. Write a midpoint-rule function to approximate $\iint_{[0,2]\times[0,2]}(16-x^2-2y^2)\,dA$.
+22. Compare midpoint estimates for $N=4,8,16,32$ subdivisions in each direction.
+23. Use random sampling to estimate $\iint_{[1,4]\times[0,2]}x^2y\,dA$.
+24. Plot the error of the midpoint rule as the number of subdivisions increases.
+25. Plot the surface $z=x^2y$ above $[1,4]\times[0,2]$ and add a coarse grid of columns.
+
+## Python lab and interactive page
+
+- Notebook lab: [Chapter13_Double_Integrals_and_Riemann_Sums.ipynb](../labs/Chapter13_Double_Integrals_and_Riemann_Sums.ipynb)
+- Interactive HTML page: [Chapter 13 interactive page](../htmls/chapter-13.html)
+
+## Chapter summary
+
+A double integral is the limit of double Riemann sums. On a rectangle, the approximation
+
+$$
+\sum_{i=1}^m\sum_{j=1}^n f(x_{ij}^*,y_{ij}^*)\Delta A
+$$
+
+becomes the exact quantity
+
+$$
+\iint_R f(x,y)\,dA.
+$$
+
+When $f\ge 0$, the integral is volume. When $f$ changes sign, it is signed accumulation. When $f$ is a density, it computes mass or probability. Fubini's theorem makes double integrals computable by reducing them to iterated one-variable integrals:
+
+$$
+\iint_{[a,b]\times[c,d]}f(x,y)\,dA
+=
+\int_a^b\int_c^d f(x,y)\,dy\,dx
+=
+\int_c^d\int_a^b f(x,y)\,dx\,dy.
+$$
+
+This chapter prepares the next step: double integrals over non-rectangular regions, where the bounds themselves encode geometry.

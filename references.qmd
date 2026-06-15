@@ -1,0 +1,41 @@
+---
+title: 'References'
+subtitle: 'Verified sources and further reading for multivariable calculus, computation, statistics, and machine learning'
+nocite: |
+  @*
+---
+
+# References {.unnumbered}
+
+This bibliography was checked against official book pages, publisher pages, DOI records, journal pages, or stable project pages. Some sources are freely available online; others are standard published books available through publishers, libraries, or bookstores. The goal is to use references that are real, findable, and appropriate for a modern multivariable calculus book.
+
+## Core calculus and vector calculus
+
+The main mathematical spine of this book follows the standard multivariable calculus sequence: geometry in $\mathbb R^n$, functions of several variables, partial derivatives, multiple integrals, vector fields, line integrals, surface integrals, Green's theorem, Stokes theorem, and the divergence theorem. Useful references for these topics include @stewart2008calculus, @massey2017worldwide, @openstax2016calculus3, @marsden2012vector, @hubbard2015vector, and @lang1987calculus.
+
+For students who want a more theoretical viewpoint, @spivak1965calculus gives a compact bridge from advanced calculus to differential forms, while @rudin1976principles and @folland1999real provide deeper analysis background.
+
+## Linear algebra and geometry
+
+Multivariable calculus becomes clearer when gradients, derivatives, tangent planes, Jacobians, Hessians, and quadratic approximations are read through the language of vectors and matrices. For linear algebra background and its connection to data, see @strang2016linear and @strang2019linear.
+
+## Optimization and machine learning
+
+Optimization is one of the central modern uses of multivariable calculus. The chapters on directional derivatives, Hessians, Lagrange multipliers, gradient descent, Newton's method, empirical risk, logistic regression, and neural-network backpropagation connect naturally to @boyd2004convex, @nocedal2006numerical, @hastie2009elements, @james2021introduction, @bishop2006pattern, @goodfellow2016deep, @mohri2018foundations, and @murphy2022probml.
+
+## Probability and statistics
+
+Multiple integrals and change of variables are essential for joint distributions, marginal densities, conditional densities, covariance, likelihood, Fisher information, asymptotic approximation, and Bayesian posterior geometry. Good references for these connections include @casella2002statistical, @wasserman2004all, @lehmann1998theory, and @murphy2022probml.
+
+## Applied mathematics and partial differential equations
+
+The vector-calculus chapters also prepare students for applied mathematics: conservation laws, diffusion, heat flow, flux, divergence, curl, Laplacians, and variational thinking. For further study, see @evans2010pde and @haberman2013applied.
+
+## Python and computational tools
+
+The Python labs use the scientific Python ecosystem for visualization, numerical approximation, symbolic checking, simulation, and machine-learning experiments. The main computational references include NumPy @harris2020array, SciPy @virtanen2020scipy, pandas @mckinney2010pandas, Matplotlib @hunter2007matplotlib, Jupyter @kluyver2016jupyter, scikit-learn @pedregosa2011scikit, and SymPy @meurer2017sympy.
+
+## Complete bibliography
+
+::: {#refs}
+:::

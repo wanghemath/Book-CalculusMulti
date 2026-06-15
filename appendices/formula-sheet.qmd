@@ -1,0 +1,1209 @@
+---
+title: 'Formula Sheet'
+subtitle: 'Core formulas for multivariable calculus, computation, probability, statistics, and machine learning'
+---
+
+# Formula Sheet
+
+This appendix collects the central formulas used throughout the book.  It is designed as a quick reference, not as a substitute for understanding the geometry behind each formula.  The best way to use it is to identify the object first: point, vector, curve, surface, scalar field, vector field, density, loss function, or constraint.
+
+## 1. Euclidean Space and Vector Geometry
+
+### Points, vectors, distance, and norm
+
+For points $a=(a_1,
+\dots,a_n)$ and $b=(b_1,\dots,b_n)$ in $\mathbb R^n$,
+
+$$
+b-a=(b_1-a_1,\dots,b_n-a_n)
+$$
+
+is the displacement vector from $a$ to $b$.
+
+$$
+\|v\|=\sqrt{v_1^2+\cdots+v_n^2}
+$$
+
+$$
+d(a,b)=\|b-a\|=\sqrt{(b_1-a_1)^2+\cdots+(b_n-a_n)^2}
+$$
+
+The unit vector in the direction of a nonzero vector $v$ is
+
+$$
+\widehat v=\frac{v}{\|v\|}.
+$$
+
+A sphere in $\mathbb R^3$ with center $(h,k,\ell)$ and radius $r$ has equation
+
+$$
+(x-h)^2+(y-k)^2+(z-\ell)^2=r^2.
+$$
+
+More generally, the sphere in $\mathbb R^n$ centered at $a$ with radius $r$ is
+
+$$
+\|x-a\|=r.
+$$
+
+### Dot product, angles, orthogonality, and projections
+
+For $u,v\in \mathbb R^n$,
+
+$$
+u\cdot v=u_1v_1+\cdots+u_nv_n.
+$$
+
+$$
+u\cdot v=\|u\|\|v\|\cos\theta.
+$$
+
+Thus,
+
+$$
+\cos\theta=\frac{u\cdot v}{\|u\|\|v\|}.
+$$
+
+Vectors $u$ and $v$ are orthogonal if and only if
+
+$$
+u\cdot v=0.
+$$
+
+The scalar projection of $u$ onto $v$ is
+
+$$
+\operatorname{comp}_v(u)=\frac{u\cdot v}{\|v\|}.
+$$
+
+The vector projection of $u$ onto $v$ is
+
+$$
+\operatorname{proj}_v(u)=\frac{u\cdot v}{v\cdot v}v.
+$$
+
+The component of $u$ perpendicular to $v$ is
+
+$$
+u-\operatorname{proj}_v(u).
+$$
+
+Work by a constant force $F$ along displacement $d$ is
+
+$$
+W=F\cdot d.
+$$
+
+## 2. Lines, Planes, Hyperplanes, and Cross Products
+
+### Lines and line segments
+
+A line through a point $p$ in direction $v\ne 0$ is
+
+$$
+r(t)=p+tv,\qquad -\infty<t<\infty.
+$$
+
+The line segment from $a$ to $b$ is
+
+$$
+r(t)=(1-t)a+tb=a+t(b-a),\qquad 0\le t\le 1.
+$$
+
+The symmetric form of a line in $\mathbb R^3$ is
+
+$$
+\frac{x-x_0}{a}=\frac{y-y_0}{b}=\frac{z-z_0}{c}
+$$
+
+when the direction vector is $(a,b,c)$ and the nonzero denominators are meaningful.
+
+### Planes and hyperplanes
+
+A plane through $p=(x_0,y_0,z_0)$ with normal vector $n=(A,B,C)$ is
+
+$$
+A(x-x_0)+B(y-y_0)+C(z-z_0)=0.
+$$
+
+Equivalently,
+
+$$
+n\cdot (x-p)=0.
+$$
+
+A parametric plane through $p$ spanned by two nonparallel vectors $u$ and $v$ is
+
+$$
+r(s,t)=p+su+tv.
+$$
+
+A hyperplane in $\mathbb R^n$ has the form
+
+$$
+w\cdot x=b.
+$$
+
+The distance from a point $q$ to the plane $n\cdot(x-p)=0$ is
+
+$$
+\operatorname{dist}(q,\text{plane})=\frac{|n\cdot(q-p)|}{\|n\|}.
+$$
+
+The angle $\theta$ between two planes with normal vectors $n_1$ and $n_2$ satisfies
+
+$$
+\cos\theta=\frac{|n_1\cdot n_2|}{\|n_1\|\|n_2\|}.
+$$
+
+### Cross product and triple product
+
+For $u=(u_1,u_2,u_3)$ and $v=(v_1,v_2,v_3)$,
+
+$$
+u\times v=
+\begin{vmatrix}
+\mathbf i & \mathbf j & \mathbf k\\
+u_1 & u_2 & u_3\\
+v_1 & v_2 & v_3
+\end{vmatrix}.
+$$
+
+Equivalently,
+
+$$
+u\times v=(u_2v_3-u_3v_2,\,u_3v_1-u_1v_3,\,u_1v_2-u_2v_1).
+$$
+
+The magnitude is
+
+$$
+\|u\times v\|=\|u\|\|v\|\sin\theta.
+$$
+
+Area of parallelogram spanned by $u$ and $v$:
+
+$$
+A=\|u\times v\|.
+$$
+
+Area of triangle with side vectors $u$ and $v$:
+
+$$
+A=\frac12\|u\times v\|.
+$$
+
+The scalar triple product is
+
+$$
+u\cdot(v\times w)=
+\begin{vmatrix}
+u_1&u_2&u_3\\
+v_1&v_2&v_3\\
+w_1&w_2&w_3
+\end{vmatrix}.
+$$
+
+The volume of the parallelepiped spanned by $u,v,w$ is
+
+$$
+V=|u\cdot(v\times w)|.
+$$
+
+## 3. Curves and Motion in Space
+
+For a vector-valued curve
+
+$$
+r(t)=(x(t),y(t),z(t)),
+$$
+
+velocity, speed, and acceleration are
+
+$$
+v(t)=r'(t),\qquad \text{speed}=\|r'(t)\|,\qquad a(t)=r''(t).
+$$
+
+Arc length from $t=a$ to $t=b$ is
+
+$$
+L=\int_a^b \|r'(t)\|\,dt.
+$$
+
+For a plane curve $r(t)=(x(t),y(t))$,
+
+$$
+L=\int_a^b \sqrt{\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2}\,dt.
+$$
+
+For a space curve $r(t)=(x(t),y(t),z(t))$,
+
+$$
+L=\int_a^b \sqrt{\left(\frac{dx}{dt}\right)^2+\left(\frac{dy}{dt}\right)^2+\left(\frac{dz}{dt}\right)^2}\,dt.
+$$
+
+The unit tangent vector is
+
+$$
+T(t)=\frac{r'(t)}{\|r'(t)\|}.
+$$
+
+Curvature is
+
+$$
+\kappa(t)=\frac{\|T'(t)\|}{\|r'(t)\|}.
+$$
+
+When $r'(t)\times r''(t)\ne 0$,
+
+$$
+\kappa(t)=\frac{\|r'(t)\times r''(t)\|}{\|r'(t)\|^3}.
+$$
+
+## 4. Functions, Limits, Partial Derivatives, and Gradients
+
+### Scalar fields and level sets
+
+A scalar field is a function
+
+$$
+f:\mathbb R^n\to \mathbb R.
+$$
+
+For $f(x,y)$, the graph is
+
+$$
+z=f(x,y).
+$$
+
+Level curves satisfy
+
+$$
+f(x,y)=c.
+$$
+
+Level surfaces satisfy
+
+$$
+f(x,y,z)=c.
+$$
+
+### Partial derivatives
+
+For $f(x,y)$,
+
+$$
+f_x(a,b)=\lim_{h\to 0}\frac{f(a+h,b)-f(a,b)}{h},
+$$
+
+$$
+f_y(a,b)=\lim_{h\to 0}\frac{f(a,b+h)-f(a,b)}{h}.
+$$
+
+Second partial derivatives are
+
+$$
+f_{xx},\qquad f_{xy},\qquad f_{yx},\qquad f_{yy}.
+$$
+
+If $f_{xy}$ and $f_{yx}$ are continuous near a point, then
+
+$$
+f_{xy}=f_{yx}.
+$$
+
+### Gradient
+
+For $f(x,y)$,
+
+$$
+\nabla f=(f_x,f_y).
+$$
+
+For $f(x,y,z)$,
+
+$$
+\nabla f=(f_x,f_y,f_z).
+$$
+
+For $f(x_1,\dots,x_n)$,
+
+$$
+\nabla f=\left(\frac{\partial f}{\partial x_1},\dots,\frac{\partial f}{\partial x_n}\right).
+$$
+
+The gradient is perpendicular to level curves and level surfaces.
+
+## 5. Linear Approximation, Chain Rule, Jacobians, and Hessians
+
+### Linearization and tangent planes
+
+For $z=f(x,y)$, the tangent plane at $(a,b,f(a,b))$ is
+
+$$
+z=f(a,b)+f_x(a,b)(x-a)+f_y(a,b)(y-b).
+$$
+
+The linearization is
+
+$$
+L(x,y)=f(a,b)+f_x(a,b)(x-a)+f_y(a,b)(y-b).
+$$
+
+In vector form, for $f:\mathbb R^n\to \mathbb R$,
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h.
+$$
+
+The differential is
+
+$$
+df=f_x\,dx+f_y\,dy
+$$
+
+for two variables, and
+
+$$
+df=\nabla f\cdot dx
+$$
+
+in vector notation.
+
+For a level surface $F(x,y,z)=c$, the tangent plane at $p=(x_0,y_0,z_0)$ is
+
+$$
+\nabla F(p)\cdot((x,y,z)-p)=0.
+$$
+
+Equivalently,
+
+$$
+F_x(p)(x-x_0)+F_y(p)(y-y_0)+F_z(p)(z-z_0)=0.
+$$
+
+### Directional derivatives
+
+For a unit vector $u$,
+
+$$
+D_u f(a)=\nabla f(a)\cdot u.
+$$
+
+The maximum rate of increase is
+
+$$
+\|\nabla f(a)\|,
+$$
+
+and it occurs in the direction
+
+$$
+\frac{\nabla f(a)}{\|\nabla f(a)\|}
+$$
+
+when $\nabla f(a)\ne 0$.
+
+### Chain rule
+
+If $z=f(x,y)$ and $x=x(t)$, $y=y(t)$, then
+
+$$
+\frac{dz}{dt}=f_x\frac{dx}{dt}+f_y\frac{dy}{dt}.
+$$
+
+If $z=f(x,y)$, $x=x(s,t)$, and $y=y(s,t)$, then
+
+$$
+\frac{\partial z}{\partial s}=f_x\frac{\partial x}{\partial s}+f_y\frac{\partial y}{\partial s},
+$$
+
+$$
+\frac{\partial z}{\partial t}=f_x\frac{\partial x}{\partial t}+f_y\frac{\partial y}{\partial t}.
+$$
+
+For a map $F:\mathbb R^n\to \mathbb R^m$, the Jacobian matrix is
+
+$$
+J_F(x)=
+\begin{bmatrix}
+\frac{\partial F_1}{\partial x_1} & \cdots & \frac{\partial F_1}{\partial x_n}\\
+\vdots & \ddots & \vdots\\
+\frac{\partial F_m}{\partial x_1} & \cdots & \frac{\partial F_m}{\partial x_n}
+\end{bmatrix}.
+$$
+
+For a composition $H=F\circ G$,
+
+$$
+J_H(x)=J_F(G(x))J_G(x).
+$$
+
+### Hessian and Taylor approximation
+
+The Hessian matrix of $f:\mathbb R^n\to \mathbb R$ is
+
+$$
+H_f(x)=
+\begin{bmatrix}
+\frac{\partial^2 f}{\partial x_1^2} & \cdots & \frac{\partial^2 f}{\partial x_1\partial x_n}\\
+\vdots & \ddots & \vdots\\
+\frac{\partial^2 f}{\partial x_n\partial x_1} & \cdots & \frac{\partial^2 f}{\partial x_n^2}
+\end{bmatrix}.
+$$
+
+Second-order Taylor approximation:
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h+\frac12 h^T H_f(a)h.
+$$
+
+For $f(x,y)$ near $(a,b)$,
+
+$$
+f(x,y)\approx f(a,b)+f_x(a,b)\Delta x+f_y(a,b)\Delta y
++\frac12\left[f_{xx}(a,b)(\Delta x)^2+2f_{xy}(a,b)\Delta x\Delta y+f_{yy}(a,b)(\Delta y)^2\right].
+$$
+
+## 6. Optimization
+
+### Critical points and second derivative test
+
+Critical points of $f(x,y)$ satisfy
+
+$$
+f_x=0,\qquad f_y=0.
+$$
+
+Let
+
+$$
+D=f_{xx}f_{yy}-f_{xy}^2.
+$$
+
+At a critical point:
+
+| Condition | Classification |
+|---|---|
+| $D>0$ and $f_{xx}>0$ | local minimum |
+| $D>0$ and $f_{xx}<0$ | local maximum |
+| $D<0$ | saddle point |
+| $D=0$ | inconclusive |
+
+For $f:\mathbb R^n\to\mathbb R$, a critical point satisfies
+
+$$
+\nabla f=0.
+$$
+
+The Hessian test is based on eigenvalues of $H_f$:
+
+| Hessian eigenvalues | Local behavior |
+|---|---|
+| all positive | local minimum |
+| all negative | local maximum |
+| mixed signs | saddle point |
+| zero eigenvalues present | inconclusive without more analysis |
+
+### Gradient descent and Newton's method
+
+Gradient descent:
+
+$$
+x_{k+1}=x_k-\alpha_k\nabla f(x_k).
+$$
+
+Newton's method for optimization:
+
+$$
+x_{k+1}=x_k-H_f(x_k)^{-1}\nabla f(x_k).
+$$
+
+### Lagrange multipliers
+
+For one constraint $g(x,y)=c$, extrema of $f$ occur where
+
+$$
+\nabla f=\lambda \nabla g,
+$$
+
+with
+
+$$
+g(x,y)=c.
+$$
+
+For several constraints $g_1=c_1,\dots,g_k=c_k$,
+
+$$
+\nabla f=\lambda_1\nabla g_1+\cdots+\lambda_k\nabla g_k,
+$$
+
+with all constraints imposed.
+
+## 7. Double and Triple Integrals
+
+### Double integrals
+
+Over a rectangle $R=[a,b]\times[c,d]$,
+
+$$
+\iint_R f(x,y)\,dA=\int_a^b\int_c^d f(x,y)\,dy\,dx
+=\int_c^d\int_a^b f(x,y)\,dx\,dy.
+$$
+
+For a Type I region
+
+$$
+D=\{(x,y):a\le x\le b,\ g_1(x)\le y\le g_2(x)\},
+$$
+
+$$
+\iint_D f(x,y)\,dA=\int_a^b\int_{g_1(x)}^{g_2(x)}f(x,y)\,dy\,dx.
+$$
+
+For a Type II region
+
+$$
+D=\{(x,y):c\le y\le d,\ h_1(y)\le x\le h_2(y)\},
+$$
+
+$$
+\iint_D f(x,y)\,dA=\int_c^d\int_{h_1(y)}^{h_2(y)}f(x,y)\,dx\,dy.
+$$
+
+Area:
+
+$$
+A(D)=\iint_D 1\,dA.
+$$
+
+Average value:
+
+$$
+f_{\text{avg}}=\frac{1}{A(D)}\iint_D f(x,y)\,dA.
+$$
+
+Mass of a lamina with density $\rho(x,y)$:
+
+$$
+m=\iint_D \rho(x,y)\,dA.
+$$
+
+Center of mass:
+
+$$
+\bar x=\frac{1}{m}\iint_D x\rho(x,y)\,dA,
+\qquad
+\bar y=\frac{1}{m}\iint_D y\rho(x,y)\,dA.
+$$
+
+### Polar coordinates and planar change of variables
+
+Polar coordinates:
+
+$$
+x=r\cos\theta,\qquad y=r\sin\theta.
+$$
+
+$$
+r^2=x^2+y^2,\qquad \tan\theta=\frac{y}{x}.
+$$
+
+Area element:
+
+$$
+dA=r\,dr\,d\theta.
+$$
+
+Polar double integral:
+
+$$
+\iint_D f(x,y)\,dA=\int_\alpha^\beta\int_{r_1(\theta)}^{r_2(\theta)} f(r\cos\theta,r\sin\theta)r\,dr\,d\theta.
+$$
+
+For a transformation $(x,y)=T(u,v)$,
+
+$$
+\iint_D f(x,y)\,dA=\iint_S f(x(u,v),y(u,v))\left|\frac{\partial(x,y)}{\partial(u,v)}\right|\,du\,dv,
+$$
+
+where
+
+$$
+\frac{\partial(x,y)}{\partial(u,v)}=
+\begin{vmatrix}
+x_u & x_v\\
+y_u & y_v
+\end{vmatrix}.
+$$
+
+### Triple integrals
+
+Volume:
+
+$$
+V(E)=\iiint_E 1\,dV.
+$$
+
+Mass with density $\rho(x,y,z)$:
+
+$$
+m=\iiint_E \rho(x,y,z)\,dV.
+$$
+
+Average value:
+
+$$
+f_{\text{avg}}=\frac{1}{V(E)}\iiint_E f(x,y,z)\,dV.
+$$
+
+Center of mass:
+
+$$
+\bar x=\frac{1}{m}\iiint_E x\rho\,dV,
+\qquad
+\bar y=\frac{1}{m}\iiint_E y\rho\,dV,
+\qquad
+\bar z=\frac{1}{m}\iiint_E z\rho\,dV.
+$$
+
+### Cylindrical and spherical coordinates
+
+Cylindrical coordinates:
+
+$$
+x=r\cos\theta,\qquad y=r\sin\theta,\qquad z=z.
+$$
+
+Volume element:
+
+$$
+dV=r\,dr\,d\theta\,dz.
+$$
+
+Spherical coordinates:
+
+$$
+x=\rho\sin\phi\cos\theta,
+\qquad
+y=\rho\sin\phi\sin\theta,
+\qquad
+z=\rho\cos\phi.
+$$
+
+Volume element:
+
+$$
+dV=\rho^2\sin\phi\,d\rho\,d\phi\,d\theta.
+$$
+
+Useful identities:
+
+$$
+\rho^2=x^2+y^2+z^2,
+\qquad
+r=\rho\sin\phi,
+\qquad
+z=\rho\cos\phi.
+$$
+
+## 8. Line Integrals, Conservative Fields, and Green's Theorem
+
+### Scalar line integrals
+
+For a curve $C$ parameterized by $r(t)=(x(t),y(t),z(t))$, $a\le t\le b$,
+
+$$
+\int_C f\,ds=\int_a^b f(r(t))\|r'(t)\|\,dt.
+$$
+
+Mass of a wire with density $\rho$:
+
+$$
+m=\int_C \rho\,ds.
+$$
+
+### Vector line integrals and work
+
+For a vector field $F$,
+
+$$
+\int_C F\cdot dr=\int_a^b F(r(t))\cdot r'(t)\,dt.
+$$
+
+In the plane, if $F=(P,Q)$,
+
+$$
+\int_C F\cdot dr=\int_C P\,dx+Q\,dy.
+$$
+
+In space, if $F=(P,Q,R)$,
+
+$$
+\int_C F\cdot dr=\int_C P\,dx+Q\,dy+R\,dz.
+$$
+
+### Conservative fields
+
+A vector field $F$ is conservative if
+
+$$
+F=\nabla f
+$$
+
+for some potential function $f$.
+
+Fundamental Theorem for Line Integrals:
+
+$$
+\int_C \nabla f\cdot dr=f(r(b))-f(r(a)).
+$$
+
+If $F$ is conservative, then line integrals are path independent and
+
+$$
+\oint_C F\cdot dr=0
+$$
+
+for every closed curve $C$ in the appropriate domain.
+
+For $F=(P,Q)$ on a simply connected domain, a useful test is
+
+$$
+P_y=Q_x.
+$$
+
+For $F=(P,Q,R)$ on a simply connected solid region, a useful test is
+
+$$
+\nabla\times F=0.
+$$
+
+### Green's theorem
+
+Circulation form:
+
+$$
+\oint_C P\,dx+Q\,dy=\iint_D (Q_x-P_y)\,dA.
+$$
+
+Flux form:
+
+$$
+\oint_C P\,dy-Q\,dx=\iint_D (P_x+Q_y)\,dA.
+$$
+
+Area formulas:
+
+$$
+A(D)=\oint_C x\,dy=-\oint_C y\,dx=\frac12\oint_C x\,dy-y\,dx.
+$$
+
+## 9. Curl, Divergence, Surface Integrals, Stokes' Theorem, and the Divergence Theorem
+
+### Curl and divergence
+
+For $F=(P,Q,R)$,
+
+$$
+\nabla\cdot F=P_x+Q_y+R_z.
+$$
+
+$$
+\nabla\times F=
+\begin{vmatrix}
+\mathbf i & \mathbf j & \mathbf k\\
+\frac{\partial}{\partial x} & \frac{\partial}{\partial y} & \frac{\partial}{\partial z}\\
+P & Q & R
+\end{vmatrix}.
+$$
+
+Equivalently,
+
+$$
+\nabla\times F=(R_y-Q_z,\,P_z-R_x,\,Q_x-P_y).
+$$
+
+The Laplacian of a scalar field $f$ is
+
+$$
+\Delta f=\nabla\cdot\nabla f=f_{xx}+f_{yy}+f_{zz}.
+$$
+
+Useful identities:
+
+$$
+\nabla\times(\nabla f)=0,
+$$
+
+$$
+\nabla\cdot(\nabla\times F)=0.
+$$
+
+### Parameterized surfaces and surface area
+
+For a parameterized surface
+
+$$
+r(u,v)=(x(u,v),y(u,v),z(u,v)),
+$$
+
+a normal vector is
+
+$$
+r_u\times r_v.
+$$
+
+Surface area:
+
+$$
+A(S)=\iint_D \|r_u\times r_v\|\,dA.
+$$
+
+Scalar surface integral:
+
+$$
+\iint_S f\,dS=\iint_D f(r(u,v))\|r_u\times r_v\|\,du\,dv.
+$$
+
+For a graph $z=g(x,y)$,
+
+$$
+dS=\sqrt{1+g_x^2+g_y^2}\,dA.
+$$
+
+### Flux integrals
+
+For an oriented surface $S$ with unit normal $n$,
+
+$$
+\iint_S F\cdot n\,dS
+$$
+
+is the flux of $F$ through $S$.
+
+Using a parameterization $r(u,v)$,
+
+$$
+\iint_S F\cdot n\,dS=\iint_D F(r(u,v))\cdot(r_u\times r_v)\,du\,dv.
+$$
+
+For a graph $z=g(x,y)$ with upward orientation,
+
+$$
+n\,dS=(-g_x,-g_y,1)\,dA.
+$$
+
+### Stokes' theorem
+
+If $C=\partial S$ is the positively oriented boundary of an oriented surface $S$, then
+
+$$
+\oint_C F\cdot dr=\iint_S (\nabla\times F)\cdot n\,dS.
+$$
+
+### Divergence theorem
+
+If $S=\partial E$ is a closed surface oriented outward, then
+
+$$
+\iint_S F\cdot n\,dS=\iiint_E \nabla\cdot F\,dV.
+$$
+
+## 10. Probability and Statistics Formulas
+
+### Joint densities
+
+For a joint density $f_{X,Y}(x,y)$,
+
+$$
+P((X,Y)\in D)=\iint_D f_{X,Y}(x,y)\,dA.
+$$
+
+Marginal densities:
+
+$$
+f_X(x)=\int_{-\infty}^{\infty} f_{X,Y}(x,y)\,dy,
+$$
+
+$$
+f_Y(y)=\int_{-\infty}^{\infty} f_{X,Y}(x,y)\,dx.
+$$
+
+Conditional density:
+
+$$
+f_{Y|X}(y|x)=\frac{f_{X,Y}(x,y)}{f_X(x)}.
+$$
+
+Independence:
+
+$$
+f_{X,Y}(x,y)=f_X(x)f_Y(y).
+$$
+
+Expectation:
+
+$$
+E[g(X,Y)]=\iint g(x,y)f_{X,Y}(x,y)\,dA.
+$$
+
+Covariance:
+
+$$
+\operatorname{Cov}(X,Y)=E[(X-E[X])(Y-E[Y])].
+$$
+
+### Change of variables for densities
+
+If $Y=T(X)$ and $T$ is invertible, then
+
+$$
+f_Y(y)=f_X(T^{-1}(y))\left|\det J_{T^{-1}}(y)\right|.
+$$
+
+### Multivariate normal distribution
+
+For $x\in\mathbb R^n$, mean $\mu$, and positive definite covariance matrix $\Sigma$,
+
+$$
+f(x)=\frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}}
+\exp\left[-\frac12(x-\mu)^T\Sigma^{-1}(x-\mu)\right].
+$$
+
+Level sets of the multivariate normal are ellipsoids:
+
+$$
+(x-\mu)^T\Sigma^{-1}(x-\mu)=c.
+$$
+
+### Likelihood, score, and observed information
+
+For log-likelihood $\ell(\theta)$,
+
+$$
+\text{score}=\nabla \ell(\theta).
+$$
+
+The maximum likelihood estimator often satisfies
+
+$$
+\nabla \ell(\widehat\theta)=0.
+$$
+
+Observed information:
+
+$$
+J(\widehat\theta)=-H_\ell(\widehat\theta).
+$$
+
+Local quadratic approximation:
+
+$$
+\ell(\theta)\approx \ell(\widehat\theta)-\frac12(\theta-\widehat\theta)^T J(\widehat\theta)(\theta-\widehat\theta).
+$$
+
+Delta method approximation:
+
+$$
+\operatorname{Var}(g(\widehat\theta))\approx \nabla g(\theta)^T\operatorname{Cov}(\widehat\theta)\nabla g(\theta).
+$$
+
+## 11. Data Science and Machine Learning Formulas
+
+### Least squares
+
+For data matrix $X\in\mathbb R^{m\times p}$, response $y\in\mathbb R^m$, and parameter vector $\beta\in\mathbb R^p$,
+
+$$
+L(\beta)=\frac12\|X\beta-y\|^2.
+$$
+
+Gradient:
+
+$$
+\nabla L(\beta)=X^T(X\beta-y).
+$$
+
+Hessian:
+
+$$
+H_L=X^TX.
+$$
+
+Normal equations:
+
+$$
+X^TX\widehat\beta=X^Ty.
+$$
+
+Ridge regression:
+
+$$
+L_\lambda(\beta)=\frac12\|X\beta-y\|^2+\frac{\lambda}{2}\|\beta\|^2.
+$$
+
+Gradient:
+
+$$
+\nabla L_\lambda(\beta)=X^T(X\beta-y)+\lambda\beta.
+$$
+
+Ridge solution:
+
+$$
+\widehat\beta=(X^TX+\lambda I)^{-1}X^Ty.
+$$
+
+### Logistic regression
+
+Sigmoid function:
+
+$$
+\sigma(t)=\frac{1}{1+e^{-t}}.
+$$
+
+Binary logistic model:
+
+$$
+p_i=\sigma(x_i^T\beta).
+$$
+
+Negative log-likelihood:
+
+$$
+L(\beta)=-\sum_{i=1}^m\left[y_i\log p_i+(1-y_i)\log(1-p_i)\right].
+$$
+
+Gradient:
+
+$$
+\nabla L(\beta)=X^T(p-y).
+$$
+
+Hessian:
+
+$$
+H_L=X^T W X,
+$$
+
+where
+
+$$
+W=\operatorname{diag}(p_i(1-p_i)).
+$$
+
+### Neural-network chain rule
+
+For a computational graph with intermediate variables,
+
+$$
+\frac{dL}{d\theta}=\sum_j \frac{\partial L}{\partial z_j}\frac{\partial z_j}{\partial \theta}.
+$$
+
+For composition of maps, gradients are propagated by Jacobian products:
+
+$$
+J_{F_k\circ\cdots\circ F_1}=J_{F_k}\cdots J_{F_1}.
+$$
+
+Backpropagation is reverse-mode repeated application of the chain rule.
+
+### Numerical gradient check
+
+For small $h$ and standard basis vector $e_i$,
+
+$$
+\frac{\partial f}{\partial x_i}(x)\approx \frac{f(x+he_i)-f(x-he_i)}{2h}.
+$$
+
+## 12. Applied Mathematics and PDE Formulas
+
+Gradient:
+
+$$
+\nabla u=(u_x,u_y,u_z).
+$$
+
+Divergence of a vector field $F=(P,Q,R)$:
+
+$$
+\nabla\cdot F=P_x+Q_y+R_z.
+$$
+
+Curl:
+
+$$
+\nabla\times F=(R_y-Q_z,\,P_z-R_x,\,Q_x-P_y).
+$$
+
+Laplacian:
+
+$$
+\Delta u=u_{xx}+u_{yy}+u_{zz}.
+$$
+
+Heat equation:
+
+$$
+u_t=\kappa\Delta u.
+$$
+
+Advection equation with velocity field $v$:
+
+$$
+u_t+v\cdot\nabla u=0.
+$$
+
+Conservation law:
+
+$$
+u_t+\nabla\cdot F=0.
+$$
+
+Poisson equation:
+
+$$
+-\Delta u=f.
+$$
+
+Laplace equation:
+
+$$
+\Delta u=0.
+$$
+
+Gradient flow for minimizing an energy $E(u)$:
+
+$$
+\frac{du}{dt}=-\nabla E(u).
+$$
+
+Continuous diffusion, optimization, and probabilistic smoothing are connected by gradient, divergence, Laplacian, and conservation laws.
+
+## 13. Strategy Map
+
+| Task | First formula to try |
+|---|---|
+| Distance between points | $d(a,b)=\|b-a\|$ |
+| Angle between vectors | $\cos\theta=\frac{u\cdot v}{\|u\|\|v\|}$ |
+| Projection | $\operatorname{proj}_v(u)=\frac{u\cdot v}{v\cdot v}v$ |
+| Plane through point with normal | $n\cdot(x-p)=0$ |
+| Tangent plane to graph | $z=f(a,b)+f_x(a,b)(x-a)+f_y(a,b)(y-b)$ |
+| Tangent plane to level surface | $\nabla F(p)\cdot(x-p)=0$ |
+| Fastest increase | direction $\nabla f/\|\nabla f\|$ |
+| Local extrema | solve $\nabla f=0$ and inspect Hessian |
+| Constraint extrema | solve $\nabla f=\lambda\nabla g$ |
+| Area by integration | $\iint_D 1\,dA$ |
+| Volume by integration | $\iiint_E 1\,dV$ |
+| Polar integral | include factor $r$ |
+| Spherical integral | include factor $\rho^2\sin\phi$ |
+| Work along a curve | $\int_C F\cdot dr$ |
+| Conservative field | find $f$ with $F=\nabla f$ |
+| Circulation around a plane curve | Green's theorem |
+| Flux through closed surface | Divergence theorem |
+| Circulation around space boundary | Stokes' theorem |
+| Probability over region | integrate joint density over the region |
+| Fit least-squares model | use $\nabla L=X^T(X\beta-y)$ |
+| Simulate or approximate integral | use grid quadrature or Monte Carlo |

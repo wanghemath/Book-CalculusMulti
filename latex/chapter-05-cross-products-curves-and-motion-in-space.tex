@@ -1,0 +1,1202 @@
+% -----------------------------------------------------------------------------
+% Chapter 5 LaTeX version
+% Source QMD: chapter-05-cross-products-curves-and-motion-in-space.qmd
+% This file is self-contained. To use inside a larger book, copy the material
+% after \begin{document}, or move the preamble definitions to the main preamble.
+% -----------------------------------------------------------------------------
+
+\documentclass[11pt,oneside]{book}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usepackage{float}
+\usepackage{caption}
+\usepackage[most]{tcolorbox}
+
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{arrows.meta,calc,positioning,shadows.blur,decorations.pathreplacing,patterns,backgrounds,fit,angles,quotes,intersections,decorations.markings}
+
+% -----------------------------------------------------------------------------
+% Colors and style
+% -----------------------------------------------------------------------------
+\definecolor{chapterblue}{HTML}{1F5AA6}
+\definecolor{chapterteal}{HTML}{168A8F}
+\definecolor{chapterorange}{HTML}{D9822B}
+\definecolor{chaptergreen}{HTML}{2D8A4E}
+\definecolor{chapterpurple}{HTML}{6B4EAA}
+\definecolor{chapterred}{HTML}{B23B3B}
+\definecolor{softblue}{HTML}{EAF3FF}
+\definecolor{softgreen}{HTML}{EAF8EF}
+\definecolor{softorange}{HTML}{FFF4E6}
+\definecolor{softpurple}{HTML}{F3EEFF}
+\definecolor{softred}{HTML}{FFF0F0}
+\definecolor{softgray}{HTML}{F6F7F9}
+\definecolor{darkgray}{HTML}{30343B}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=chapterblue,
+  urlcolor=chapterteal,
+  citecolor=chapterpurple
+}
+
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{topsep=0.3em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+\captionsetup{font=small,labelfont=bf}
+
+\tikzset{
+  axisline/.style={-Latex,thick,darkgray},
+  vector/.style={-Latex,very thick,chapterblue},
+  vectororange/.style={-Latex,very thick,chapterorange},
+  vectorgreen/.style={-Latex,very thick,chaptergreen},
+  vectorpurple/.style={-Latex,very thick,chapterpurple},
+  vectorred/.style={-Latex,very thick,chapterred},
+  smallvector/.style={-Latex,thick,chapterblue},
+  guide/.style={dash pattern=on 3pt off 2pt,gray!70},
+  projection/.style={dash pattern=on 4pt off 2pt,thick,chapterorange},
+  point/.style={circle,fill=chapterorange,draw=white,line width=0.4pt,inner sep=1.8pt},
+  bluepoint/.style={circle,fill=chapterblue,draw=white,line width=0.4pt,inner sep=1.8pt},
+  greenpoint/.style={circle,fill=chaptergreen,draw=white,line width=0.4pt,inner sep=1.8pt},
+  purplepoint/.style={circle,fill=chapterpurple,draw=white,line width=0.4pt,inner sep=1.8pt},
+  redpoint/.style={circle,fill=chapterred,draw=white,line width=0.4pt,inner sep=1.8pt},
+  boxnode/.style={rounded corners=3pt,draw=chapterblue,fill=softblue,thick,align=center,inner sep=6pt},
+  greennode/.style={rounded corners=3pt,draw=chaptergreen,fill=softgreen,thick,align=center,inner sep=6pt},
+  orangenode/.style={rounded corners=3pt,draw=chapterorange,fill=softorange,thick,align=center,inner sep=6pt},
+  purplenode/.style={rounded corners=3pt,draw=chapterpurple,fill=softpurple,thick,align=center,inner sep=6pt},
+  rednode/.style={rounded corners=3pt,draw=chapterred,fill=softred,thick,align=center,inner sep=6pt},
+  helixarrow/.style={postaction={decorate},decoration={markings,mark=at position 0.68 with {\arrow{Latex}}}}
+}
+
+\newtcolorbox{mainideabox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterblue,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Main idea},
+  sharp corners=south,
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{definitionbox}[1][] {
+  enhanced, breakable,
+  colback=softpurple,
+  colframe=chapterpurple,
+  fonttitle=\bfseries,
+  title={Definition},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{examplebox}[1][] {
+  enhanced, breakable,
+  colback=softorange,
+  colframe=chapterorange,
+  fonttitle=\bfseries,
+  title={Example},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{notebox}[1][] {
+  enhanced, breakable,
+  colback=softgreen,
+  colframe=chaptergreen,
+  fonttitle=\bfseries,
+  title={Note},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{warningbox}[1][] {
+  enhanced, breakable,
+  colback=softred,
+  colframe=chapterred,
+  fonttitle=\bfseries,
+  title={Common mistake},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newtcolorbox{bridgebox}[1][] {
+  enhanced, breakable,
+  colback=softblue,
+  colframe=chapterteal,
+  fonttitle=\bfseries,
+  title={Bridge to applications},
+  boxrule=0.8pt,
+  left=1mm,right=1mm,top=1mm,bottom=1mm,
+  #1
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\vect}[1]{\left\langle #1\right\rangle}
+\newcommand{\dd}{\,d}
+\DeclareMathOperator{\spanop}{span}
+
+\begin{document}
+\setcounter{chapter}{4}
+
+\chapter{Cross Products, Curves, and Motion in Space}
+\label{ch:cross-products-curves-motion}
+
+\section*{Chapter overview}
+
+In the previous chapters we learned how to describe points, vectors, lines, planes, and hyperplanes. This chapter adds two geometric tools that are essential for the rest of multivariable calculus.
+
+The first tool is the \textbf{cross product}. Unlike the dot product, which returns a scalar, the cross product returns a vector. It encodes orientation, normal directions, area, and volume. It is the natural algebraic language for finding normal vectors to planes, surface orientations, torque, curl, and flux.
+
+The second tool is the calculus of \textbf{vector-valued functions}. A curve in the plane or in space can be described by a position vector
+\[
+\mathbf r(t)=\vect{x(t),y(t),z(t)}.
+\]
+Differentiating this vector gives velocity. Differentiating again gives acceleration. Integrating speed gives arc length. Differentiating the unit tangent vector gives curvature. These ideas connect geometry, physics, optimization paths, gradient descent trajectories, and data streams evolving through time.
+
+\begin{mainideabox}
+This chapter is a bridge from vector geometry to vector calculus. Cross products give normal directions and oriented area; vector-valued functions describe paths and motion. Later, line integrals, vector fields, flux, curl, Stokes' theorem, and the divergence theorem will all use these ideas.
+\end{mainideabox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.92]
+  \node[boxnode,minimum width=3.5cm] (dot) at (-4,1.9) {Dot product\\alignment\\$\mathbf a\cdot\mathbf b$};
+  \node[orangenode,minimum width=3.5cm] (cross) at (0,1.9) {Cross product\\orientation\\$\mathbf a\times\mathbf b$};
+  \node[greennode,minimum width=3.5cm] (curve) at (4,1.9) {Vector curve\\motion\\$\mathbf r(t)$};
+  \node[purplenode,minimum width=3.7cm] (normal) at (-2,-0.45) {Normal vector\\planes and surfaces};
+  \node[purplenode,minimum width=3.7cm] (area) at (2,-0.45) {Area and volume\\determinants};
+  \node[rednode,minimum width=4.2cm] (calc) at (0,-2.75) {Velocity, speed, acceleration,\\arc length, curvature};
+  \draw[smallvector] (cross) -- (normal);
+  \draw[smallvector] (cross) -- (area);
+  \draw[smallvector] (curve) -- (calc);
+  \draw[smallvector] (normal) -- (calc);
+  \draw[smallvector] (area) -- (calc);
+  \draw[guide] (dot) -- (cross);
+\end{tikzpicture}
+\caption{The chapter moves from algebraic orientation to geometric motion.}
+\end{figure}
+
+\section*{Learning goals}
+
+After studying this chapter, you should be able to:
+\begin{enumerate}
+\item compute cross products using determinants and component formulas;
+\item interpret the direction of $\mathbf a\times\mathbf b$ using the right-hand rule;
+\item compute areas using $\norm{\mathbf a\times\mathbf b}$;
+\item compute volumes using the scalar triple product;
+\item describe curves using vector-valued functions;
+\item compute velocity, speed, and acceleration;
+\item compute arc length and reparameterize simple curves by arc length;
+\item compute unit tangent vectors and curvature;
+\item connect curves and motion to modern data and optimization examples.
+\end{enumerate}
+
+\section{Why the cross product is needed}
+
+The dot product answers a question about \textbf{alignment}:
+\[
+\mathbf a\cdot\mathbf b=\norm{\mathbf a}\norm{\mathbf b}\cos\theta.
+\]
+It tells us whether two vectors point in similar, opposite, or perpendicular directions. But in three dimensions we often need a vector that is \textbf{perpendicular to two given vectors}. For example:
+\begin{itemize}
+\item a plane is often described by a normal vector;
+\item the orientation of a surface is described by a normal vector;
+\item the area of a parallelogram spanned by two vectors is measured by a perpendicular vector;
+\item the torque from a force is perpendicular to both the radius vector and the force vector;
+\item the curl of a vector field is written using a cross product with the differential operator $\nabla$.
+\end{itemize}
+
+The cross product is designed for exactly these tasks.
+
+\section{Definition and computation of the cross product}
+
+\begin{definitionbox}[title={Cross product in $\R^3$}]
+Let
+\[
+\mathbf a=\vect{a_1,a_2,a_3},\qquad
+\mathbf b=\vect{b_1,b_2,b_3}.
+\]
+The \textbf{cross product} $\mathbf a\times\mathbf b$ is the vector
+\[
+\mathbf a\times \mathbf b
+=
+\vect{
+ a_2b_3-a_3b_2,
+ a_3b_1-a_1b_3,
+ a_1b_2-a_2b_1
+}.
+\]
+It is often remembered using determinant notation:
+\[
+\mathbf a\times\mathbf b
+=
+\begin{vmatrix}
+\mathbf i & \mathbf j & \mathbf k\\
+a_1 & a_2 & a_3\\
+b_1 & b_2 & b_3
+\end{vmatrix}.
+\]
+\end{definitionbox}
+
+Expanding along the first row gives
+\[
+\mathbf a\times \mathbf b
+=(a_2b_3-a_3b_2)\mathbf i
+-(a_1b_3-a_3b_1)\mathbf j
++(a_1b_2-a_2b_1)\mathbf k.
+\]
+
+\begin{warningbox}[title={Only in three dimensions for this course}]
+The cross product in this familiar vector form is a special operation for three-dimensional vectors. In higher-dimensional linear algebra, related ideas are expressed using determinants, exterior products, orientations, and differential forms.
+\end{warningbox}
+
+\begin{examplebox}[title={Example 5.1: Compute a cross product}]
+Let
+\[
+\mathbf a=\vect{1,2,3},\qquad \mathbf b=\vect{3,2,1}.
+\]
+Then
+\[
+\begin{aligned}
+\mathbf a\times\mathbf b
+&=\vect{2\cdot 1-3\cdot 2,
+3\cdot 3-1\cdot 1,
+1\cdot 2-2\cdot 3}\\
+&=\vect{-4,8,-4}.
+\end{aligned}
+\]
+This vector is perpendicular to both $\mathbf a$ and $\mathbf b$:
+\[
+\vect{-4,8,-4}\cdot\vect{1,2,3}=-4+16-12=0,
+\]
+\[
+\vect{-4,8,-4}\cdot\vect{3,2,1}=-12+16-4=0.
+\]
+\end{examplebox}
+
+\tdplotsetmaincoords{68}{118}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[tdplot_main_coords,scale=0.78]
+  \coordinate (O) at (0,0,0);
+  \coordinate (A) at (1,2,3);
+  \coordinate (B) at (3,2,1);
+  \coordinate (AB) at (4,4,4);
+  \coordinate (C) at (-0.65,1.3,-0.65);
+
+  \draw[axisline] (0,0,0) -- (4.8,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (0,0,0) -- (0,4.8,0) node[anchor=north west] {$y$};
+  \draw[axisline] (0,0,0) -- (0,0,4.8) node[anchor=south] {$z$};
+
+  \filldraw[fill=softblue,draw=chapterblue,opacity=0.42] (O) -- (A) -- (AB) -- (B) -- cycle;
+  \draw[vector] (O) -- (A) node[pos=0.92,anchor=south west] {$\mathbf a$};
+  \draw[vectororange] (O) -- (B) node[pos=0.90,anchor=south] {$\mathbf b$};
+  \draw[vectorred] (O) -- (C) node[pos=1.0,anchor=south] {$\mathbf a\times\mathbf b$};
+  \draw[guide] (A) -- (AB) -- (B);
+  \node[point,label={below left:$O$}] at (O) {};
+  \node[align=center,fill=white,draw=chapterblue,rounded corners=2pt,inner sep=4pt] at (3.2,4.5,1.4)
+  {parallelogram\\spanned by $\mathbf a,\mathbf b$};
+\end{tikzpicture}
+\caption{The cross product $\mathbf a\times\mathbf b$ is perpendicular to both $\mathbf a$ and $\mathbf b$. The vector is shown scaled for readability.}
+\label{fig:cross-product-geometry}
+\end{figure}
+
+\section{Basic properties of the cross product}
+
+For vectors $\mathbf a,\mathbf b,\mathbf c$ in $\R^3$ and scalars $\lambda$, the cross product satisfies
+\[
+\mathbf a\times\mathbf b=-(\mathbf b\times\mathbf a),
+\]
+\[
+\mathbf a\times(\mathbf b+\mathbf c)=\mathbf a\times\mathbf b+\mathbf a\times\mathbf c,
+\]
+\[
+(\lambda\mathbf a)\times\mathbf b=\lambda(\mathbf a\times\mathbf b)=\mathbf a\times(\lambda\mathbf b),
+\]
+\[
+\mathbf a\times\mathbf a=\mathbf 0.
+\]
+
+The first identity is especially important: \textbf{order matters}. Reversing the order reverses the direction.
+
+\subsection{Standard basis orientation}
+
+The standard basis vectors satisfy
+\[
+\mathbf i\times\mathbf j=\mathbf k,
+\qquad
+\mathbf j\times\mathbf k=\mathbf i,
+\qquad
+\mathbf k\times\mathbf i=\mathbf j.
+\]
+Reversing the order changes the sign:
+\[
+\mathbf j\times\mathbf i=-\mathbf k,
+\qquad
+\mathbf k\times\mathbf j=-\mathbf i,
+\qquad
+\mathbf i\times\mathbf k=-\mathbf j.
+\]
+
+This orientation is called the \textbf{right-hand rule}. If the fingers of your right hand rotate from $\mathbf a$ toward $\mathbf b$, then your thumb points in the direction of $\mathbf a\times\mathbf b$.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[tdplot_main_coords,scale=2.4]
+  \coordinate (O) at (0,0,0);
+  \draw[axisline] (O) -- (1.25,0,0) node[anchor=north east] {$x$};
+  \draw[axisline] (O) -- (0,1.25,0) node[anchor=north west] {$y$};
+  \draw[axisline] (O) -- (0,0,1.25) node[anchor=south] {$z$};
+  \draw[vector] (O) -- (1,0,0) node[pos=1.12] {$\mathbf i$};
+  \draw[vectororange] (O) -- (0,1,0) node[pos=1.15] {$\mathbf j$};
+  \draw[vectorgreen] (O) -- (0,0,1) node[pos=1.18] {$\mathbf k$};
+  \tdplotdrawarc[->,thick,chapterpurple]{(0,0,0)}{0.42}{0}{90}{anchor=south}{$\mathbf i\to\mathbf j$}
+  \node[align=center,fill=white,draw=chaptergreen,rounded corners=2pt,inner sep=4pt] at (0.65,0.72,0.75) {$\mathbf i\times\mathbf j=\mathbf k$};
+\end{tikzpicture}
+\caption{The standard right-handed orientation: rotating from $\mathbf i$ to $\mathbf j$ sends the thumb toward $\mathbf k$.}
+\label{fig:right-hand-rule}
+\end{figure}
+
+\section{Area from the cross product}
+
+The magnitude of the cross product has a geometric meaning:
+\[
+\norm{\mathbf a\times\mathbf b}=\norm{\mathbf a}\norm{\mathbf b}\sin\theta,
+\]
+where $\theta$ is the angle between $\mathbf a$ and $\mathbf b$. This is the area of the parallelogram spanned by $\mathbf a$ and $\mathbf b$.
+
+Therefore
+\[
+\text{Area of parallelogram}=\norm{\mathbf a\times\mathbf b},
+\qquad
+\text{Area of triangle}=\frac12\norm{\mathbf a\times\mathbf b}.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.08]
+  \coordinate (O) at (0,0);
+  \coordinate (A) at (4.1,0.6);
+  \coordinate (B) at (1.55,2.5);
+  \coordinate (C) at ($(A)+(B)$);
+  \filldraw[fill=softblue,draw=chapterblue,very thick,opacity=0.85] (O) -- (A) -- (C) -- (B) -- cycle;
+  \draw[vector] (O) -- (A) node[pos=0.55,below] {$\mathbf a$};
+  \draw[vectororange] (O) -- (B) node[pos=0.6,left] {$\mathbf b$};
+  \draw[guide] (A) -- (C) -- (B);
+  \draw[decorate,decoration={brace,amplitude=5pt},thick,chaptergreen] ($(O)+(0,-0.35)$) -- ($(A)+(0,-0.35)$)
+    node[midway,below=6pt] {base $\norm{\mathbf a}$};
+  \draw[guide] (B) -- ($(B)!(O)!(A)$);
+  \draw[<->,thick,chapterred] ($(B)!(O)!(A)$) -- (B) node[midway,right] {$\norm{\mathbf b}\sin\theta$};
+  \pic[draw=chapterpurple,thick,->,"$\theta$",angle eccentricity=1.35,angle radius=0.65cm] {angle=A--O--B};
+  \node[orangenode] at (4.8,2.8) {$\text{Area}=\norm{\mathbf a}\norm{\mathbf b}\sin\theta$\\$=\norm{\mathbf a\times\mathbf b}$};
+\end{tikzpicture}
+\caption{The cross product magnitude is base times height, so it gives the parallelogram area.}
+\label{fig:cross-product-area}
+\end{figure}
+
+\begin{examplebox}[title={Example 5.2: Area of a triangle}]
+Find the area of the triangle with vertices
+\[
+O=(0,0,0),\qquad A=(1,2,3),\qquad B=(3,2,1).
+\]
+The two side vectors from $O$ are
+\[
+\overrightarrow{OA}=\vect{1,2,3},\qquad \overrightarrow{OB}=\vect{3,2,1}.
+\]
+From Example 5.1,
+\[
+\overrightarrow{OA}\times\overrightarrow{OB}=\vect{-4,8,-4}.
+\]
+Thus
+\[
+\norm{\overrightarrow{OA}\times\overrightarrow{OB}}
+=\sqrt{(-4)^2+8^2+(-4)^2}=\sqrt{96}=4\sqrt6.
+\]
+So the area of the triangle is
+\[
+\frac12(4\sqrt6)=2\sqrt6.
+\]
+\end{examplebox}
+
+\section{Normal vectors and planes}
+
+A plane in $\R^3$ can be described using a point $P_0=(x_0,y_0,z_0)$ and a normal vector
+\[
+\mathbf n=\vect{A,B,C}.
+\]
+The equation is
+\[
+\mathbf n\cdot\vect{x-x_0,y-y_0,z-z_0}=0,
+\]
+or in standard form,
+\[
+A(x-x_0)+B(y-y_0)+C(z-z_0)=0.
+\]
+
+If a plane is spanned by two nonparallel vectors $\mathbf u$ and $\mathbf v$, then a normal vector is
+\[
+\mathbf n=\mathbf u\times\mathbf v.
+\]
+
+\begin{examplebox}[title={Example 5.3: Plane through three points}]
+Find an equation of the plane through
+\[
+P=(1,2,3),\qquad Q=(2,2,5),\qquad R=(3,4,1).
+\]
+First compute two direction vectors in the plane:
+\[
+\overrightarrow{PQ}=Q-P=\vect{1,0,2},
+\qquad
+\overrightarrow{PR}=R-P=\vect{2,2,-2}.
+\]
+A normal vector is
+\[
+\overrightarrow{PQ}\times\overrightarrow{PR}
+=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+1&0&2\\
+2&2&-2
+\end{vmatrix}
+=\vect{-4,6,2}.
+\]
+We may divide by $2$ and use $\mathbf n=\vect{-2,3,1}$. Using $P=(1,2,3)$, the plane is
+\[
+-2(x-1)+3(y-2)+(z-3)=0,
+\]
+so
+\[
+-2x+3y+z-7=0.
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[tdplot_main_coords,scale=0.92]
+  \coordinate (P) at (1,2,2.2);
+  \coordinate (Q) at (3.4,2,3.4);
+  \coordinate (R) at (4.1,4.4,1.5);
+  \coordinate (S) at ($(Q)+(R)-(P)$);
+  \coordinate (N) at (0.1,1.2,1.6);
+
+  \filldraw[fill=softpurple,draw=chapterpurple,opacity=0.55] (P) -- (Q) -- (S) -- (R) -- cycle;
+  \draw[vector] (P) -- (Q) node[midway,above] {$\overrightarrow{PQ}$};
+  \draw[vectororange] (P) -- (R) node[midway,left] {$\overrightarrow{PR}$};
+  \draw[vectorred] (P) -- ($(P)+(N)$) node[pos=1.1,anchor=south] {$\mathbf n=\overrightarrow{PQ}\times\overrightarrow{PR}$};
+  \node[point,label={left:$P$}] at (P) {};
+  \node[bluepoint,label={right:$Q$}] at (Q) {};
+  \node[greenpoint,label={below:$R$}] at (R) {};
+  \draw[guide] (Q) -- (S) -- (R);
+  \node[boxnode] at (4.4,1.2,3.2) {A cross product\\turns two directions\\into one normal};
+\end{tikzpicture}
+\caption{A cross product gives a normal vector to the plane through three non-collinear points.}
+\label{fig:plane-from-cross-product}
+\end{figure}
+
+\section{Scalar triple product and volume}
+
+\begin{definitionbox}[title={Scalar triple product}]
+The \textbf{scalar triple product} of $\mathbf a$, $\mathbf b$, and $\mathbf c$ is
+\[
+\mathbf a\cdot(\mathbf b\times\mathbf c).
+\]
+Geometrically,
+\[
+\abs{\mathbf a\cdot(\mathbf b\times\mathbf c)}
+\]
+is the volume of the parallelepiped determined by $\mathbf a$, $\mathbf b$, and $\mathbf c$.
+\end{definitionbox}
+
+Using a determinant,
+\[
+\mathbf a\cdot(\mathbf b\times\mathbf c)
+=
+\begin{vmatrix}
+a_1&a_2&a_3\\
+b_1&b_2&b_3\\
+c_1&c_2&c_3
+\end{vmatrix}.
+\]
+If the scalar triple product is zero, then the three vectors are coplanar.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[tdplot_main_coords,scale=0.9]
+  \coordinate (O) at (0,0,0);
+  \coordinate (A) at (2.4,0,0.9);
+  \coordinate (B) at (0,2.1,0.9);
+  \coordinate (C) at (0.9,0.8,2.8);
+  \coordinate (AB) at ($(A)+(B)$);
+  \coordinate (AC) at ($(A)+(C)$);
+  \coordinate (BC) at ($(B)+(C)$);
+  \coordinate (ABC) at ($(A)+(B)+(C)$);
+
+  \filldraw[fill=softblue,draw=chapterblue,opacity=0.36] (O) -- (A) -- (AB) -- (B) -- cycle;
+  \filldraw[fill=softgreen,draw=chaptergreen,opacity=0.28] (O) -- (A) -- (AC) -- (C) -- cycle;
+  \filldraw[fill=softorange,draw=chapterorange,opacity=0.28] (O) -- (B) -- (BC) -- (C) -- cycle;
+  \filldraw[fill=softpurple,draw=chapterpurple,opacity=0.18] (C) -- (AC) -- (ABC) -- (BC) -- cycle;
+
+  \foreach \P/\Q in {O/A,O/B,O/C,A/AB,A/AC,B/AB,B/BC,C/AC,C/BC,AB/ABC,AC/ABC,BC/ABC}{
+    \draw[thick,darkgray] (\P) -- (\Q);
+  }
+  \draw[vector] (O) -- (A) node[midway,below] {$\mathbf a$};
+  \draw[vectororange] (O) -- (B) node[midway,left] {$\mathbf b$};
+  \draw[vectorgreen] (O) -- (C) node[midway,right] {$\mathbf c$};
+  \node[rednode] at (3.9,3.6,1.5) {$V=\abs{\mathbf a\cdot(\mathbf b\times\mathbf c)}$};
+\end{tikzpicture}
+\caption{The scalar triple product measures signed volume. Its absolute value is the volume of the parallelepiped.}
+\label{fig:scalar-triple-product-volume}
+\end{figure}
+
+\begin{examplebox}[title={Example 5.4: Test coplanarity}]
+Let
+\[
+\mathbf a=\vect{-3,0,6},\qquad
+\mathbf b=\vect{4,1,-7},\qquad
+\mathbf c=\vect{1,-2,-4}.
+\]
+Compute
+\[
+\mathbf a\cdot(\mathbf b\times\mathbf c)
+=
+\begin{vmatrix}
+-3&0&6\\
+4&1&-7\\
+1&-2&-4
+\end{vmatrix}.
+\]
+First,
+\[
+\begin{aligned}
+\mathbf b\times\mathbf c
+&=\vect{1(-4)-(-7)(-2),\; (-7)(1)-4(-4),\;4(-2)-1(1)}\\
+&=\vect{-18,9,-9}.
+\end{aligned}
+\]
+Then
+\[
+\mathbf a\cdot(\mathbf b\times\mathbf c)
+=\vect{-3,0,6}\cdot\vect{-18,9,-9}=54+0-54=0.
+\]
+Therefore the vectors are coplanar.
+\end{examplebox}
+
+\section{Vector-valued functions and space curves}
+
+\begin{definitionbox}[title={Vector-valued function}]
+A \textbf{vector-valued function} takes a scalar input and returns a vector:
+\[
+\mathbf r(t)=\vect{x(t),y(t),z(t)}.
+\]
+The image of $\mathbf r(t)$ is a curve in space. The parameter $t$ may represent time, but it can also simply be a variable that traces the curve.
+\end{definitionbox}
+
+\begin{examplebox}[title={Example 5.5: A helix}]
+The curve
+\[
+\mathbf r(t)=\vect{\cos t,\sin t,t}
+\]
+is a helix. Its projection onto the $xy$-plane is the unit circle, while the $z$-coordinate increases linearly.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-3.2,-0.2) -- (3.4,-0.2) node[right] {$x$};
+  \draw[axisline] (-2.8,-0.45) -- (-2.8,4.3) node[above] {$z$};
+  \draw[thick,chapterorange,dashed] (-2.55,-0.2) ellipse (0.75 and 0.18);
+  \draw[very thick,chapterblue,domain=0:720,samples=150,smooth,variable=\t]
+    plot ({0.78*cos(\t)+0.0065*\t-2.4},{0.78*sin(\t)+0.005*\t+0.45});
+  \draw[vectorred] (1.10,2.55) -- (1.70,3.20) node[right] {tangent};
+  \node[boxnode] at (2.1,0.75) {$\mathbf r(t)=\langle\cos t,\sin t,t\rangle$\\circle in $xy$, rising in $z$};
+  \node[chapterblue] at (0.5,3.95) {space curve};
+  \node[chapterorange] at (-1.95,-0.55) {projection};
+\end{tikzpicture}
+\caption{The helix winds around the $z$-axis while rising at a constant rate. The picture uses a projected view.}
+\label{fig:helix}
+\end{figure}
+
+\section{Derivatives and integrals of vector-valued functions}
+
+The derivative of
+\[
+\mathbf r(t)=\vect{x(t),y(t),z(t)}
+\]
+is computed component by component:
+\[
+\mathbf r'(t)=\vect{x'(t),y'(t),z'(t)}.
+\]
+Similarly,
+\[
+\int_a^b \mathbf r(t)\dd t
+=
+\vect{\int_a^b x(t)\dd t,
+\int_a^b y(t)\dd t,
+\int_a^b z(t)\dd t}.
+\]
+The product rules are analogous to ordinary calculus:
+\[
+\frac{d}{dt}\left(\mathbf a(t)\cdot\mathbf b(t)\right)
+=\mathbf a'(t)\cdot\mathbf b(t)+\mathbf a(t)\cdot\mathbf b'(t),
+\]
+\[
+\frac{d}{dt}\left(\mathbf a(t)\times\mathbf b(t)\right)
+=\mathbf a'(t)\times\mathbf b(t)+\mathbf a(t)\times\mathbf b'(t).
+\]
+
+\begin{examplebox}[title={Example 5.6: Differentiate a vector function}]
+Let
+\[
+\mathbf r(t)=\vect{t^3,\tfrac12 t,t^2-4t}.
+\]
+Then
+\[
+\mathbf r'(t)=\vect{3t^2,\tfrac12,2t-4},
+\qquad
+\mathbf r''(t)=\vect{6t,0,2}.
+\]
+At $t=1$,
+\[
+\mathbf r'(1)=\vect{3,\tfrac12,-2},
+\qquad
+\mathbf r''(1)=\vect{6,0,2}.
+\]
+\end{examplebox}
+
+\section{Motion in space: velocity, speed, and acceleration}
+
+Suppose a particle moves through space with position vector
+\[
+\mathbf r(t)=\vect{x(t),y(t),z(t)}.
+\]
+The \textbf{velocity vector} is
+\[
+\mathbf v(t)=\mathbf r'(t).
+\]
+The \textbf{speed} is the magnitude of the velocity vector:
+\[
+\text{speed}=\norm{\mathbf v(t)}=\norm{\mathbf r'(t)}.
+\]
+The \textbf{acceleration vector} is
+\[
+\mathbf a(t)=\mathbf v'(t)=\mathbf r''(t).
+\]
+
+\begin{notebox}[title={Vector versus scalar quantities}]
+Velocity is a vector because it has magnitude and direction. Speed is a scalar because it is only the magnitude of velocity.
+\end{notebox}
+
+\begin{examplebox}[title={Example 5.7: Motion on a helix}]
+Let
+\[
+\mathbf r(t)=\vect{\sin t,\cos t,t}.
+\]
+Then
+\[
+\mathbf v(t)=\mathbf r'(t)=\vect{\cos t,-\sin t,1},
+\]
+and
+\[
+\mathbf a(t)=\mathbf r''(t)=\vect{-\sin t,-\cos t,0}.
+\]
+The speed is
+\[
+\norm{\mathbf v(t)}=\sqrt{\cos^2t+\sin^2t+1}=\sqrt2.
+\]
+So the particle moves with constant speed even though its direction is changing.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-3.2,-0.2) -- (3.5,-0.2) node[right] {$x$};
+  \draw[axisline] (-2.8,-0.45) -- (-2.8,4.0) node[above] {$z$};
+  \draw[very thick,chapterblue,domain=0:620,samples=130,smooth,variable=\t]
+    plot ({0.78*sin(\t)+0.0065*\t-2.4},{0.78*cos(\t)+0.0048*\t+0.55});
+  \coordinate (Pone) at (-1.05,1.45);
+  \coordinate (Ptwo) at (1.15,2.65);
+  \node[point] at (Pone) {};
+  \draw[vectorgreen] (Pone) -- ++(0.78,0.55) node[right] {$\mathbf v$};
+  \draw[vectorred] (Pone) -- ++(-0.55,-0.18) node[left] {$\mathbf a$};
+  \node[point] at (Ptwo) {};
+  \draw[vectorgreen] (Ptwo) -- ++(0.58,0.62) node[right] {$\mathbf v$};
+  \draw[vectorred] (Ptwo) -- ++(-0.50,0.02) node[left] {$\mathbf a$};
+  \node[boxnode] at (2.0,0.85) {velocity is tangent\\acceleration bends the path};
+\end{tikzpicture}
+\caption{On a helix, velocity is tangent to the curve while acceleration points inward toward the axis.}
+\label{fig:velocity-acceleration}
+\end{figure}
+
+\section{Recovering velocity and position from acceleration}
+
+Because
+\[
+\mathbf a(t)=\mathbf v'(t),
+\]
+we can recover velocity by integration:
+\[
+\mathbf v(t)=\mathbf v(0)+\int_0^t \mathbf a(u)\dd u.
+\]
+Because
+\[
+\mathbf v(t)=\mathbf r'(t),
+\]
+we can recover position by another integration:
+\[
+\mathbf r(t)=\mathbf r(0)+\int_0^t \mathbf v(u)\dd u.
+\]
+
+\begin{examplebox}[title={Example 5.8: From acceleration to position}]
+A particle starts at
+\[
+\mathbf r(0)=\vect{0,0,1}
+\]
+with initial velocity
+\[
+\mathbf v(0)=\mathbf i+\mathbf k=\vect{1,0,1}.
+\]
+Its acceleration is
+\[
+\mathbf a(t)=\vect{2t,1,6t}.
+\]
+Then
+\[
+\mathbf v(t)=\vect{1,0,1}+\int_0^t\vect{2u,1,6u}\dd u
+=\vect{1+t^2,t,1+3t^2}.
+\]
+Now integrate again:
+\[
+\begin{aligned}
+\mathbf r(t)
+&=\vect{0,0,1}+\int_0^t\vect{1+u^2,u,1+3u^2}\dd u\\
+&=\vect{t+\frac{t^3}{3},\frac{t^2}{2},1+t+t^3}.
+\end{aligned}
+\]
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[axisline] (-0.2,0) -- (8.4,0) node[right] {$x$};
+  \draw[axisline] (0,-0.2) -- (0,5.0) node[above] {$z$};
+  \draw[very thick,chapterpurple,domain=0:2.5,samples=120,smooth,variable=\t]
+    plot ({\t+\t^3/3},{0.25*(1+\t+\t^3)});
+  \node[greenpoint,label={above left:start}] at (0,0.25) {};
+  \node[redpoint,label={right:end}] at (7.708,4.78) {};
+  \draw[guide] (0,0.25) -- (7.708,4.78);
+  \node[boxnode] at (4.0,1.1) {$\mathbf a(t)\xrightarrow{\int}\mathbf v(t)$\\$\mathbf v(t)\xrightarrow{\int}\mathbf r(t)$};
+\end{tikzpicture}
+\caption{Integrating acceleration gives velocity; integrating velocity gives position. The plotted curve shows the $x$-$z$ projection of the trajectory.}
+\label{fig:motion-from-acceleration}
+\end{figure}
+
+\section{Arc length}
+
+Suppose a curve is given by
+\[
+\mathbf r(t)=\vect{x(t),y(t),z(t)},\qquad a\le t\le b,
+\]
+and assume the curve is traversed exactly once. The length of the curve is
+\[
+L=\int_a^b \norm{\mathbf r'(t)}\dd t.
+\]
+Equivalently,
+\[
+L=\int_a^b
+\sqrt{\left(\frac{dx}{dt}\right)^2+
+\left(\frac{dy}{dt}\right)^2+
+\left(\frac{dz}{dt}\right)^2}\dd t.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[axisline] (-0.2,0) -- (7.0,0) node[right] {$x$};
+  \draw[axisline] (0,-0.2) -- (0,3.8) node[above] {$y$};
+  \draw[very thick,chapterblue,domain=0.3:6.5,smooth,samples=120] plot (\x,{1.7+0.9*sin(70*\x)+0.18*\x});
+  \foreach \x in {0.7,1.3,...,6.1}{
+    \pgfmathsetmacro{\y}{1.7+0.9*sin(70*\x)+0.18*\x}
+    \draw[chapterorange,thick] (\x,\y) -- +(0.48,{0.08+0.55*cos(70*\x)});
+  }
+  \node[boxnode] at (3.6,0.7) {$L\approx\sum \Delta s_i$\\$\longrightarrow\displaystyle \int_a^b\norm{\mathbf r'(t)}\,dt$};
+  \node[chapterblue] at (6.4,3.45) {$\mathbf r(t)$};
+\end{tikzpicture}
+\caption{Arc length is obtained as the limit of many small straight-line approximations.}
+\label{fig:arc-length-concept}
+\end{figure}
+
+\begin{examplebox}[title={Example 5.9: Length of a circular helix}]
+Let
+\[
+\mathbf r(t)=\vect{\cos t,\sin t,t},\qquad 0\le t\le 2\pi.
+\]
+Then
+\[
+\mathbf r'(t)=\vect{-\sin t,\cos t,1},
+\]
+so
+\[
+\norm{\mathbf r'(t)}=\sqrt{\sin^2t+\cos^2t+1}=\sqrt2.
+\]
+Therefore
+\[
+L=\int_0^{2\pi}\sqrt2\dd t=2\sqrt2\pi.
+\]
+\end{examplebox}
+
+\section{Arc length parameterization}
+
+The arc length function from $t=a$ to $t$ is
+\[
+s(t)=\int_a^t \norm{\mathbf r'(u)}\dd u.
+\]
+When $s(t)$ can be solved for $t$ as a function of $s$, we can reparameterize the curve by arc length. This is useful because the new parameter directly measures distance traveled along the curve.
+
+\begin{examplebox}[title={Example 5.10: Reparameterize a helix by arc length}]
+For
+\[
+\mathbf r(t)=\vect{\cos t,\sin t,t},\qquad t\ge 0,
+\]
+we have $\norm{\mathbf r'(t)}=\sqrt2$. Thus
+\[
+s(t)=\int_0^t\sqrt2\dd u=\sqrt2t.
+\]
+Solving for $t$ gives
+\[
+t=\frac{s}{\sqrt2}.
+\]
+Therefore the arc length parameterization is
+\[
+\mathbf r(s)=\vect{\cos\left(\frac{s}{\sqrt2}\right),
+\sin\left(\frac{s}{\sqrt2}\right),
+\frac{s}{\sqrt2}}.
+\]
+With this parameterization,
+\[
+\norm{\frac{d\mathbf r}{ds}}=1.
+\]
+That is why an arc length parameterization is also called a \textbf{unit-speed parameterization}.
+\end{examplebox}
+
+\section{Unit tangent vector}
+
+For a smooth curve with $\mathbf r'(t)\ne\mathbf 0$, the \textbf{unit tangent vector} is
+\[
+\mathbf T(t)=\frac{\mathbf r'(t)}{\norm{\mathbf r'(t)}}.
+\]
+This vector points in the direction of motion, but has length $1$.
+
+For the helix
+\[
+\mathbf r(t)=\vect{\cos t,\sin t,t},
+\]
+we have
+\[
+\mathbf T(t)=\frac1{\sqrt2}\vect{-\sin t,\cos t,1}.
+\]
+
+\section{Curvature}
+
+Curvature measures how quickly a curve changes direction. A straight line has curvature $0$. A small circle has larger curvature than a large circle.
+
+The conceptual definition is
+\[
+\kappa=\norm{\frac{d\mathbf T}{ds}},
+\]
+where $s$ is arc length. A practical formula is
+\[
+\kappa(t)=\frac{\norm{\mathbf T'(t)}}{\norm{\mathbf r'(t)}}.
+\]
+For many computations in $\R^3$, the most convenient formula is
+\[
+\kappa(t)=\frac{\norm{\mathbf r'(t)\times\mathbf r''(t)}}{\norm{\mathbf r'(t)}^3}.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[axisline] (-3.2,0) -- (3.7,0) node[right] {$x$};
+  \draw[axisline] (0,-3.0) -- (0,3.2) node[above] {$y$};
+  \draw[very thick,chapterred] (-1.6,0) circle (0.7);
+  \draw[very thick,chapterorange] (0.4,0) circle (1.2);
+  \draw[very thick,chapterblue] (2.7,0) circle (2.0);
+  \draw[chapterred,thick] (-1.6,0) -- (-0.9,0) node[midway,above] {$a=0.7$};
+  \draw[chapterorange,thick] (0.4,0) -- (1.6,0) node[midway,above] {$a=1.2$};
+  \draw[chapterblue,thick] (2.7,0) -- (4.7,0) node[midway,above] {$a=2$};
+  \node[rednode] at (-1.6,-1.45) {larger curvature\\$\kappa=1/a$};
+  \node[boxnode] at (3.2,-2.35) {larger radius\\smaller curvature};
+\end{tikzpicture}
+\caption{For a circle of radius $a$, the curvature is $\kappa=1/a$.}
+\label{fig:curvature-circles}
+\end{figure}
+
+\begin{examplebox}[title={Example 5.11: Curvature of a circle}]
+Let a circle of radius $a$ be parameterized by
+\[
+\mathbf r(t)=\vect{a\cos t,a\sin t,0}.
+\]
+Then
+\[
+\mathbf r'(t)=\vect{-a\sin t,a\cos t,0},
+\qquad
+\mathbf r''(t)=\vect{-a\cos t,-a\sin t,0}.
+\]
+We have $\norm{\mathbf r'(t)}=a$ and
+\[
+\norm{\mathbf r'(t)\times\mathbf r''(t)}=a^2.
+\]
+Therefore
+\[
+\kappa(t)=\frac{a^2}{a^3}=\frac1a.
+\]
+Thus a circle with larger radius has smaller curvature.
+\end{examplebox}
+
+\begin{examplebox}[title={Example 5.12: Curvature of the circular helix}]
+Let
+\[
+\mathbf r(t)=\vect{\cos t,\sin t,t}.
+\]
+Then
+\[
+\mathbf r'(t)=\vect{-\sin t,\cos t,1},
+\qquad
+\mathbf r''(t)=\vect{-\cos t,-\sin t,0}.
+\]
+Compute the cross product:
+\[
+\mathbf r'(t)\times\mathbf r''(t)=\vect{\sin t,-\cos t,1}.
+\]
+Thus
+\[
+\norm{\mathbf r'(t)\times\mathbf r''(t)}=\sqrt{\sin^2t+\cos^2t+1}=\sqrt2,
+\qquad
+\norm{\mathbf r'(t)}=\sqrt2.
+\]
+Therefore
+\[
+\kappa(t)=\frac{\sqrt2}{(\sqrt2)^3}=\frac12.
+\]
+The helix has constant curvature.
+\end{examplebox}
+
+\section{Finding when speed is minimized}
+
+In applications, a trajectory may have variable speed. Since speed is nonnegative, minimizing speed is equivalent to minimizing the square of speed.
+
+\begin{examplebox}[title={Example 5.13: Minimum speed}]
+Let
+\[
+\mathbf r(t)=\vect{t^2+1,3t,t^2-4t}.
+\]
+Then
+\[
+\mathbf v(t)=\mathbf r'(t)=\vect{2t,3,2t-4}.
+\]
+The speed is
+\[
+\norm{\mathbf v(t)}=\sqrt{(2t)^2+3^2+(2t-4)^2}.
+\]
+Instead of minimizing this square root, minimize
+\[
+\norm{\mathbf v(t)}^2=4t^2+9+(2t-4)^2.
+\]
+Simplify:
+\[
+\norm{\mathbf v(t)}^2=4t^2+9+4t^2-16t+16=8t^2-16t+25.
+\]
+This quadratic is minimized when
+\[
+t=\frac{-(-16)}{2\cdot 8}=1.
+\]
+Therefore the speed is minimized at $t=1$.
+\end{examplebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.65cm,y=1.0cm]
+  \draw[axisline] (-1.15,0) -- (3.25,0) node[right] {$t$};
+  \draw[axisline] (-1.0,0) -- (-1.0,4.0) node[above] {speed};
+  \foreach \x in {-1,0,1,2,3} \draw[gray!40] (\x,0) -- (\x,3.7) node[below=4pt,black] {\small \x};
+  \foreach \y/\lab in {0.5/4,1.5/5,2.5/6,3.5/7} \draw[gray!40] (-1.05,\y) -- (3.1,\y) node[left=4pt,black] {\small \lab};
+  \draw[very thick,chapterblue,domain=-1:3,samples=150,smooth,variable=\t]
+    plot ({\t},{sqrt(8*\t*\t-16*\t+25)-3.5});
+  \draw[chapterred,dashed,thick] (1,0) -- (1,3.7);
+  \node[redpoint,label={right:$t=1$}] at (1,{sqrt(17)-3.5}) {};
+  \node[boxnode] at (2.15,3.1) {$\norm{\mathbf v(t)}=\sqrt{8t^2-16t+25}$};
+\end{tikzpicture}
+\caption{Minimizing speed is often easier by minimizing speed squared.}
+\label{fig:speed-minimum}
+\end{figure}
+
+\section{Modern viewpoint: trajectories in data and optimization}
+
+A vector-valued function does not need to describe a physical particle. It can describe any time-indexed or parameter-indexed state.
+
+\begin{bridgebox}[title={Gradient descent as a curve}]
+In machine learning, an optimization algorithm generates a sequence of model parameters
+\[
+\theta_0,\theta_1,\theta_2,\ldots,
+\]
+where each $\theta_k$ may be a vector in a high-dimensional space. If we interpolate these points, we can view training as a curve in parameter space. The velocity of this curve describes how fast the parameters are changing. The curvature describes how sharply the path bends. A highly curved path may indicate unstable optimization, poor scaling, or a loss landscape with narrow valleys.
+\end{bridgebox}
+
+\begin{bridgebox}[title={Data streams as vector-valued functions}]
+A time series with several measurements at each time can be represented as
+\[
+\mathbf x(t)=\vect{x_1(t),x_2(t),\ldots,x_n(t)}.
+\]
+Then $\mathbf x'(t)$ measures the instantaneous change of all features. This viewpoint appears in dynamical systems, finance, biology, robotics, and sensor data.
+\end{bridgebox}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \draw[very thick,chapterblue] (0,0) ellipse (4.4 and 2.4);
+  \draw[thick,chapterblue!70] (0,0) ellipse (3.4 and 1.75);
+  \draw[thick,chapterblue!55] (0,0) ellipse (2.35 and 1.1);
+  \draw[thick,chapterblue!40] (0,0) ellipse (1.25 and 0.55);
+  \node[point] (p0) at (-3.4,1.7) {};
+  \node[point] (p1) at (-2.35,0.92) {};
+  \node[point] (p2) at (-1.55,0.42) {};
+  \node[point] (p3) at (-0.88,0.12) {};
+  \node[point] (p4) at (-0.36,0.03) {};
+  \node[point] (p5) at (0,0) {};
+  \draw[vectororange] (p0) -- (p1);
+  \draw[vectororange] (p1) -- (p2);
+  \draw[vectororange] (p2) -- (p3);
+  \draw[vectororange] (p3) -- (p4);
+  \draw[vectororange] (p4) -- (p5);
+  \draw[axisline] (-4.9,0) -- (4.9,0) node[right] {parameter 1};
+  \draw[axisline] (0,-2.8) -- (0,2.8) node[above] {parameter 2};
+  \node[orangenode] at (3.0,2.2) {optimization path\\as a trajectory};
+  \node[chapterpurple] at (0.2,-0.35) {minimum};
+\end{tikzpicture}
+\caption{An optimization path can be viewed as a vector-valued trajectory in parameter space.}
+\label{fig:optimization-path}
+\end{figure}
+
+\section{Summary of core formulas}
+
+\renewcommand{\arraystretch}{1.25}
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.32\textwidth}X}
+\toprule
+Concept & Formula \\
+\midrule
+Cross product & $\mathbf a\times\mathbf b=\vect{a_2b_3-a_3b_2,\;a_3b_1-a_1b_3,\;a_1b_2-a_2b_1}$ \\
+Orthogonality & $(\mathbf a\times\mathbf b)\cdot\mathbf a=0$, $(\mathbf a\times\mathbf b)\cdot\mathbf b=0$ \\
+Parallelogram area & $\norm{\mathbf a\times\mathbf b}$ \\
+Triangle area & $\frac12\norm{\mathbf a\times\mathbf b}$ \\
+Scalar triple product & $\mathbf a\cdot(\mathbf b\times\mathbf c)$ \\
+Parallelepiped volume & $\abs{\mathbf a\cdot(\mathbf b\times\mathbf c)}$ \\
+Curve & $\mathbf r(t)=\vect{x(t),y(t),z(t)}$ \\
+Velocity & $\mathbf v(t)=\mathbf r'(t)$ \\
+Speed & $\norm{\mathbf v(t)}=\norm{\mathbf r'(t)}$ \\
+Acceleration & $\mathbf a(t)=\mathbf r''(t)$ \\
+Arc length & $L=\int_a^b\norm{\mathbf r'(t)}\dd t$ \\
+Arc length function & $s(t)=\int_a^t\norm{\mathbf r'(u)}\dd u$ \\
+Unit tangent & $\mathbf T(t)=\dfrac{\mathbf r'(t)}{\norm{\mathbf r'(t)}}$ \\
+Curvature & $\kappa=\norm{\dfrac{d\mathbf T}{ds}}$ \\
+Curvature formula & $\kappa(t)=\dfrac{\norm{\mathbf r'(t)\times\mathbf r''(t)}}{\norm{\mathbf r'(t)}^3}$ \\
+\bottomrule
+\end{tabularx}
+\caption{Core formulas for cross products, curves, and motion.}
+\end{table}
+\renewcommand{\arraystretch}{1}
+
+\section{Practice problems}
+
+\subsection*{Conceptual questions}
+\begin{enumerate}
+\item Explain why $\mathbf a\times\mathbf b$ is perpendicular to both $\mathbf a$ and $\mathbf b$.
+\item Why does reversing the order of a cross product reverse its direction?
+\item Why does $\norm{\mathbf a\times\mathbf b}$ represent area?
+\item What does it mean if $\mathbf a\cdot(\mathbf b\times\mathbf c)=0$?
+\item Explain the difference between velocity and speed.
+\item Why is arc length parameterization called unit-speed parameterization?
+\item Why is curvature defined using $d\mathbf T/ds$ rather than simply $d\mathbf T/dt$?
+\end{enumerate}
+
+\subsection*{Computational exercises}
+\begin{enumerate}
+\item Compute $\vect{2,-1,4}\times\vect{0,3,1}$.
+\item Find the area of the parallelogram spanned by $\vect{1,2,0}$ and $\vect{3,-1,4}$.
+\item Find the area of the triangle with vertices $P=(1,0,2)$, $Q=(3,1,1)$, and $R=(0,2,4)$.
+\item Find a normal vector to the plane through $P=(1,1,0)$, $Q=(2,0,1)$, and $R=(0,3,2)$.
+\item Find an equation of the plane through the points in Problem 4.
+\item Compute the volume of the parallelepiped determined by $\mathbf a=\vect{1,0,2}$, $\mathbf b=\vect{2,1,1}$, and $\mathbf c=\vect{0,3,1}$.
+\item Determine whether $\vect{1,2,3}$, $\vect{2,4,6}$, and $\vect{0,1,1}$ are coplanar.
+\item Let $\mathbf r(t)=\vect{t,t^2,t^3}$. Find $\mathbf v(t)$, $\mathbf a(t)$, and speed.
+\item Let $\mathbf r(t)=\vect{\cos(2t),\sin(2t),3t}$. Find speed.
+\item Find the arc length of $\mathbf r(t)=\vect{3t,4t,12t}$ for $0\le t\le 2$.
+\item Find the arc length of $\mathbf r(t)=\vect{\cos t,\sin t,2t}$ for $0\le t\le 2\pi$.
+\item Compute the curvature of $\mathbf r(t)=\vect{\cos t,\sin t,0}$.
+\item Compute the curvature of $\mathbf r(t)=\vect{2\cos t,2\sin t,0}$.
+\item Find when the speed of $\mathbf r(t)=\vect{t^2,t^2-2t,3t}$ is minimized.
+\end{enumerate}
+
+\subsection*{Computational exploration}
+\begin{enumerate}
+\item Write a function that computes the cross product from the component formula.
+\item Verify numerically that $\mathbf a\times\mathbf b$ is perpendicular to both $\mathbf a$ and $\mathbf b$ for several random examples.
+\item Plot the curve $\mathbf r(t)=\vect{\cos t,\sin t,0.2t}$ for $0\le t\le 8\pi$.
+\item Plot velocity vectors at five points on the curve in the previous problem.
+\item Numerically approximate arc length for $\mathbf r(t)=\vect{t,t^2,t^3}$ on $0\le t\le 1$.
+\item Use finite differences to approximate velocity and acceleration from sampled position data.
+\item Simulate a gradient descent path for a quadratic function and plot the trajectory on contour lines.
+\end{enumerate}
+
+\section{Chapter project: tracking motion from data}
+
+Suppose a sensor records the position of an object at equally spaced times. The data are noisy, so you do not know $\mathbf r(t)$ exactly. Your goal is to estimate velocity, speed, acceleration, and curvature from the data.
+
+A possible workflow:
+\begin{enumerate}
+\item Load or simulate position data $\mathbf r(t_k)$.
+\item Estimate velocity using finite differences.
+\item Estimate speed as the norm of velocity.
+\item Estimate acceleration using finite differences again.
+\item Estimate curvature using
+\[
+\kappa(t)=\frac{\norm{\mathbf r'(t)\times\mathbf r''(t)}}{\norm{\mathbf r'(t)}^3}.
+\]
+\item Plot the trajectory and color it by speed or curvature.
+\end{enumerate}
+
+This project connects calculus to robotics, sports tracking, physics simulations, autonomous systems, and time-dependent data analysis.
+
+\section{What comes next}
+
+The cross product and space curves are not isolated topics. They prepare us for the main constructions of vector calculus. In later chapters:
+\begin{itemize}
+\item line integrals use $ds=\norm{\mathbf r'(t)}dt$;
+\item work integrals use $\mathbf F(\mathbf r(t))\cdot\mathbf r'(t)$;
+\item surface normals often come from cross products;
+\item curl is remembered as $\nabla\times\mathbf F$;
+\item Stokes' theorem relates circulation around a boundary curve to curl through a surface.
+\end{itemize}
+The ideas of this chapter therefore form the geometric foundation for the second half of the book.
+
+\end{document}

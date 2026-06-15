@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 25. Multivariable Calculus for Data Science and Machine Learning</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; line-height: 1.55; max-width: 900px; }
+    h1 { color: #12355b; }
+    .box { border-left: 5px solid #0f766e; background: #eef7f6; padding: 1rem; }
+    code, pre { background: #f6f8fa; padding: 0.2rem 0.35rem; }
+    pre { overflow-x: auto; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Chapter 25. Multivariable Calculus for Data Science and Machine Learning</h1>
+  <div class="box">
+    <p>This is a starter standalone interactive page for the chapter. Replace or extend this page with a richer JavaScript, Plotly, GeoGebra, or Desmos activity.</p>
+  </div>
+  <h2>Python idea behind this page</h2>
+  <pre><code>import numpy as np
+
+rng = np.random.default_rng(0)
+X = rng.normal(size=(100, 2))
+true_w = np.array([2.0, -1.0])
+y = X @ true_w + 0.1*rng.normal(size=100)
+w = np.zeros(2)
+eta = 0.1
+for k in range(100):
+    grad = 2/len(y) * X.T @ (X @ w - y)
+    w -= eta * grad
+print(w)</code></pre>
+  <p><a href="index.html">Back to HTML index</a></p>
+</body>
+</html>

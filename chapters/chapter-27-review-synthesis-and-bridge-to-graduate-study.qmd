@@ -1,0 +1,996 @@
+---
+title: "Review, Synthesis, and Bridge to Graduate Study" 
+format:
+  html:
+    toc: true
+    toc-depth: 3
+jupyter: python3
+---
+
+
+Multivariable calculus is not a list of formulas. It is a language for describing how quantities change, accumulate, interact, flow, and optimize in many dimensions. The goal of this final chapter is to organize the whole book into a small number of durable ideas that students can carry into applied mathematics, statistics, data science, machine learning, physics, engineering, and quantitative modeling.
+
+The chapters of the book have developed four connected viewpoints:
+
+1. **Geometry:** points, vectors, curves, surfaces, regions, and fields.
+2. **Local change:** derivatives, gradients, Jacobians, Hessians, and approximations.
+3. **Accumulation:** double integrals, triple integrals, surface integrals, line integrals, and change of variables.
+4. **Global structure:** conservative fields, Green's theorem, Stokes theorem, the Divergence theorem, and conservation laws.
+
+Modern computational work uses all four viewpoints at once. A statistical model has parameters in a high-dimensional space. A machine learning algorithm follows gradients of a loss function. A probability distribution is a density whose mass is computed by integration. A physical system is described by fields, fluxes, and conservation laws. A numerical algorithm replaces an exact formula by an approximation whose geometry must still be understood.
+
+This chapter is a synthesis chapter. It reviews the main objects, explains how to choose the correct tool, and gives a computational capstone: a small calculus toolkit that approximates gradients, Jacobians, Hessians, multiple integrals, and vector-field quantities.
+
+## Learning goals
+
+After studying this chapter, you should be able to:
+
+- organize multivariable calculus by object type: scalar functions, vector functions, regions, curves, surfaces, and vector fields;
+- decide whether a problem is asking for local change, accumulation, optimization, or global flow;
+- use gradients, Jacobians, and Hessians as the main derivative objects in modern computation;
+- connect double and triple integrals to mass, probability, expectation, and volume;
+- connect line and surface integrals to work, circulation, flux, and conservation;
+- explain how the major integral theorems generalize the Fundamental Theorem of Calculus;
+- implement a small numerical toolkit for gradients, Jacobians, Hessians, and integrals;
+- prepare for graduate courses in applied mathematics, statistics, data science, AI, and machine learning.
+
+::: {.callout-tip}
+## The central habit
+
+Before computing, identify the object. Is it a scalar field, vector field, curve, surface, region, density, loss function, or constraint? The correct formula usually becomes clear once the mathematical object is clear.
+:::
+
+## 27.1 The big map of the subject
+
+A compact way to remember the book is by the following table.
+
+| Object | Typical notation | Question | Main tools |
+|---|---:|---|---|
+| Point or vector | $x \in \mathbb R^n$ | Where are we? What direction? | norm, dot product, projection |
+| Scalar field | $f: \mathbb R^n \to \mathbb R$ | How does a quantity change? | gradient, Hessian, Taylor expansion |
+| Vector function | $r(t)$ | How does a curve move? | velocity, speed, acceleration, arc length |
+| Region | $R \subset \mathbb R^2$, $E \subset \mathbb R^3$ | How much accumulates? | double and triple integrals |
+| Coordinate map | $T(u,v)$ or $T(u,v,w)$ | How does area or volume transform? | Jacobian determinant |
+| Vector field | $F: \mathbb R^n \to \mathbb R^n$ | How does a field push or flow? | line integrals, flux, curl, divergence |
+| Constraint | $g(x)=c$ | What is optimal under restriction? | Lagrange multipliers |
+| Model or loss | $L(\theta)$ | How do we fit or optimize? | gradients, Hessians, descent methods |
+
+The most important distinction is between **local** and **global** information. A derivative tells us what happens near a point. An integral tells us what accumulates over an interval, region, curve, or surface. A theorem such as Green's theorem or the Divergence theorem connects local information to global information.
+
+```{python}
+#| label: fig-ch27-concept-map
+#| fig-cap: 'A schematic map of the main objects in multivariable calculus.'
+import matplotlib.pyplot as plt
+
+nodes = {
+    'Geometry': (0.0, 1.0),
+    'Derivatives': (1.5, 1.0),
+    'Integrals': (0.0, 0.0),
+    'Vector fields': (1.5, 0.0),
+    'Applications': (0.75, -0.8)
+}
+edges = [
+    ('Geometry', 'Derivatives'),
+    ('Geometry', 'Integrals'),
+    ('Derivatives', 'Vector fields'),
+    ('Integrals', 'Vector fields'),
+    ('Derivatives', 'Applications'),
+    ('Integrals', 'Applications'),
+    ('Vector fields', 'Applications')
+]
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+for a, b in edges:
+    x1, y1 = nodes[a]
+    x2, y2 = nodes[b]
+    ax.annotate('', xy=(x2, y2), xytext=(x1, y1), arrowprops=dict(arrowstyle='->', lw=1.5))
+for name, (x, y) in nodes.items():
+    circle = plt.Circle((x, y), 0.18, fill=False, lw=2)
+    ax.add_patch(circle)
+    ax.text(x, y, name, ha='center', va='center', fontsize=10)
+ax.set_xlim(-0.4, 1.9)
+ax.set_ylim(-1.2, 1.4)
+ax.set_aspect('equal')
+ax.axis('off')
+plt.show()
+```
+
+## 27.2 Geometry: the coordinate language
+
+The first part of the book developed the coordinate language of space. The essential objects are points, vectors, distances, angles, projections, lines, planes, and surfaces.
+
+For $x=(x_1,\ldots,x_n)$ and $y=(y_1,\ldots,y_n)$,
+
+$$
+\|x-y\| = \sqrt{(x_1-y_1)^2+\cdots+(x_n-y_n)^2}.
+$$
+
+The dot product is
+
+$$
+x\cdot y = x_1y_1+\cdots+x_ny_n,
+$$
+
+and it measures alignment:
+
+$$
+x\cdot y = \|x\|\,\|y\|\cos\theta.
+$$
+
+Projection is the geometry behind least squares and many data methods. The projection of $x$ onto the direction of a nonzero vector $v$ is
+
+$$
+\operatorname{proj}_v x = \frac{x\cdot v}{v\cdot v}v.
+$$
+
+A hyperplane in $\mathbb R^n$ has equation
+
+$$
+w\cdot x = b.
+$$
+
+This simple equation appears in tangent planes, constraints, regression, support vector machines, and linear classifiers.
+
+### Example 27.1: Projection as a least-squares approximation
+
+Let $x=(3,4)$ and $v=(1,2)$. The best approximation to $x$ among all multiples of $v$ is the projection of $x$ onto $v$:
+
+$$
+\operatorname{proj}_v x = \frac{x\cdot v}{v\cdot v}v
+= \frac{3+8}{1+4}(1,2)
+= \frac{11}{5}(1,2).
+$$
+
+The residual
+
+$$
+r = x - \operatorname{proj}_v x
+$$
+
+is orthogonal to $v$. This is the same geometry that appears when fitting a linear model by least squares: the residual is orthogonal to the space of fitted values.
+
+```{python}
+#| label: fig-ch27-projection-review
+#| fig-cap: 'Projection decomposes a vector into a component along a direction and an orthogonal residual.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([3.0, 4.0])
+v = np.array([1.0, 2.0])
+proj = (x @ v) / (v @ v) * v
+resid = x - proj
+
+fig, ax = plt.subplots(figsize=(5.5, 5.5))
+ax.quiver(0, 0, x[0], x[1], angles='xy', scale_units='xy', scale=1, width=0.01)
+ax.quiver(0, 0, proj[0], proj[1], angles='xy', scale_units='xy', scale=1, width=0.01)
+ax.quiver(proj[0], proj[1], resid[0], resid[1], angles='xy', scale_units='xy', scale=1, width=0.01)
+ax.text(x[0] + 0.1, x[1], '$x$')
+ax.text(proj[0] + 0.1, proj[1] - 0.2, r'$\operatorname{proj}_v x$')
+ax.text(proj[0] + resid[0]/2 + 0.1, proj[1] + resid[1]/2, 'residual')
+ax.set_xlim(-0.5, 4.0)
+ax.set_ylim(-0.5, 4.8)
+ax.set_aspect('equal')
+ax.grid(True, alpha=0.3)
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+plt.show()
+```
+
+## 27.3 Derivatives: local change and local models
+
+For a scalar function $f:\mathbb R^n\to \mathbb R$, the first derivative is the gradient
+
+$$
+\nabla f(x) = \left(\frac{\partial f}{\partial x_1},\ldots,\frac{\partial f}{\partial x_n}\right).
+$$
+
+The gradient does three things at once:
+
+- it gives the best linear approximation;
+- it gives directional derivatives by dot product;
+- it points in the direction of fastest increase.
+
+The first-order Taylor approximation near $a$ is
+
+$$
+f(a+h) \approx f(a)+\nabla f(a)\cdot h.
+$$
+
+The directional derivative in a unit direction $u$ is
+
+$$
+D_u f(a)=\nabla f(a)\cdot u.
+$$
+
+The second derivative is organized by the Hessian matrix
+
+$$
+H_f(a)=
+\begin{bmatrix}
+\frac{\partial^2 f}{\partial x_1^2} & \cdots & \frac{\partial^2 f}{\partial x_1\partial x_n} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial^2 f}{\partial x_n\partial x_1} & \cdots & \frac{\partial^2 f}{\partial x_n^2}
+\end{bmatrix}.
+$$
+
+The second-order Taylor approximation is
+
+$$
+f(a+h) \approx f(a)+\nabla f(a)\cdot h+\frac12 h^T H_f(a) h.
+$$
+
+This formula is the local geometry behind optimization, uncertainty approximation, and many algorithms in statistics and machine learning.
+
+### Example 27.2: Local quadratic geometry
+
+Let
+
+$$
+f(x,y)=x^2+4y^2.
+$$
+
+At the origin, $\nabla f(0,0)=0$ and
+
+$$
+H_f(0,0)=
+\begin{bmatrix}
+2&0\\
+0&8
+\end{bmatrix}.
+$$
+
+The eigenvalues are positive, so the origin is a local minimum. The curvature is larger in the $y$-direction than in the $x$-direction. Gradient descent therefore moves differently depending on the direction and step size.
+
+```{python}
+#| label: fig-ch27-quadratic-geometry
+#| fig-cap: 'A quadratic function is controlled by its Hessian matrix.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 250)
+y = np.linspace(-1.5, 1.5, 250)
+X, Y = np.meshgrid(x, y)
+Z = X**2 + 4*Y**2
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contour(X, Y, Z, levels=18)
+ax.clabel(cs, inline=True, fontsize=8)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Contours of $f(x,y)=x^2+4y^2$')
+ax.set_aspect('equal')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 27.4 Jacobians: derivatives of vector-valued maps
+
+For a map $F:\mathbb R^n\to \mathbb R^m$, the derivative is the Jacobian matrix
+
+$$
+J_F(x)=
+\begin{bmatrix}
+\frac{\partial F_1}{\partial x_1} & \cdots & \frac{\partial F_1}{\partial x_n} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial F_m}{\partial x_1} & \cdots & \frac{\partial F_m}{\partial x_n}
+\end{bmatrix}.
+$$
+
+Near a point $a$,
+
+$$
+F(a+h) \approx F(a)+J_F(a)h.
+$$
+
+The Jacobian is also the linear map used in the multivariable chain rule. If $F=G\circ H$, then
+
+$$
+J_F(x)=J_G(H(x))J_H(x).
+$$
+
+In computation, this is the matrix form of backpropagation. In integration, the determinant of the Jacobian measures how area or volume changes under a coordinate transformation.
+
+### Example 27.3: The polar-coordinate Jacobian
+
+The polar-coordinate map is
+
+$$
+T(r,\theta)=(r\cos\theta,r\sin\theta).
+$$
+
+Its Jacobian matrix is
+
+$$
+J_T(r,\theta)=
+\begin{bmatrix}
+\cos\theta & -r\sin\theta\\
+\sin\theta & r\cos\theta
+\end{bmatrix},
+$$
+
+so
+
+$$
+|\det J_T(r,\theta)|=r.
+$$
+
+That is why $dA=r\,dr\,d\theta$.
+
+```{python}
+#| label: fig-ch27-polar-grid-review
+#| fig-cap: 'The polar-coordinate map stretches small rectangles by the Jacobian factor r.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 6))
+for r in np.linspace(0.4, 2.0, 5):
+    theta = np.linspace(0, 2*np.pi, 400)
+    ax.plot(r*np.cos(theta), r*np.sin(theta), lw=1)
+for theta in np.linspace(0, 2*np.pi, 16, endpoint=False):
+    r = np.linspace(0, 2.0, 200)
+    ax.plot(r*np.cos(theta), r*np.sin(theta), lw=1)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('Polar grid in the plane')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 27.5 Integrals: accumulation over geometric objects
+
+A definite integral accumulates over an interval. Multivariable calculus extends this idea to regions, solids, curves, and surfaces.
+
+| Integral | Object | Common meaning |
+|---|---|---|
+| $\int_a^b f(x)\,dx$ | interval | signed area, total change |
+| $\iint_R f(x,y)\,dA$ | plane region | volume, mass, probability |
+| $\iiint_E f(x,y,z)\,dV$ | solid region | mass, volume, expectation |
+| $\int_C f\,ds$ | curve | mass of a wire |
+| $\int_C F\cdot dr$ | oriented curve | work, circulation |
+| $\iint_S f\,dS$ | surface | mass of a shell |
+| $\iint_S F\cdot n\,dS$ | oriented surface | flux |
+
+In statistics, integrals compute probability, expectation, variance, and normalization constants. In applied mathematics, integrals compute mass, energy, flow, and conservation quantities. In machine learning, integrals appear in expected risk, Bayesian inference, generative models, and continuous approximations.
+
+### Example 27.4: Probability as a double integral
+
+Suppose a joint density is
+
+$$
+f(x,y)=4xy, \qquad 0\le x\le 1,\quad 0\le y\le 1.
+$$
+
+Then
+
+$$
+\iint_{[0,1]^2} 4xy\,dA = 1,
+$$
+
+so it is a valid density. The probability of the event $x+y\le 1$ is
+
+$$
+\int_0^1 \int_0^{1-x} 4xy\,dy\,dx
+= \int_0^1 2x(1-x)^2\,dx
+= \frac16.
+$$
+
+```{python}
+#| label: fig-ch27-probability-region
+#| fig-cap: 'A probability over a two-dimensional event is an integral over a region.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 1, 300)
+y = np.linspace(0, 1, 300)
+X, Y = np.meshgrid(x, y)
+Z = 4*X*Y
+mask = X + Y <= 1
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contourf(X, Y, np.where(mask, Z, np.nan), levels=16)
+ax.plot([0, 1], [1, 0], lw=2)
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title(r'Density over the event $x+y\leq 1$')
+fig.colorbar(cs, ax=ax, label='density')
+ax.set_aspect('equal')
+plt.show()
+```
+
+## 27.6 Optimization: from critical points to algorithms
+
+Optimization is one of the main bridges from calculus to data science and machine learning. The central objects are:
+
+- the **gradient** $\nabla f$, which gives the local direction of steepest increase;
+- the **Hessian** $H_f$, which describes curvature;
+- the **constraint gradients** $\nabla g_i$, which describe normal directions to constraint surfaces.
+
+For unconstrained optimization, critical points satisfy
+
+$$
+\nabla f(x)=0.
+$$
+
+For a one-constraint problem, the Lagrange multiplier condition is
+
+$$
+\nabla f(x)=\lambda \nabla g(x),
+\qquad g(x)=c.
+$$
+
+For a two-constraint problem,
+
+$$
+\nabla f(x)=\lambda \nabla g(x)+\mu \nabla h(x),
+\qquad g(x)=c,
+\qquad h(x)=d.
+$$
+
+Gradient descent uses the update
+
+$$
+x_{k+1}=x_k-\alpha \nabla f(x_k).
+$$
+
+Newton's method uses curvature:
+
+$$
+x_{k+1}=x_k-H_f(x_k)^{-1}\nabla f(x_k).
+$$
+
+The main graduate-level habit is to ask not only where the optimum is, but also whether the problem is well-conditioned, whether the Hessian is positive definite, and whether constraints or regularization change the geometry.
+
+```{python}
+#| label: fig-ch27-gradient-descent-review
+#| fig-cap: 'Gradient descent follows local negative-gradient directions on a loss landscape.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[3.0, 0.8], [0.8, 1.0]])
+b = np.array([-1.0, 0.5])
+
+def f_xy(z):
+    return 0.5*z @ A @ z + b @ z
+
+def grad_xy(z):
+    return A @ z + b
+
+z = np.array([2.4, 1.8])
+alpha = 0.22
+path = [z.copy()]
+for _ in range(18):
+    z = z - alpha*grad_xy(z)
+    path.append(z.copy())
+path = np.array(path)
+
+x = np.linspace(-2.5, 2.8, 240)
+y = np.linspace(-2.2, 2.2, 240)
+X, Y = np.meshgrid(x, y)
+Z = np.zeros_like(X)
+for i in range(X.shape[0]):
+    for j in range(X.shape[1]):
+        Z[i, j] = f_xy(np.array([X[i, j], Y[i, j]]))
+
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.contour(X, Y, Z, levels=24)
+ax.plot(path[:, 0], path[:, 1], marker='o')
+ax.set_xlabel('$x_1$')
+ax.set_ylabel('$x_2$')
+ax.set_title('Gradient descent path')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 27.7 Vector fields and the global theorems
+
+Vector calculus studies fields that assign a vector to each point. The main differential operators are:
+
+$$
+\operatorname{div}F = \nabla\cdot F,
+\qquad
+\operatorname{curl}F = \nabla\times F.
+$$
+
+The divergence measures local source or sink behavior. The curl measures local rotation. The global theorems convert integrals over boundaries into integrals over interiors.
+
+### The four Fundamental-Theorem patterns
+
+| Theorem | Boundary integral | Interior integral | Meaning |
+|---|---|---|---|
+| Fundamental Theorem of Calculus | $f(b)-f(a)$ | $\int_a^b f'(x)\,dx$ | endpoint change equals accumulated derivative |
+| Fundamental Theorem for Line Integrals | $f(B)-f(A)$ | $\int_C \nabla f\cdot dr$ | potential difference equals work |
+| Green's theorem | $\oint_C P\,dx+Q\,dy$ | $\iint_R (Q_x-P_y)\,dA$ | boundary circulation equals interior curl |
+| Stokes theorem | $\oint_{\partial S} F\cdot dr$ | $\iint_S (\nabla\times F)\cdot n\,dS$ | boundary circulation equals surface curl flux |
+| Divergence theorem | $\iint_{\partial E} F\cdot n\,dS$ | $\iiint_E \nabla\cdot F\,dV$ | boundary flux equals interior source |
+
+The pattern is powerful: a global boundary measurement is controlled by a local derivative inside.
+
+```{python}
+#| label: fig-ch27-vector-field-review
+#| fig-cap: 'A rotational vector field illustrates circulation around closed curves.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 17)
+y = np.linspace(-2, 2, 17)
+X, Y = np.meshgrid(x, y)
+U = -Y
+V = X
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.quiver(X, Y, U, V)
+theta = np.linspace(0, 2*np.pi, 300)
+ax.plot(np.cos(theta), np.sin(theta), lw=2)
+ax.set_aspect('equal')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_title('$F(x,y)=(-y,x)$ and a closed curve')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 27.8 A problem-solving decision tree
+
+A good problem-solving strategy is often more useful than a memorized formula. Use the following decision tree.
+
+**Step 1: Identify the object.**
+
+- Scalar function $f(x,y)$ or $f(x,y,z)$?
+- Vector-valued function $r(t)$?
+- Region $R$ or solid $E$?
+- Curve $C$ or surface $S$?
+- Vector field $F$?
+- Constraint $g(x)=c$?
+- Density or loss function?
+
+**Step 2: Identify the action.**
+
+- Find a rate of change: use derivative, gradient, Jacobian, or Hessian.
+- Approximate locally: use linearization or Taylor expansion.
+- Find maximum or minimum: use critical points, Hessian test, boundary check, or Lagrange multipliers.
+- Accumulate over a region: use double or triple integrals.
+- Change coordinates: compute a Jacobian determinant.
+- Accumulate along a curve: use line integrals.
+- Compute flux through a surface: use surface integrals or the Divergence theorem.
+- Compute circulation: use line integrals, Green's theorem, or Stokes theorem.
+
+**Step 3: Interpret the result.**
+
+A numerical answer is rarely the final mathematical answer. Ask what the number means: volume, mass, probability, expected value, rate of increase, work, flux, circulation, curvature, uncertainty, or model error.
+
+## 27.9 A compact formula sheet with meaning
+
+### Derivatives
+
+$$
+D_u f(a)=\nabla f(a)\cdot u,
+\qquad \|u\|=1.
+$$
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h.
+$$
+
+$$
+f(a+h)\approx f(a)+\nabla f(a)\cdot h+\frac12h^TH_f(a)h.
+$$
+
+$$
+J_{G\circ F}(x)=J_G(F(x))J_F(x).
+$$
+
+### Optimization
+
+$$
+\nabla f=0,
+\qquad
+\nabla f=\lambda \nabla g,
+\qquad
+x_{k+1}=x_k-\alpha\nabla f(x_k).
+$$
+
+### Multiple integrals
+
+$$
+\iint_R f(x,y)\,dA,
+\qquad
+\iiint_E f(x,y,z)\,dV.
+$$
+
+$$
+dA=r\,dr\,d\theta,
+\qquad
+dV=r\,dr\,d\theta\,dz,
+\qquad
+dV=\rho^2\sin\phi\,d\rho\,d\phi\,d\theta.
+$$
+
+### Vector calculus
+
+$$
+\int_C F\cdot dr,
+\qquad
+\iint_S F\cdot n\,dS.
+$$
+
+$$
+\nabla\cdot F,
+\qquad
+\nabla\times F.
+$$
+
+$$
+\oint_{\partial R} P\,dx+Q\,dy
+=
+\iint_R(Q_x-P_y)\,dA.
+$$
+
+$$
+\oint_{\partial S}F\cdot dr
+=
+\iint_S(\nabla\times F)\cdot n\,dS.
+$$
+
+$$
+\iint_{\partial E}F\cdot n\,dS
+=
+\iiint_E \nabla\cdot F\,dV.
+$$
+
+## 27.10 Computational capstone: a mini calculus toolkit
+
+This section builds a small numerical toolkit. The goal is not to replace exact mathematics, but to make the formulas executable. A graduate student should be able to move between exact formulas, numerical approximations, and visual checks.
+
+```{python}
+#| label: fig-ch27-gradient-check-toolkit
+#| fig-cap: 'A finite-difference gradient approximates the first derivative of a multivariable function.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def finite_gradient(f, x, h=1e-6):
+    x = np.asarray(x, dtype=float)
+    g = np.zeros_like(x)
+    for j in range(len(x)):
+        e = np.zeros_like(x)
+        e[j] = 1.0
+        g[j] = (f(x + h*e) - f(x - h*e))/(2*h)
+    return g
+
+
+def finite_hessian(f, x, h=1e-4):
+    x = np.asarray(x, dtype=float)
+    n = len(x)
+    H = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            ei = np.zeros(n)
+            ej = np.zeros(n)
+            ei[i] = 1.0
+            ej[j] = 1.0
+            H[i, j] = (
+                f(x + h*ei + h*ej)
+                - f(x + h*ei - h*ej)
+                - f(x - h*ei + h*ej)
+                + f(x - h*ei - h*ej)
+            )/(4*h*h)
+    return H
+
+f = lambda z: z[0]**2 + z[0]*z[1] + 3*z[1]**2
+point = np.array([1.0, -2.0])
+g = finite_gradient(f, point)
+H = finite_hessian(f, point)
+
+fig, ax = plt.subplots(figsize=(5.5, 3.5))
+ax.axis('off')
+text = (
+    'At x = (1, -2)\n'
+    f'finite gradient = {np.round(g, 6)}\n'
+    f'finite Hessian =\n{np.round(H, 6)}'
+)
+ax.text(0.05, 0.7, text, fontsize=12, family='monospace', va='top')
+plt.show()
+```
+
+```{python}
+#| label: fig-ch27-jacobian-toolkit
+#| fig-cap: 'A finite-difference Jacobian approximates the derivative of a vector-valued map.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def finite_jacobian(F, x, h=1e-6):
+    x = np.asarray(x, dtype=float)
+    y0 = np.asarray(F(x), dtype=float)
+    J = np.zeros((len(y0), len(x)))
+    for j in range(len(x)):
+        e = np.zeros_like(x)
+        e[j] = 1.0
+        J[:, j] = (np.asarray(F(x + h*e)) - np.asarray(F(x - h*e)))/(2*h)
+    return J
+
+F = lambda z: np.array([z[0]**2 + z[1], np.sin(z[0]*z[1])])
+x0 = np.array([1.2, -0.7])
+J = finite_jacobian(F, x0)
+
+fig, ax = plt.subplots(figsize=(5.5, 3.2))
+ax.axis('off')
+ax.text(0.05, 0.8, f'Finite-difference Jacobian at {x0}:\n\n{np.round(J, 6)}', fontsize=12, family='monospace', va='top')
+plt.show()
+```
+
+```{python}
+#| label: fig-ch27-integration-toolkit
+#| fig-cap: 'Grid integration approximates accumulation over a rectangle.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def integrate_rectangle(f, ax_lim, by_lim, nx=300, ny=300):
+    a, b = ax_lim
+    c, d = by_lim
+    x = np.linspace(a, b, nx)
+    y = np.linspace(c, d, ny)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+    inner = np.trapz(Z, x, axis=1)
+    return np.trapz(inner, y)
+
+f2 = lambda X, Y: np.exp(-(X**2 + Y**2))
+approx = integrate_rectangle(f2, (-2, 2), (-2, 2))
+
+x = np.linspace(-2, 2, 250)
+y = np.linspace(-2, 2, 250)
+X, Y = np.meshgrid(x, y)
+Z = f2(X, Y)
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contourf(X, Y, Z, levels=18)
+fig.colorbar(cs, ax=ax, label='height')
+ax.set_title(f'Approximate integral over square: {approx:.4f}')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_aspect('equal')
+plt.show()
+```
+
+```{python}
+#| label: fig-ch27-divergence-curl-toolkit
+#| fig-cap: 'Finite differences can approximate divergence and curl on a grid.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-2, 2, 80)
+y = np.linspace(-2, 2, 80)
+X, Y = np.meshgrid(x, y)
+P = X**2 - Y
+Q = X + Y**2
+
+dx = x[1] - x[0]
+dy = y[1] - y[0]
+P_y, P_x = np.gradient(P, dy, dx)
+Q_y, Q_x = np.gradient(Q, dy, dx)
+divF = P_x + Q_y
+curlF = Q_x - P_y
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contourf(X, Y, curlF, levels=18)
+fig.colorbar(cs, ax=ax, label='curl')
+ax.set_title('Approximate scalar curl of $F=(x^2-y, x+y^2)$')
+ax.set_xlabel('$x$')
+ax.set_ylabel('$y$')
+ax.set_aspect('equal')
+plt.show()
+```
+
+::: {.callout-warning}
+## Numerical computation is not proof
+
+A numerical approximation can suggest a pattern, check an answer, or make a concept visible. It does not replace a proof. In graduate work, the best habit is to combine computation with exact reasoning: use computation to explore, and use mathematics to explain.
+:::
+
+## 27.11 Graduate-study bridge
+
+The following table shows how the main ideas of this book reappear in later courses.
+
+| Later area | Multivariable calculus foundation |
+|---|---|
+| Real analysis | limits, continuity, differentiability, rigorous approximation |
+| Linear algebra | vector spaces, projections, hyperplanes, quadratic forms |
+| Optimization | gradients, Hessians, convexity, constraints, descent methods |
+| Probability | joint densities, transformations, expectation, covariance |
+| Mathematical statistics | likelihood, score, Hessian, Fisher information, delta method |
+| Machine learning | loss functions, backpropagation, gradient descent, regularization |
+| Numerical analysis | finite differences, numerical integration, error analysis |
+| Differential equations | vector fields, gradient flow, divergence, curl, conservation laws |
+| Partial differential equations | gradient, divergence, Laplacian, flux, boundary conditions |
+| Geometry and topology | curves, surfaces, orientation, Stokes-type theorems |
+
+The most important preparation is not memorizing every formula. It is learning how to translate a new problem into the correct mathematical object.
+
+## 27.12 Capstone project: build a calculus engine
+
+A strong final project for this book is to build a small Python package or notebook called `calculus_engine`. It should include the following functions:
+
+1. `finite_gradient(f, x)`
+2. `finite_jacobian(F, x)`
+3. `finite_hessian(f, x)`
+4. `integrate_rectangle(f, xlim, ylim)`
+5. `monte_carlo_integral(f, sampler)`
+6. `line_integral(F, r, a, b)`
+7. `surface_flux(F, r, u_range, v_range)`
+8. `gradient_descent(f, grad, x0, alpha)`
+9. `newton_step(f, grad, hessian, x)`
+10. `plot_contours(f)`
+
+The project should include examples from probability, optimization, and vector calculus. It should also include written interpretations of each output.
+
+### Example project theme: one dataset, many calculus ideas
+
+Choose a simple dataset with input-output pairs $(x_i,y_i)$. Fit a linear regression model
+
+$$
+\hat y_i=\beta_0+\beta_1x_i.
+$$
+
+Then study the least-squares loss
+
+$$
+L(\beta_0,\beta_1)=\sum_{i=1}^n (y_i-\beta_0-\beta_1x_i)^2.
+$$
+
+This one example uses:
+
+- vectors for data;
+- a scalar field for the loss landscape;
+- gradients for optimization;
+- Hessians for curvature;
+- contour plots for visualization;
+- linear approximation for sensitivity;
+- probability if the errors are modeled as random noise.
+
+```{python}
+#| label: fig-ch27-capstone-loss
+#| fig-cap: 'A single least-squares loss landscape connects vectors, gradients, Hessians, optimization, and statistics.'
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(27)
+x_data = np.linspace(-2, 2, 40)
+y_data = 1.0 + 1.8*x_data + rng.normal(scale=0.35, size=x_data.shape)
+
+b0 = np.linspace(-1.0, 3.0, 180)
+b1 = np.linspace(0.0, 3.5, 180)
+B0, B1 = np.meshgrid(b0, b1)
+Loss = np.zeros_like(B0)
+for xi, yi in zip(x_data, y_data):
+    Loss += (yi - B0 - B1*xi)**2
+
+Xmat = np.column_stack([np.ones_like(x_data), x_data])
+beta_hat = np.linalg.solve(Xmat.T @ Xmat, Xmat.T @ y_data)
+
+fig, ax = plt.subplots(figsize=(6, 5))
+cs = ax.contour(B0, B1, Loss, levels=24)
+ax.clabel(cs, inline=True, fontsize=7)
+ax.plot(beta_hat[0], beta_hat[1], marker='o', markersize=8)
+ax.set_xlabel(r'$\beta_0$')
+ax.set_ylabel(r'$\beta_1$')
+ax.set_title('Least-squares loss and fitted parameters')
+ax.grid(True, alpha=0.25)
+plt.show()
+```
+
+## 27.13 Common mistakes to avoid
+
+1. **Confusing points and vectors.** A point gives location; a vector gives displacement. Coordinates can represent either, but the meaning differs.
+2. **Forgetting that multivariable limits require all paths.** Checking one path is not enough to prove a limit exists.
+3. **Using the gradient without normalizing the direction.** Directional derivatives use unit vectors.
+4. **Forgetting boundary cases in optimization.** Critical points inside a region are not enough for absolute extrema.
+5. **Missing the Jacobian factor.** Coordinate changes require area or volume scaling.
+6. **Using the wrong orientation.** Line and surface integrals over oriented objects depend on direction.
+7. **Applying Green, Stokes, or Divergence theorem without checking hypotheses.** Holes, singularities, and missing boundaries matter.
+8. **Treating numerical output as exact.** Computation supports reasoning but does not replace it.
+
+## 27.14 Cumulative worked example
+
+Consider the scalar field
+
+$$
+f(x,y)=x^2+xy+2y^2.
+$$
+
+**Gradient.**
+
+$$
+\nabla f(x,y)=(2x+y, x+4y).
+$$
+
+At $(1,-1)$,
+
+$$
+\nabla f(1,-1)=(1,-3).
+$$
+
+**Directional derivative.** In the unit direction
+
+$$
+u=\frac{1}{\sqrt 5}(1,2),
+$$
+
+we have
+
+$$
+D_u f(1,-1)=(1,-3)\cdot \frac{1}{\sqrt 5}(1,2)=\frac{-5}{\sqrt 5}=-\sqrt 5.
+$$
+
+**Hessian.**
+
+$$
+H_f=
+\begin{bmatrix}
+2&1\\
+1&4
+\end{bmatrix}.
+$$
+
+The Hessian is positive definite because its leading principal minors are positive. Therefore $f$ is strictly convex and has a unique global minimum where $\nabla f=0$, namely $(0,0)$.
+
+**Integral.** The average value over the rectangle $[-1,1]\times[-1,1]$ is
+
+$$
+\frac{1}{4}\int_{-1}^1\int_{-1}^1 (x^2+xy+2y^2)\,dy\,dx.
+$$
+
+By symmetry, the $xy$ term integrates to zero. The average is
+
+$$
+\frac14\left(\frac{4}{3}+\frac{8}{3}\right)=1.
+$$
+
+This one example uses gradients, directional derivatives, Hessians, optimization, symmetry, and double integrals.
+
+## 27.15 Practice problems
+
+### Conceptual review
+
+1. Explain the difference between a scalar field and a vector field. Give one example of each.
+2. Explain why the gradient is perpendicular to level curves.
+3. Explain the difference between a double integral over a region and a line integral over a curve.
+4. Explain why the Jacobian determinant appears in change of variables.
+5. Compare Green's theorem, Stokes theorem, and the Divergence theorem in one paragraph.
+
+### Core skills
+
+6. Let $f(x,y)=x^2+3xy+y^2$. Compute $\nabla f$, $H_f$, and the directional derivative at $(1,2)$ in the direction $(3,4)$.
+7. Find the tangent plane to $z=x^2+y^2$ at $(1,2,5)$.
+8. Compute $\iint_R xy\,dA$, where $R=[0,2]\times[1,3]$.
+9. Change the integral $\int_0^1\int_y^1 e^{x^2}\,dx\,dy$ to the opposite order.
+10. Use polar coordinates to evaluate $\iint_R (x^2+y^2)\,dA$, where $R$ is the disk $x^2+y^2\le 4$.
+
+### Vector calculus
+
+11. For $F(x,y)=(-y,x)$, compute $\oint_C F\cdot dr$ where $C$ is the unit circle oriented counterclockwise.
+12. For $F(x,y,z)=(x,y,z)$, compute the flux through the sphere $x^2+y^2+z^2=a^2$ using the Divergence theorem.
+13. Find a potential function for $F(x,y)=(2xy, x^2+3y^2)$ if one exists.
+14. Compute $\nabla\cdot F$ and $\nabla\times F$ for $F(x,y,z)=(yz,xz,xy)$.
+
+### Statistics, data science, and applied mathematics
+
+15. Let $L(\beta_0,\beta_1)=\sum_{i=1}^n(y_i-\beta_0-\beta_1x_i)^2$. Derive the gradient of $L$.
+16. Let $f(x,y)=ce^{-(x^2+y^2)}$. Find $c$ so that $f$ is a probability density on $\mathbb R^2$.
+17. For a differentiable loss function $L(\theta)$, explain how the Hessian near a minimum is related to curvature and uncertainty.
+18. Write pseudocode for gradient descent and explain the role of the step size.
+19. Explain why a conservation law naturally involves divergence.
+20. Design one computational experiment that illustrates a major theorem from vector calculus.
+
+## 27.16 Python lab and interactive page
+
+- Notebook lab: [Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb](../labs/Chapter27_Review_Synthesis_and_Bridge_to_Graduate_Study.ipynb)
+- Interactive HTML page: [Chapter 27 interactive page](../htmls/chapter-27.html)
+
+## Chapter summary
+
+This chapter organized multivariable calculus as a coherent language for modern quantitative work. Geometry describes the spaces and objects. Derivatives describe local change. Integrals describe accumulation. Optimization turns derivatives into algorithms. Vector calculus connects local field behavior with global boundary behavior. Probability and statistics reinterpret integrals as probabilities and expectations, and machine learning reinterprets gradients and Hessians as tools for fitting models.
+
+The deepest lesson is that the same mathematical structures appear across many subjects. A tangent plane, a linear approximation, a least-squares projection, a gradient descent step, a probability density, a flux integral, and a conservation law are not isolated facts. They are connected parts of one multivariable calculus language.

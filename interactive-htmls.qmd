@@ -1,0 +1,89 @@
+---
+title: 'Interactive HTML Pages'
+---
+
+# Interactive HTML Pages
+
+This page collects the standalone interactive HTML pages for the book.  Each page is designed as a short visual activity that supports the corresponding chapter.  Students can use these pages before class for intuition, during class for guided exploration, or after class for review.
+
+The pages live in the `htmls/` folder of the repository.  When the book is published through GitHub Pages, the links below open the corresponding interactive page directly from the book site.  When the book is rendered locally, the same links open the local files in the `htmls/` folder.
+
+## How to use these pages
+
+A good workflow is:
+
+1. Read the chapter section that introduces the concept.
+2. Open the corresponding interactive page.
+3. Change parameters, rotate figures, or compare examples.
+4. Return to the chapter and solve the worked examples or exercises.
+5. Use the Python lab for a deeper computational version.
+
+For instructors, these pages can also be used as short classroom demonstrations.  The best use is not to show a finished picture, but to ask students what should happen when a parameter changes and then test the prediction.
+
+## Complete list of interactive pages
+
+| Chapter | Topic | Main visual purpose | Open page |
+|---:|---|---|---|
+| 01 | From Single Variable Calculus to Multivariable Thinking | Visualize the move from one input to many inputs; compare graphs, contours, and data vectors. | [Open interactive page](htmls/chapter-01.html) |
+| 02 | Euclidean Space $\mathbb R^n$ | Explore coordinates, projections, distance, balls, spheres, and high-dimensional intuition. | [Open interactive page](htmls/chapter-02.html) |
+| 03 | Vectors, Norms, Dot Products, and Projections | Manipulate vectors, angles, orthogonality, projections, and cosine similarity. | [Open interactive page](htmls/chapter-03.html) |
+| 04 | Lines, Planes, Hyperplanes, and Parametric Geometry | Visualize parametric lines, planes, intersections, and decision boundaries. | [Open interactive page](htmls/chapter-04.html) |
+| 05 | Cross Products, Curves, and Motion in Space | Explore orientation, normal vectors, area, space curves, velocity, speed, and curvature. | [Open interactive page](htmls/chapter-05.html) |
+| 06 | Functions of Several Variables | Connect domains, surfaces, level curves, heatmaps, and loss landscapes. | [Open interactive page](htmls/chapter-06.html) |
+| 07 | Limits and Continuity in Several Variables | Test limits along paths and visualize why multivariable limits require all directions. | [Open interactive page](htmls/chapter-07.html) |
+| 08 | Partial Derivatives and the Gradient | Visualize partial rates of change, finite differences, gradient vectors, and level curves. | [Open interactive page](htmls/chapter-08.html) |
+| 09 | Linear Approximation, Tangent Planes, and Differentials | Compare surfaces with tangent planes and study local linear models. | [Open interactive page](htmls/chapter-09.html) |
+| 10 | Chain Rule, Jacobians, and Automatic Differentiation | Trace computational graphs, Jacobians, coordinate maps, and backpropagation ideas. | [Open interactive page](htmls/chapter-10.html) |
+| 11 | Directional Derivatives, Hessians, and Optimization | Explore steepest ascent, critical points, Hessians, gradient descent, and Newton steps. | [Open interactive page](htmls/chapter-11.html) |
+| 12 | Constrained Optimization and Lagrange Multipliers | Visualize constraints, tangent geometry, level curves, and multiplier equations. | [Open interactive page](htmls/chapter-12.html) |
+| 13 | Double Integrals and Riemann Sums | Build double integrals from rectangles, volume columns, midpoint sums, and Monte Carlo estimates. | [Open interactive page](htmls/chapter-13.html) |
+| 14 | Double Integrals over General Regions | Compare Type I and Type II descriptions, reverse integration order, and split regions. | [Open interactive page](htmls/chapter-14.html) |
+| 15 | Polar Coordinates and Change of Variables in the Plane | Explore polar grids, Jacobians, disks, annuli, and transformed probability densities. | [Open interactive page](htmls/chapter-15.html) |
+| 16 | Triple Integrals and Geometry in $\mathbb R^3$ | Visualize solids, projections, mass, volume, and three-dimensional integration order. | [Open interactive page](htmls/chapter-16.html) |
+| 17 | Cylindrical and Spherical Coordinates | Explore coordinate surfaces, volume elements, balls, cones, shells, and radial symmetry. | [Open interactive page](htmls/chapter-17.html) |
+| 18 | Multivariable Taylor Approximation and Quadratic Forms | Visualize local quadratic models, Hessians, eigen-directions, and likelihood approximation. | [Open interactive page](htmls/chapter-18.html) |
+| 19 | Vector Fields and Gradient Fields | Compare gradient fields, rotational fields, sources, sinks, flows, and optimization dynamics. | [Open interactive page](htmls/chapter-19.html) |
+| 20 | Line Integrals and Work | Compute scalar and vector line integrals along parameterized and piecewise paths. | [Open interactive page](htmls/chapter-20.html) |
+| 21 | Conservative Fields, Potentials, and Green's Theorem | Explore potentials, path independence, circulation, flux, and area by line integrals. | [Open interactive page](htmls/chapter-21.html) |
+| 22 | Curl, Divergence, and Surface Integrals | Visualize curl, divergence, surface normals, surface area, and flux. | [Open interactive page](htmls/chapter-22.html) |
+| 23 | Stokes Theorem and the Divergence Theorem | Connect circulation, flux, boundaries, orientations, and conservation laws. | [Open interactive page](htmls/chapter-23.html) |
+| 24 | Multivariable Calculus for Probability and Statistics | Explore joint densities, marginals, covariance, likelihoods, and posterior landscapes. | [Open interactive page](htmls/chapter-24.html) |
+| 25 | Multivariable Calculus for Data Science and Machine Learning | Visualize loss functions, gradient descent, logistic regression, regularization, and neural-network gradients. | [Open interactive page](htmls/chapter-25.html) |
+| 26 | Multivariable Calculus for Applied Mathematics | Explore differential operators, diffusion, conservation laws, finite differences, and gradient flows. | [Open interactive page](htmls/chapter-26.html) |
+| 27 | Review, Synthesis, and Bridge to Graduate Study | Review the full concept map through interactive synthesis and capstone-style exploration. | [Open interactive page](htmls/chapter-27.html) |
+
+
+## Suggested development plan
+
+The current `htmls/` folder can be developed in stages.
+
+**Stage 1: Concept visualization.**  Each page should include a simple interactive figure: a slider, toggle, contour plot, vector field, or rotating 3D surface.
+
+**Stage 2: Guided questions.**  Each page should include two or three short prompts, such as “What changes?”, “What stays fixed?”, and “What does the formula predict?”
+
+**Stage 3: Computation bridge.**  Each page should link naturally to the corresponding Python lab, where students reproduce or extend the visualization with code.
+
+**Stage 4: Assessment.**  Each page can end with a short check-for-understanding question that can be used in class, discussion sections, or review assignments.
+
+## Design principles
+
+The interactive pages should follow the same philosophy as the book:
+
+- start from geometry and visual intuition,
+- connect formulas to computation,
+- use examples from data, probability, optimization, and applied mathematics,
+- keep each activity short enough to use in a focused class moment,
+- help students move from “I can see it” to “I can compute it” to “I can explain it.”
+
+## File naming convention
+
+The HTML files use a simple chapter-based convention:
+
+```text
+htmls/chapter-01.html
+htmls/chapter-02.html
+...
+htmls/chapter-27.html
+```
+
+This convention keeps the links stable even if chapter titles are revised later.
