@@ -18,7 +18,7 @@ book:
   page-navigation: true
   search: true
   reader-mode: true
-  downloads: [pdf]
+  downloads: [pdf] 
   sharing: [twitter, linkedin]
   
   navbar:
